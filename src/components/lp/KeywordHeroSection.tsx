@@ -5,7 +5,15 @@ import { buttonVariants } from '@/components/ui/button'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export default function HeroSection() {
+interface KeywordHeroSectionProps {
+  title: string
+  subtext: string
+}
+
+export default function KeywordHeroSection({ title, subtext }: KeywordHeroSectionProps) {
+  // \n を改行として表示するために split して span 配列に変換
+  const titleLines = title.split('\n')
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-white to-zinc-50 px-6 pb-24 pt-20 md:pt-28">
       {/* 背景装飾 */}
@@ -23,17 +31,25 @@ export default function HeroSection() {
 
         {/* キャッチコピー */}
         <h1 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-zinc-900 sm:text-5xl md:text-6xl">
-          デザインセンスがなくても、
-          <br className="hidden sm:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">
-            3分で感動的なカードを。
-          </span>
+          {titleLines.map((line, index) => (
+            <span key={index}>
+              {index === titleLines.length - 1 ? (
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">
+                  {line}
+                </span>
+              ) : (
+                <>
+                  {line}
+                  <br />
+                </>
+              )}
+            </span>
+          ))}
         </h1>
 
         {/* サブテキスト */}
         <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-zinc-500 md:text-xl">
-          誕生日・記念日・お礼など、あらゆるシーンで使えるアニメーション付き
-          メッセージカードをAIとテンプレートで簡単作成。URLひとつで相手に届けましょう。
+          {subtext}
         </p>
 
         {/* CTAボタン */}
@@ -59,25 +75,6 @@ export default function HeroSection() {
         <p className="mt-4 text-xs text-zinc-400">
           クレジットカード不要 · 登録なしで今すぐ試せます
         </p>
-
-        {/* ヒーロービジュアル */}
-        <div className="mt-16 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-zinc-200/80">
-          <div className="flex h-8 items-center gap-2 border-b border-zinc-100 bg-zinc-50 px-4">
-            <div className="h-3 w-3 rounded-full bg-red-400" />
-            <div className="h-3 w-3 rounded-full bg-yellow-400" />
-            <div className="h-3 w-3 rounded-full bg-green-400" />
-            <span className="ml-2 text-xs text-zinc-400">cardmagic.app/create/editor</span>
-          </div>
-          <div className="flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 p-12 md:p-20">
-            <div className="w-full max-w-sm rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 p-8 text-center shadow-lg">
-              <p className="mb-2 text-4xl">🎂</p>
-              <p className="text-xl font-bold text-white">Happy Birthday!</p>
-              <p className="mt-2 text-sm text-white/80">
-                あなたの誕生日をお祝いして<br />心から嬉しいです
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   )

@@ -1,4 +1,4 @@
-export type CardSize = 'a4_landscape' | 'a4_portrait' | 'square' | 'instagram' | 'line_stamp';
+export type CardSize = 'a4_landscape' | 'a4_portrait' | 'square' | 'instagram' | 'line_stamp' | 'shikishi';
 
 export type CardStatus = 'draft' | 'published' | 'archived';
 
@@ -91,4 +91,5 @@ export const CARD_SIZES: Record<CardSize, CardSizeConfig> = {
   square:        { width: 800, height: 800, label: '正方形' },
   instagram:     { width: 1080, height: 1080, label: 'Instagram' },
   line_stamp:    { width: 370, height: 320, label: 'LINEスタンプ' },
+  shikishi:      { width: 915, height: 1028, label: '色紙' },
 };

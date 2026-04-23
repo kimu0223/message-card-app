@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Type, Palette, Sparkles } from 'lucide-react'
 import { nanoid } from 'nanoid'
-import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, AnimationType } from '@/types/card'
+import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, AnimationType, CardSize } from '@/types/card'
+import { CARD_SIZES } from '@/types/card'
 
 const FONTS = [
   { value: 'Noto Sans JP', label: 'Noto Sans' },
@@ -47,6 +48,7 @@ interface EditorPanelProps {
   selectedElementId: string | null
   onUpdateElement: (id: string, updates: Partial<CanvasElement>) => void
   onAddElement: (element: CanvasElement) => void
+  onSetSize: (size: CardSize) => void
   onSetBackground: (bg: Background) => void
   onSetAnimation: (anim: AnimationConfig | null) => void
 }
@@ -56,6 +58,7 @@ export default function EditorPanel({
   selectedElementId,
   onUpdateElement,
   onAddElement,
+  onSetSize,
   onSetBackground,
   onSetAnimation,
 }: EditorPanelProps) {
@@ -213,6 +216,26 @@ export default function EditorPanel({
         </TabsContent>
 
         <TabsContent value="background" className="space-y-4 pt-3">
+          {/* カードサイズ選択 */}
+          <div>
+            <Label className="text-xs text-zinc-500">カードサイズ</Label>
+            <Select
+              value={canvasData.size}
+              onValueChange={(v) => v && onSetSize(v as CardSize)}
+            >
+              <SelectTrigger className="mt-1 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.entries(CARD_SIZES) as [CardSize, (typeof CARD_SIZES)[CardSize]][]).map(([key, config]) => (
+                  <SelectItem key={key} value={key} className="text-xs">
+                    {config.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex gap-2">
             <Button variant={bgType === 'color' ? 'default' : 'outline'} size="sm" className="flex-1 text-xs" onClick={() => setBgType('color')}>
               単色

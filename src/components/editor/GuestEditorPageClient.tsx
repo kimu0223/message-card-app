@@ -28,7 +28,7 @@ export default function GuestEditorPageClient() {
     selectedElementId, setSelectedElementId,
     zoom, setZoom,
     showAIPanel, toggleAIPanel,
-    updateElement, addElement, setBackground, setAnimation,
+    updateElement, addElement, setSize, setBackground, setAnimation,
   } = useEditorStore()
 
   // localStorageから初期化
@@ -157,6 +157,7 @@ export default function GuestEditorPageClient() {
             selectedElementId={selectedElementId}
             onUpdateElement={(id, updates) => updateElement(id, updates)}
             onAddElement={addElement}
+            onSetSize={setSize}
             onSetBackground={setBackground}
             onSetAnimation={setAnimation}
           />

@@ -46,7 +46,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
     zoom, setZoom,
     showAIPanel, toggleAIPanel,
     isSaving, setIsSaving, setLastSavedAt,
-    updateElement, addElement, setBackground, setAnimation,
+    updateElement, addElement, setSize, setBackground, setAnimation,
   } = useEditorStore()
 
   // 初期化
@@ -196,6 +196,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
             selectedElementId={selectedElementId}
             onUpdateElement={(id, updates) => updateElement(id, updates)}
             onAddElement={addElement}
+            onSetSize={setSize}
             onSetBackground={setBackground}
             onSetAnimation={setAnimation}
           />

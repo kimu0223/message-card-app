@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
 
@@ -17,6 +19,7 @@ export default function LPFooter() {
             <Link href="/login" className="hover:text-zinc-900 transition-colors">ログイン</Link>
             <a href="#pricing" className="hover:text-zinc-900 transition-colors">料金</a>
             <a href="#faq" className="hover:text-zinc-900 transition-colors">よくある質問</a>
+            <Link href="/blog" className="hover:text-zinc-900 transition-colors">ブログ</Link>
           </nav>
 
           {/* コピーライト */}

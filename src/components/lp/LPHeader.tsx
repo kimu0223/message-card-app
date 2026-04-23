@@ -34,6 +34,7 @@ export default function LPHeader() {
           <a href="#features" className="hover:text-zinc-900 transition-colors">機能</a>
           <a href="#pricing" className="hover:text-zinc-900 transition-colors">料金</a>
           <a href="#faq" className="hover:text-zinc-900 transition-colors">よくある質問</a>
+          <Link href="/blog" className="hover:text-zinc-900 transition-colors">ブログ</Link>
         </nav>
 
         {/* CTAボタン */}
@@ -64,6 +65,7 @@ export default function LPHeader() {
             <a href="#features" onClick={() => setMobileOpen(false)}>機能</a>
             <a href="#pricing" onClick={() => setMobileOpen(false)}>料金</a>
             <a href="#faq" onClick={() => setMobileOpen(false)}>よくある質問</a>
+            <Link href="/blog" onClick={() => setMobileOpen(false)}>ブログ</Link>
             <hr className="border-zinc-100" />
             <Link href="/login" className="text-zinc-600">ログイン</Link>
             <Link href="/create" className={cn(buttonVariants({ size: 'sm', className: 'bg-emerald-500 hover:bg-emerald-600 text-white w-full text-center' }))}>
