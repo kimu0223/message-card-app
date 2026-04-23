@@ -2,6 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AppHeader from '@/components/layout/AppHeader'
 
+// Supabase (cookies) を使うため静的プリレンダリングを無効化
+// これにより配下の dashboard / editor / billing も動的レンダリングになる
+export const dynamic = 'force-dynamic'
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

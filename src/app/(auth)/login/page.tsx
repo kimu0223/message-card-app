@@ -1,5 +1,8 @@
 'use client'
 
+// ビルド時の静的プリレンダリングで Supabase クライアント初期化エラーが起きるため動的レンダリングに固定
+export const dynamic = 'force-dynamic'
+
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'

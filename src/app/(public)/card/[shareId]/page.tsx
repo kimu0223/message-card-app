@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+
+// generateMetadata + page の両方で Supabase を使うため動的レンダリングに固定
+export const dynamic = 'force-dynamic'
 import PublicCardView from '@/components/share/PublicCardView'
 import type { CanvasData } from '@/types/card'
 
