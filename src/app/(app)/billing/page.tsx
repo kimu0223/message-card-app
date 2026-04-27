@@ -17,6 +17,7 @@ export default async function BillingPage() {
     .single()
 
   const isPro = profile?.plan === 'pro'
+  const proPriceId = process.env.STRIPE_PRICE_PRO_MONTHLY ?? ''
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
@@ -99,7 +100,7 @@ export default async function BillingPage() {
                 ご利用中
               </Button>
             ) : (
-              <UpgradeButton />
+              <UpgradeButton priceId={proPriceId} />
             )}
           </div>
         </div>
