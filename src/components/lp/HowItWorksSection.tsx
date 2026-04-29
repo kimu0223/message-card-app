@@ -1,53 +1,71 @@
-const STEPS = [
-  {
-    num: '01',
-    emoji: '🎨',
-    title: 'テンプレートを選ぶ',
-    desc: '誕生日・お礼・お祝いなど目的別テンプレートが揃っています。好みのスタイルを選ぶだけ。',
-  },
-  {
-    num: '02',
-    emoji: '✏️',
-    title: 'メッセージを編集',
-    desc: 'テキストを自由に編集。フォント・色・サイズも簡単に変更できます。',
-  },
-  {
-    num: '03',
-    emoji: '✨',
-    title: 'AIにメッセージを提案させる',
-    desc: '相手やシーンを伝えると、AIが心に響くメッセージ候補を3つ提案。そのまま使えます。',
-  },
-  {
-    num: '04',
-    emoji: '📲',
-    title: 'URLで届ける',
-    desc: '完成したらURLをコピーしてLINE・SNSで送るだけ。アニメーション付きで届きます。',
-  },
+'use client'
+
+import { useReveal } from '@/hooks/useReveal'
+
+const steps = [
+  { no: '01', title: 'テンプレートを選ぶ', body: '誕生日・お礼・お祝いなど、シーン別の高品質テンプレートから、心に響く一枚を。' },
+  { no: '02', title: 'メッセージを編集', body: 'テキスト・フォント・色・サイズを自由にカスタマイズ。あなたらしさを込めて。' },
+  { no: '03', title: 'AIにメッセージを提案させる', body: '相手とシーンを伝えると、AIが心を動かすメッセージを3案ご提案します。' },
+  { no: '04', title: 'URLで届ける', body: 'URLをコピーしてLINEやSNSへ。アニメーションが、相手の心に届きます。' },
 ]
 
 export default function HowItWorksSection() {
+  useReveal()
+
   return (
-    <section id="how-it-works" className="scroll-mt-20 bg-white px-6 py-24">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-14 text-center">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-600">How it works</p>
-          <h2 className="text-3xl font-bold text-zinc-900 md:text-4xl">たった4ステップで完成</h2>
+    <section className="relative py-[110px]" id="how" style={{ position: 'relative', zIndex: 2 }}>
+      <div className="mx-auto max-w-[1240px] px-8">
+        <div className="lp-reveal">
+          <span
+            className="inline-flex items-center gap-[10px]"
+            style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 14, letterSpacing: '0.04em', color: 'var(--lp-terracotta)' }}
+          >
+            <span style={{ width: 28, height: 1, background: 'var(--lp-terracotta)', opacity: 0.6, display: 'inline-block' }} />
+            How it works
+          </span>
+          <h2
+            className="mt-[14px] mb-[18px]"
+            style={{
+              fontFamily: 'var(--font-lp-serif)',
+              fontWeight: 500,
+              fontSize: 'clamp(32px, 4vw, 52px)',
+              lineHeight: 1.25,
+              letterSpacing: '0.01em',
+              color: 'var(--lp-ink)',
+              textWrap: 'balance',
+            }}
+          >
+            たった4ステップで、<br />感動が手紙になる。
+          </h2>
         </div>
 
-        <div className="relative grid gap-8 md:grid-cols-4">
-          {/* コネクターライン */}
-          <div className="absolute left-0 right-0 top-10 hidden h-0.5 bg-gradient-to-r from-emerald-200 via-teal-200 to-emerald-200 md:block" />
-
-          {STEPS.map((step) => (
-            <div key={step.num} className="relative flex flex-col items-center text-center">
-              {/* ステップ番号バブル */}
-              <div className="relative z-10 mb-4 flex h-20 w-20 flex-col items-center justify-center rounded-full border-2 border-emerald-200 bg-white shadow-md">
-                <span className="text-2xl leading-none">{step.emoji}</span>
-                <span className="mt-0.5 text-[10px] font-bold text-emerald-500">{step.num}</span>
+        <div className="mt-[60px] grid gap-[22px] sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((s, i) => (
+            <div
+              key={s.no}
+              className="lp-reveal relative rounded-[22px] border p-7 transition-transform duration-[400ms] hover:-translate-y-1"
+              data-delay={i + 1}
+              style={{
+                background: 'var(--lp-paper)',
+                borderColor: 'var(--lp-paper-line)',
+                boxShadow: 'var(--lp-shadow-soft)',
+              }}
+            >
+              <div className="mb-4 inline-flex items-center gap-[10px]" style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', color: 'var(--lp-terracotta)', fontSize: 14 }}>
+                <div
+                  className="grid h-7 w-7 place-items-center rounded-full text-sm"
+                  style={{ background: 'var(--lp-terracotta)', color: 'var(--lp-cream-soft)', fontFamily: 'var(--font-lp-display)', fontStyle: 'normal' }}
+                >
+                  {i + 1}
+                </div>
+                STEP {s.no}
               </div>
-
-              <h3 className="mb-2 text-base font-bold text-zinc-800">{step.title}</h3>
-              <p className="text-sm leading-relaxed text-zinc-500">{step.desc}</p>
+              <h3 className="mb-[10px]" style={{ fontFamily: 'var(--font-lp-serif)', fontWeight: 500, fontSize: 22, color: 'var(--lp-ink)' }}>
+                {s.title}
+              </h3>
+              <p className="m-0 text-sm leading-[1.85]" style={{ color: 'var(--lp-ink-soft)' }}>
+                {s.body}
+              </p>
             </div>
           ))}
         </div>

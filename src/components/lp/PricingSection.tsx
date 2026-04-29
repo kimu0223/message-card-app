@@ -1,110 +1,144 @@
 'use client'
 
 import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { Check } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { PLANS } from '@/constants/plans'
+import { useReveal } from '@/hooks/useReveal'
+
+const plans = [
+  {
+    name: 'Free',
+    price: '¥0',
+    desc: '登録不要で、今すぐ使い始められます。',
+    featured: false,
+    feats: ['無料テンプレート 5種', '月5枚まで作成', 'AIメッセージ 月10回', 'PNG / PDF 書き出し', '色紙・A4など全サイズ対応'],
+    cta: '無料で試す',
+  },
+  {
+    name: 'Standard',
+    price: '¥490',
+    desc: '月20枚・AIも充実のスタンダード。',
+    featured: true,
+    feats: ['全テンプレート使い放題', '月20枚まで作成', 'AIメッセージ 月50回', '全アニメーション効果', 'PNG / PDF 書き出し', '色紙・A4など全サイズ対応'],
+    cta: 'Standardを始める',
+  },
+  {
+    name: 'Pro',
+    price: '¥980',
+    desc: '枚数・AI・画像生成すべて無制限に。',
+    featured: false,
+    feats: ['全テンプレート使い放題', '作成枚数 無制限', 'AIメッセージ 無制限', '全アニメーション効果', 'AI画像生成・デザイン提案', '優先サポート'],
+    cta: 'Proを始める',
+  },
+]
 
 export default function PricingSection() {
-  const free = PLANS.free
-  const standard = PLANS.standard
-  const pro = PLANS.pro
+  useReveal()
 
   return (
-    <section id="pricing" className="scroll-mt-20 bg-white px-6 py-24">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-14 text-center">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-600">Pricing</p>
-          <h2 className="text-3xl font-bold text-zinc-900 md:text-4xl">シンプルな料金プラン</h2>
-          <p className="mt-3 text-zinc-500">まずは無料で始めて、必要になったらアップグレード</p>
+    <section className="relative py-[110px]" id="pricing" style={{ position: 'relative', zIndex: 2 }}>
+      <div className="mx-auto max-w-[1240px] px-8">
+        <div className="lp-reveal">
+          <span
+            className="inline-flex items-center gap-[10px]"
+            style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 14, letterSpacing: '0.04em', color: 'var(--lp-terracotta)' }}
+          >
+            <span style={{ width: 28, height: 1, background: 'var(--lp-terracotta)', opacity: 0.6, display: 'inline-block' }} />
+            Pricing
+          </span>
+          <h2
+            className="mt-[14px] mb-[18px]"
+            style={{
+              fontFamily: 'var(--font-lp-serif)',
+              fontWeight: 500,
+              fontSize: 'clamp(32px, 4vw, 52px)',
+              lineHeight: 1.25,
+              color: 'var(--lp-ink)',
+            }}
+          >
+            シンプルな、3つのプラン。
+          </h2>
+          <p className="max-w-[620px] text-[17px] leading-[1.85]" style={{ color: 'var(--lp-ink-soft)' }}>
+            まずは無料で。気に入ったらアップグレード。いつでもキャンセル可能です。
+          </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
-          {/* Free プラン */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-8">
-            <div className="mb-6">
-              <p className="text-sm font-semibold uppercase tracking-widest text-zinc-400">{free.name}</p>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-zinc-900">¥0</span>
-                <span className="text-sm text-zinc-400">/月</span>
-              </div>
-              <p className="mt-2 text-sm text-zinc-500">登録不要で今すぐ使い始められます</p>
-            </div>
-
-            <ul className="mb-8 space-y-3">
-              {free.features.map(feat => (
-                <li key={feat} className="flex items-center gap-3 text-sm text-zinc-600">
-                  <Check className="h-4 w-4 shrink-0 text-emerald-500" />
-                  {feat}
-                </li>
-              ))}
-            </ul>
-
-            <Link href="/create" className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}>
-              無料で試す
-            </Link>
-          </div>
-
-          {/* Standard プラン（おすすめ・中央） */}
-          <div className="relative rounded-2xl border-2 border-emerald-400 bg-white p-8 shadow-xl shadow-emerald-100">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-bold text-white">おすすめ</span>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-sm font-semibold uppercase tracking-widest text-emerald-600">{standard.name}</p>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-zinc-900">¥{standard.price.toLocaleString()}</span>
-                <span className="text-sm text-zinc-400">/月</span>
-              </div>
-              <p className="mt-2 text-sm text-zinc-500">月20枚・AIも充実のスタンダードプラン</p>
-            </div>
-
-            <ul className="mb-8 space-y-3">
-              {standard.features.map(feat => (
-                <li key={feat} className="flex items-center gap-3 text-sm text-zinc-700">
-                  <Check className="h-4 w-4 shrink-0 text-emerald-500" />
-                  {feat}
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              href="/login"
-              className={cn('inline-flex w-full items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors bg-emerald-500 hover:bg-emerald-600 text-white')}
+        <div className="mt-[60px] grid gap-[22px] md:grid-cols-3">
+          {plans.map((p, i) => (
+            <div
+              key={p.name}
+              className={`lp-reveal relative flex flex-col rounded-[22px] border p-8 ${p.featured ? '-translate-y-3' : ''}`}
+              data-delay={i + 1}
+              style={{
+                background: p.featured ? 'var(--lp-ink)' : 'var(--lp-paper)',
+                borderColor: p.featured ? 'var(--lp-ink)' : 'var(--lp-paper-line)',
+                boxShadow: p.featured ? '0 30px 60px -28px rgba(43,37,32,0.6)' : 'var(--lp-shadow-soft)',
+                color: p.featured ? 'var(--lp-cream-soft)' : 'var(--lp-ink)',
+              }}
             >
-              Standardを始める
-            </Link>
-          </div>
+              {p.featured && (
+                <div
+                  className="absolute right-[-8px] top-5 rounded-l-md px-[14px] py-[6px]"
+                  style={{
+                    background: 'var(--lp-terracotta)',
+                    color: 'var(--lp-cream-soft)',
+                    fontFamily: 'var(--font-lp-display)',
+                    fontStyle: 'italic',
+                    fontSize: 13,
+                    boxShadow: '0 4px 0 -2px var(--lp-terracotta-deep)',
+                  }}
+                >
+                  人気No.1
+                </div>
+              )}
 
-          {/* Pro プラン */}
-          <div className="rounded-2xl border-2 border-zinc-800 bg-zinc-900 p-8">
-            <div className="mb-6">
-              <p className="text-sm font-semibold uppercase tracking-widest text-zinc-400">{pro.name}</p>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-white">¥{pro.price.toLocaleString()}</span>
-                <span className="text-sm text-zinc-400">/月</span>
+              <h3 style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 26, margin: '0 0 6px' }}>
+                {p.name}
+              </h3>
+              <div className="my-3" style={{ fontFamily: 'var(--font-lp-serif)', fontSize: 40, fontWeight: 500 }}>
+                {p.price}
+                <span className="ml-1 text-sm font-normal" style={{ color: p.featured ? 'rgba(255,252,245,0.7)' : 'var(--lp-ink-mute)' }}>/月</span>
               </div>
-              <p className="mt-2 text-sm text-zinc-400">作成枚数・AI回数すべて無制限</p>
+              <div className="mb-6 min-h-9 text-[13px] leading-[1.7]" style={{ color: p.featured ? 'rgba(255,252,245,0.7)' : 'var(--lp-ink-mute)' }}>
+                {p.desc}
+              </div>
+
+              <ul className="mb-7 flex flex-1 flex-col gap-[10px] p-0" style={{ listStyle: 'none' }}>
+                {p.feats.map(f => (
+                  <li key={f} className="flex gap-[10px] text-sm leading-[1.5]" style={{ color: p.featured ? 'rgba(255,252,245,0.85)' : 'var(--lp-ink-soft)' }}>
+                    <span
+                      className="mt-0.5 grid h-[18px] w-[18px] flex-shrink-0 place-items-center rounded-full text-[11px]"
+                      style={{
+                        background: p.featured ? 'transparent' : 'var(--lp-cream-deep)',
+                        color: 'var(--lp-terracotta)',
+                      }}
+                    >
+                      ✓
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href={p.name === 'Free' ? '/create' : '/login'}
+                className="inline-flex items-center justify-center rounded-full border px-[22px] py-[14px] text-[15px] font-medium tracking-wide transition-transform hover:-translate-y-0.5"
+                style={p.featured
+                  ? {
+                    background: 'var(--lp-terracotta)',
+                    color: 'var(--lp-cream-soft)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 6px 0 -3px var(--lp-terracotta-deep), 0 12px 24px -10px rgba(168,95,68,0.45)',
+                  }
+                  : {
+                    background: 'transparent',
+                    color: 'var(--lp-ink)',
+                    borderColor: 'rgba(43,37,32,0.18)',
+                  }
+                }
+              >
+                {p.cta}
+              </Link>
             </div>
-
-            <ul className="mb-8 space-y-3">
-              {pro.features.map(feat => (
-                <li key={feat} className="flex items-center gap-3 text-sm text-zinc-300">
-                  <Check className="h-4 w-4 shrink-0 text-emerald-400" />
-                  {feat}
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              href="/login"
-              className={cn('inline-flex w-full items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-600')}
-            >
-              Proを始める
-            </Link>
-          </div>
+          ))}
         </div>
       </div>
     </section>

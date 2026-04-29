@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { Sparkles, Menu, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Menu, X } from 'lucide-react'
 
 export default function LPHeader() {
   const [scrolled, setScrolled] = useState(false)
@@ -17,59 +15,97 @@ export default function LPHeader() {
   }, [])
 
   return (
-    <header className={cn(
-      'sticky top-0 z-50 w-full transition-shadow duration-200',
-      scrolled ? 'bg-white/95 shadow-sm backdrop-blur-sm' : 'bg-transparent'
-    )}>
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        {/* ロゴ */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-zinc-900">
-          <Sparkles className="h-5 w-5 text-emerald-500" />
-          <span>CardMagic</span>
+    <header
+      className="sticky top-0 z-50 border-b transition-all duration-200"
+      style={{
+        backdropFilter: 'blur(14px) saturate(120%)',
+        background: scrolled ? 'rgba(244, 236, 220, 0.85)' : 'rgba(244, 236, 220, 0.72)',
+        borderColor: 'rgba(43,37,32,0.06)',
+      }}
+    >
+      <div className="mx-auto flex max-w-[1240px] items-center justify-between px-8 py-[18px]">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-[10px]" style={{ fontFamily: 'var(--font-lp-display)', fontSize: 24, letterSpacing: '0.01em', color: 'var(--lp-ink)' }}>
+          <div
+            className="grid place-items-center"
+            style={{
+              width: 32, height: 32,
+              background: 'var(--lp-ink)',
+              color: 'var(--lp-cream-soft)',
+              borderRadius: 8,
+              fontFamily: 'var(--font-lp-display)',
+              fontStyle: 'italic',
+              fontSize: 18,
+              transform: 'rotate(-6deg)',
+              boxShadow: '0 2px 0 -1px var(--lp-ink), 2px 2px 0 0 var(--lp-terracotta)',
+            }}
+          >
+            M
+          </div>
+          <span style={{ fontWeight: 400 }}>
+            Card<em style={{ fontStyle: 'italic', color: 'var(--lp-terracotta)', fontFamily: 'var(--font-lp-display)' }}>Magic</em>
+          </span>
         </Link>
 
-        {/* デスクトップナビ */}
-        <nav className="hidden items-center gap-6 text-sm font-medium text-zinc-600 md:flex">
-          <a href="#how-it-works" className="hover:text-zinc-900 transition-colors">使い方</a>
-          <a href="#features" className="hover:text-zinc-900 transition-colors">機能</a>
-          <a href="#pricing" className="hover:text-zinc-900 transition-colors">料金</a>
-          <a href="#faq" className="hover:text-zinc-900 transition-colors">よくある質問</a>
-          <Link href="/blog" className="hover:text-zinc-900 transition-colors">ブログ</Link>
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-7 text-sm md:flex" style={{ color: 'var(--lp-ink-soft)' }}>
+          <a href="#how" className="transition-colors hover:text-[var(--lp-terracotta)]">使い方</a>
+          <a href="#features" className="transition-colors hover:text-[var(--lp-terracotta)]">機能</a>
+          <a href="#gallery" className="transition-colors hover:text-[var(--lp-terracotta)]">テンプレート</a>
+          <a href="#pricing" className="transition-colors hover:text-[var(--lp-terracotta)]">料金</a>
+          <a href="#faq" className="transition-colors hover:text-[var(--lp-terracotta)]">FAQ</a>
         </nav>
 
-        {/* CTAボタン */}
-        <div className="hidden items-center gap-3 md:flex">
-          <Link href="/login" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>
+        {/* CTA */}
+        <div className="hidden items-center gap-[10px] md:flex">
+          <Link
+            href="/login"
+            className="inline-flex items-center rounded-full border px-[18px] py-[10px] text-sm font-medium transition-colors"
+            style={{ borderColor: 'rgba(43,37,32,0.18)', color: 'var(--lp-ink)' }}
+          >
             ログイン
           </Link>
-          <Link href="/create" className={cn(buttonVariants({ size: 'sm', className: 'bg-emerald-500 hover:bg-emerald-600 text-white' }))}>
-            無料で試す
+          <Link
+            href="/create"
+            className="inline-flex items-center rounded-full px-[18px] py-[10px] text-sm font-medium text-[var(--lp-cream-soft)] transition-transform hover:-translate-y-0.5"
+            style={{
+              background: 'var(--lp-ink)',
+              boxShadow: '0 6px 0 -3px var(--lp-ink), 0 12px 24px -10px rgba(43,37,32,0.5)',
+            }}
+          >
+            無料で試す →
           </Link>
         </div>
 
-        {/* モバイルメニュー */}
+        {/* Mobile menu button */}
         <button
           className="flex items-center md:hidden"
           onClick={() => setMobileOpen(v => !v)}
           aria-label="メニュー"
+          style={{ color: 'var(--lp-ink)' }}
         >
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
-      {/* モバイルドロワー */}
+      {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="border-t border-zinc-100 bg-white px-6 py-4 md:hidden">
-          <nav className="flex flex-col gap-4 text-sm font-medium text-zinc-600">
-            <a href="#how-it-works" onClick={() => setMobileOpen(false)}>使い方</a>
+        <div className="border-t px-8 py-5 md:hidden" style={{ borderColor: 'rgba(43,37,32,0.06)', background: 'var(--lp-cream-soft)' }}>
+          <nav className="flex flex-col gap-4 text-sm font-medium" style={{ color: 'var(--lp-ink-soft)' }}>
+            <a href="#how" onClick={() => setMobileOpen(false)}>使い方</a>
             <a href="#features" onClick={() => setMobileOpen(false)}>機能</a>
+            <a href="#gallery" onClick={() => setMobileOpen(false)}>テンプレート</a>
             <a href="#pricing" onClick={() => setMobileOpen(false)}>料金</a>
-            <a href="#faq" onClick={() => setMobileOpen(false)}>よくある質問</a>
-            <Link href="/blog" onClick={() => setMobileOpen(false)}>ブログ</Link>
-            <hr className="border-zinc-100" />
-            <Link href="/login" className="text-zinc-600">ログイン</Link>
-            <Link href="/create" className={cn(buttonVariants({ size: 'sm', className: 'bg-emerald-500 hover:bg-emerald-600 text-white w-full text-center' }))}>
-              無料で試す
+            <a href="#faq" onClick={() => setMobileOpen(false)}>FAQ</a>
+            <hr style={{ borderColor: 'rgba(43,37,32,0.08)' }} />
+            <Link href="/login" onClick={() => setMobileOpen(false)}>ログイン</Link>
+            <Link
+              href="/create"
+              className="inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-[var(--lp-cream-soft)]"
+              style={{ background: 'var(--lp-ink)' }}
+              onClick={() => setMobileOpen(false)}
+            >
+              無料で試す →
             </Link>
           </nav>
         </div>

@@ -1,81 +1,133 @@
 'use client'
 
 import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { ArrowRight, Sparkles } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import HeroEnvelope from './HeroEnvelope'
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white to-zinc-50 px-6 pb-24 pt-20 md:pt-28">
-      {/* 背景装飾 */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-emerald-100/60 blur-3xl" />
-        <div className="absolute -right-32 top-16 h-80 w-80 rounded-full bg-teal-100/50 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto max-w-4xl text-center">
-        {/* バッジ */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-sm font-medium text-emerald-700">
-          <Sparkles className="h-4 w-4" />
-          AI搭載・登録不要で今すぐ体験
-        </div>
-
-        {/* キャッチコピー */}
-        <h1 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-zinc-900 sm:text-5xl md:text-6xl">
-          デザインセンスがなくても、
-          <br className="hidden sm:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">
-            3分で感動的なカードを。
+    <section className="relative overflow-hidden py-[70px] pb-[80px]" style={{ position: 'relative', zIndex: 2 }}>
+      <div className="mx-auto grid max-w-[1240px] items-center gap-[60px] px-8 lg:grid-cols-[1.05fr_1fr]">
+        {/* Left: copy */}
+        <div>
+          {/* Badge */}
+          <span
+            className="inline-flex items-center gap-[10px] rounded-full border px-[14px] py-[7px] pl-[8px] text-[13px]"
+            style={{
+              background: 'var(--lp-paper)',
+              borderColor: 'var(--lp-paper-line)',
+              color: 'var(--lp-ink-soft)',
+              boxShadow: 'var(--lp-shadow-soft)',
+            }}
+          >
+            <span
+              className="grid h-[18px] w-[18px] place-items-center rounded-full text-[11px]"
+              style={{ background: 'var(--lp-terracotta)', color: 'var(--lp-cream-soft)' }}
+            >
+              ✦
+            </span>
+            AI搭載・登録不要で今すぐ体験
           </span>
-        </h1>
 
-        {/* サブテキスト */}
-        <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-zinc-500 md:text-xl">
-          誕生日・記念日・お礼など、あらゆるシーンで使えるアニメーション付き
-          メッセージカードをAIとテンプレートで簡単作成。URLひとつで相手に届けましょう。
-        </p>
+          {/* Title */}
+          <h1
+            className="mt-[22px] mb-[26px]"
+            style={{
+              fontFamily: 'var(--font-lp-serif)',
+              fontWeight: 500,
+              fontSize: 'clamp(40px, 5.6vw, 78px)',
+              lineHeight: 1.18,
+              letterSpacing: '0.005em',
+              color: 'var(--lp-ink)',
+              textWrap: 'balance',
+            }}
+          >
+            <span style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', color: 'var(--lp-terracotta)', display: 'inline-block' }}>
+              Open
+            </span>{' '}
+            the moment.<br />
+            <span className="relative inline-block">
+              心がふるえる
+              <span
+                className="pointer-events-none absolute"
+                style={{
+                  left: -4, right: -4, bottom: -2,
+                  height: 14,
+                  background: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'><path d='M2 14 Q 50 4 100 11 T 198 8' fill='none' stroke='%23C97B5C' stroke-width='3' stroke-linecap='round' opacity='0.85'/></svg>") no-repeat`,
+                  backgroundSize: '100% 100%',
+                  zIndex: -1,
+                }}
+              />
+            </span>
+            、<br />
+            一通の手紙を。
+          </h1>
 
-        {/* CTAボタン */}
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <Link
-            href="/create"
-            className={cn(
-              buttonVariants({ size: 'lg' }),
-              'gap-2 bg-emerald-500 px-8 text-base hover:bg-emerald-600 text-white'
-            )}
+          {/* Lede */}
+          <p
+            className="mb-8 max-w-[540px]"
+            style={{ fontSize: 17, lineHeight: 1.95, color: 'var(--lp-ink-soft)' }}
           >
-            無料でカードを作る
-            <ArrowRight className="h-5 w-5" />
-          </Link>
-          <Link
-            href="/login"
-            className={cn(buttonVariants({ variant: 'outline', size: 'lg', className: 'px-8 text-base' }))}
-          >
-            ログイン / 新規登録
-          </Link>
+            誕生日・記念日・お礼。すべての特別な日に、<br />
+            アニメーション付きのメッセージカードをAIとテンプレートで。<br />
+            URLひとつで、相手の手元に届きます。
+          </p>
+
+          {/* CTA */}
+          <div className="flex flex-wrap gap-[14px]">
+            <Link
+              href="/create"
+              className="inline-flex items-center gap-[10px] rounded-full px-[22px] py-[14px] text-[15px] font-medium tracking-wide text-[var(--lp-cream-soft)] transition-transform hover:-translate-y-0.5"
+              style={{
+                background: 'var(--lp-ink)',
+                boxShadow: '0 6px 0 -3px var(--lp-ink), 0 12px 24px -10px rgba(43,37,32,0.5)',
+              }}
+            >
+              無料でカードを作る →
+            </Link>
+            <a
+              href="#gallery"
+              className="inline-flex items-center gap-[10px] rounded-full border px-[22px] py-[14px] text-[15px] font-medium tracking-wide transition-colors"
+              style={{ borderColor: 'rgba(43,37,32,0.18)', color: 'var(--lp-ink)' }}
+            >
+              テンプレートを見る
+            </a>
+          </div>
+
+          {/* Meta */}
+          <div className="mt-[22px] flex items-center gap-2 text-[13px]" style={{ color: 'var(--lp-ink-mute)' }}>
+            <span className="h-[6px] w-[6px] rounded-full" style={{ background: 'var(--lp-sage)' }} />
+            クレジットカード不要 · 3分で完成 · 登録なしOK
+          </div>
+
+          {/* Stats */}
+          <div className="mt-10 flex flex-wrap gap-9">
+            {[
+              { num: '120+', label: 'templates' },
+              { num: '38万通', label: 'cards sent' },
+              { num: '4.8★', label: 'user rating' },
+            ].map(s => (
+              <div key={s.label} className="flex flex-col gap-[2px]">
+                <span style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 32, color: 'var(--lp-ink)' }}>
+                  {s.num}
+                </span>
+                <span className="text-[12px] uppercase tracking-widest" style={{ color: 'var(--lp-ink-mute)' }}>
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <p className="mt-4 text-xs text-zinc-400">
-          クレジットカード不要 · 登録なしで今すぐ試せます
-        </p>
+        {/* Right: envelope animation */}
+        <div className="relative py-5 pb-[60px]">
+          <HeroEnvelope />
 
-        {/* ヒーロービジュアル */}
-        <div className="mt-16 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-zinc-200/80">
-          <div className="flex h-8 items-center gap-2 border-b border-zinc-100 bg-zinc-50 px-4">
-            <div className="h-3 w-3 rounded-full bg-red-400" />
-            <div className="h-3 w-3 rounded-full bg-yellow-400" />
-            <div className="h-3 w-3 rounded-full bg-green-400" />
-            <span className="ml-2 text-xs text-zinc-400">cardmagic.app/create/editor</span>
-          </div>
-          <div className="flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 p-12 md:p-20">
-            <div className="w-full max-w-sm rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 p-8 text-center shadow-lg">
-              <p className="mb-2 text-4xl">🎂</p>
-              <p className="text-xl font-bold text-white">Happy Birthday!</p>
-              <p className="mt-2 text-sm text-white/80">
-                あなたの誕生日をお祝いして<br />心から嬉しいです
-              </p>
-            </div>
+          {/* Floating paper bits */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div className="lp-paper-bit" style={{ top: '10%', left: '0%', '--c': 'var(--lp-terracotta)', '--w': '10px', '--h': '14px', '--r': '20deg', '--dur': '6s' } as React.CSSProperties} />
+            <div className="lp-paper-bit" style={{ top: '85%', left: '8%', '--c': 'var(--lp-sage)', '--w': '14px', '--h': '18px', '--r': '-12deg', '--dur': '8s', '--delay': '1.2s' } as React.CSSProperties} />
+            <div className="lp-paper-bit" style={{ top: '30%', right: '-2%', '--c': 'var(--lp-gold)', '--w': '12px', '--h': '16px', '--r': '30deg', '--dur': '7s', '--delay': '0.4s' } as React.CSSProperties} />
+            <div className="lp-paper-bit" style={{ top: '75%', right: '5%', '--c': 'var(--lp-terracotta)', '--w': '8px', '--h': '10px', '--r': '-18deg', '--dur': '9s', '--delay': '2s' } as React.CSSProperties} />
           </div>
         </div>
       </div>
