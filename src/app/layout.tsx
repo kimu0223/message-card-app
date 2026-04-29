@@ -7,6 +7,7 @@ import {
   Caveat,
   JetBrains_Mono,
 } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import "@/styles/lp.css";
 
@@ -69,6 +70,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${zenOldMincho.variable} ${zenKakuGothic.variable} ${dmSerifDisplay.variable} ${caveat.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
+      <GoogleAnalytics gaId="G-J7NR1Q4P10" />
     </html>
   );
 }
