@@ -1,4 +1,3 @@
-import '@/styles/lp.css'
 import LPHeader from '@/components/lp/LPHeader'
 import HeroSection from '@/components/lp/HeroSection'
 import GallerySection from '@/components/lp/GallerySection'

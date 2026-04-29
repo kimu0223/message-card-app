@@ -21,7 +21,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single()
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div
+      className="min-h-screen"
+      style={{
+        background: 'var(--lp-cream)',
+        color: 'var(--lp-ink)',
+        fontFamily: 'var(--font-lp-sans)',
+      }}
+    >
       <AppHeader user={user} profile={profile} />
       <main>{children}</main>
     </div>

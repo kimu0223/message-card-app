@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Heart, Share2, Edit2, Trash2, Clock } from 'lucide-react'
+import { Heart, Share2, Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 import { ja } from 'date-fns/locale'
-import { cn } from '@/lib/utils'
 
 interface Card {
   id: string
@@ -26,6 +23,7 @@ interface Card {
 
 interface DashboardClientProps {
   cards: Card[]
+  isAtLimit: boolean
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -33,7 +31,15 @@ const STATUS_LABELS: Record<string, string> = {
   published: '公開中',
 }
 
-export default function DashboardClient({ cards: initialCards }: DashboardClientProps) {
+// Color palette for card thumbnails without images
+const THUMB_COLORS = [
+  'linear-gradient(135deg, #E8DDC4 0%, #DDD0B3 100%)',
+  'linear-gradient(135deg, rgba(201,123,92,0.25) 0%, rgba(234,223,198,0.6) 100%)',
+  'linear-gradient(135deg, rgba(143,166,138,0.25) 0%, rgba(234,223,198,0.6) 100%)',
+  'linear-gradient(135deg, rgba(184,146,99,0.25) 0%, rgba(234,223,198,0.6) 100%)',
+]
+
+export default function DashboardClient({ cards: initialCards, isAtLimit }: DashboardClientProps) {
   const router = useRouter()
   const [cards, setCards] = useState(initialCards)
 
@@ -113,25 +119,44 @@ export default function DashboardClient({ cards: initialCards }: DashboardClient
     }
   }
 
-  const favorites = cards.filter(c => c.is_favorite)
-  const rest = cards.filter(c => !c.is_favorite)
+  const { favorites, rest } = useMemo(() => ({
+    favorites: cards.filter(c => c.is_favorite),
+    rest: cards.filter(c => !c.is_favorite),
+  }), [cards])
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
       {favorites.length > 0 && (
         <section>
-          <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-500">
-            <Heart className="h-4 w-4 fill-pink-500 text-pink-500" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, fontSize: 13, fontWeight: 600, color: 'var(--lp-ink-mute)' }}>
+            <Heart style={{ width: 14, height: 14, fill: 'var(--lp-terracotta)', color: 'var(--lp-terracotta)' }} />
             お気に入り
-          </h2>
-          <CardGrid cards={favorites} onToggleFavorite={handleToggleFavorite} onDelete={handleDelete} onShare={handleShare} />
+          </div>
+          <CardGrid
+            cards={favorites}
+            onToggleFavorite={handleToggleFavorite}
+            onDelete={handleDelete}
+            onShare={handleShare}
+            isAtLimit={isAtLimit}
+            showNewTile={false}
+          />
         </section>
       )}
+
       <section>
         {favorites.length > 0 && (
-          <h2 className="mb-4 text-sm font-semibold text-zinc-500">すべてのカード</h2>
+          <div style={{ marginBottom: 16, fontSize: 13, fontWeight: 600, color: 'var(--lp-ink-mute)' }}>
+            すべてのカード
+          </div>
         )}
-        <CardGrid cards={rest} onToggleFavorite={handleToggleFavorite} onDelete={handleDelete} onShare={handleShare} />
+        <CardGrid
+          cards={rest}
+          onToggleFavorite={handleToggleFavorite}
+          onDelete={handleDelete}
+          onShare={handleShare}
+          isAtLimit={isAtLimit}
+          showNewTile
+        />
       </section>
     </div>
   )
@@ -142,62 +167,120 @@ function CardGrid({
   onToggleFavorite,
   onDelete,
   onShare,
+  isAtLimit,
+  showNewTile,
 }: {
   cards: Card[]
   onToggleFavorite: (id: string, current: boolean) => void
   onDelete: (id: string, title: string) => void
   onShare: (id: string, shareId: string | null, status: string) => void
+  isAtLimit: boolean
+  showNewTile: boolean
 }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {cards.map(card => (
-        <div key={card.id} className="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
-          <Link href={`/editor/${card.id}`} className="block aspect-[4/3] bg-gradient-to-br from-zinc-100 to-zinc-200">
+    <div className="mycards">
+      {/* New card tile */}
+      {showNewTile && (
+        isAtLimit ? (
+          <div className="mycard-new" style={{ opacity: 0.5, pointerEvents: 'none' }}>
+            <div>
+              <div className="mycard-new-plus">+</div>
+              <div className="mycard-new-name">上限に達しました</div>
+              <div className="mycard-new-desc">プランをアップグレードしてください</div>
+            </div>
+          </div>
+        ) : (
+          <Link href="/editor" className="mycard-new" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div>
+              <div className="mycard-new-plus">+</div>
+              <div className="mycard-new-name">新しいカード</div>
+              <div className="mycard-new-desc">テンプレートから簡単作成</div>
+            </div>
+          </Link>
+        )
+      )}
+
+      {cards.map((card, i) => (
+        <div key={card.id} className="mycard">
+          {/* Thumbnail */}
+          <Link href={`/editor/${card.id}`} style={{ display: 'block', aspectRatio: '5 / 7', position: 'relative', overflow: 'hidden' }}>
             {card.thumbnail_url ? (
-              <img src={card.thumbnail_url} alt={card.title} className="h-full w-full object-cover" />
+              <img
+                src={card.thumbnail_url}
+                alt={card.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             ) : (
-              <div className="flex h-full items-center justify-center text-4xl">💌</div>
+              <div style={{
+                width: '100%',
+                height: '100%',
+                background: THUMB_COLORS[i % THUMB_COLORS.length],
+                display: 'grid',
+                placeItems: 'center',
+              }}>
+                <span style={{
+                  fontFamily: 'var(--font-lp-display)',
+                  fontStyle: 'italic',
+                  fontSize: 40,
+                  color: 'rgba(43,37,32,0.12)',
+                }}>
+                  CM
+                </span>
+              </div>
             )}
+            {/* Status badge */}
+            <span className="mycard-status" data-s={card.status} style={{ position: 'absolute', top: 10, right: 10 }}>
+              {STATUS_LABELS[card.status] ?? card.status}
+            </span>
           </Link>
 
-          <div className="flex flex-1 flex-col p-3">
-            <div className="flex items-start justify-between gap-2">
-              <Link href={`/editor/${card.id}`} className="min-w-0">
-                <h3 className="truncate text-sm font-medium text-zinc-800 hover:text-zinc-600">
-                  {card.title}
-                </h3>
-              </Link>
-              <Badge variant="secondary" className="shrink-0 text-xs">
-                {STATUS_LABELS[card.status] ?? card.status}
-              </Badge>
-            </div>
-
-            <div className="mt-1 flex items-center gap-1 text-xs text-zinc-400">
-              <Clock className="h-3 w-3" />
+          {/* Meta */}
+          <div className="mycard-meta">
+            <Link href={`/editor/${card.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div className="mycard-name">{card.title}</div>
+            </Link>
+            <div className="mycard-date">
               {formatDistanceToNow(new Date(card.updated_at), { addSuffix: true, locale: ja })}
             </div>
 
-            <div className="mt-3 flex items-center gap-1">
-              <Link href={`/editor/${card.id}`} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'h-7 px-2 text-xs')}>
-                <Edit2 className="mr-1 h-3 w-3" />
+            {/* Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 10 }}>
+              <Link href={`/editor/${card.id}`} className="mycard-action">
+                <Edit2 style={{ width: 12, height: 12 }} />
                 編集
               </Link>
 
               <button
-                className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'h-7 px-2 text-xs')}
                 onClick={() => onShare(card.id, card.share_id, card.status)}
+                className="mycard-action"
               >
-                <Share2 className="mr-1 h-3 w-3" />
+                <Share2 style={{ width: 12, height: 12 }} />
                 シェア
               </button>
 
-              <button onClick={() => onToggleFavorite(card.id, card.is_favorite)} className="ml-auto rounded p-1 transition hover:bg-zinc-100">
-                <Heart className={`h-4 w-4 ${card.is_favorite ? 'fill-pink-500 text-pink-500' : 'text-zinc-300'}`} />
-              </button>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
+                <button
+                  onClick={() => onToggleFavorite(card.id, card.is_favorite)}
+                  className="mycard-action-fav"
+                >
+                  <Heart
+                    style={{
+                      width: 15,
+                      height: 15,
+                      ...(card.is_favorite
+                        ? { fill: 'var(--lp-terracotta)', color: 'var(--lp-terracotta)' }
+                        : { color: 'var(--lp-ink-mute)' }),
+                    }}
+                  />
+                </button>
 
-              <button onClick={() => onDelete(card.id, card.title)} className="rounded p-1 text-zinc-300 transition hover:bg-red-50 hover:text-red-500">
-                <Trash2 className="h-4 w-4" />
-              </button>
+                <button
+                  onClick={() => onDelete(card.id, card.title)}
+                  className="mycard-action-delete"
+                >
+                  <Trash2 style={{ width: 15, height: 15 }} />
+                </button>
+              </div>
             </div>
           </div>
         </div>

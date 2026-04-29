@@ -1,9 +1,10 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Sparkles, FileText } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronLeft, FileText } from 'lucide-react'
 import TemplateSelector from '@/components/editor/TemplateSelector'
-import { Button } from '@/components/ui/button'
+import Logo from '@/components/shared/Logo'
 import type { Template } from '@/types/template'
 
 const GUEST_STORAGE_KEY = 'guestEditorState'
@@ -58,38 +59,83 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      {/* ヘッダー */}
-      <div className="border-b border-zinc-200 bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-emerald-500" />
-            <span className="font-bold text-zinc-900">CardMagic</span>
+    <div>
+      {/* ─── Subnav ─── */}
+      <nav className="lp-subnav">
+        <div className="lp-subnav-inner">
+          {/* Back */}
+          <Link href="/" className="lp-subnav-back">
+            <ChevronLeft style={{ width: 18, height: 18 }} />
+            戻る
+          </Link>
+
+          <Logo />
+
+          {/* Meta */}
+          <span className="lp-subnav-meta">登録不要 &middot; 3分で完成</span>
+        </div>
+      </nav>
+
+      {/* ─── Main content ─── */}
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 2rem 4rem' }}>
+        {/* Hero */}
+        <div className="create-hero">
+          <div className="lp-eyebrow">
+            <span>Step 1 of 4 &mdash; Choose</span>
           </div>
-          <p className="text-sm text-zinc-500">テンプレートを選んでスタート</p>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-zinc-900 md:text-3xl">
-            テンプレートを選んでください
-          </h1>
-          <p className="mt-2 text-zinc-500">シーンを選ぶと、ぴったりのデザインが表示されます</p>
+          <h1 className="create-title">どんなシーンで贈りますか？</h1>
+          <p className="create-lede">
+            シーンを選ぶと、ぴったりのテンプレートが表示されます。
+            <br />
+            もちろん白紙からオリジナルを作ることもできます。
+          </p>
         </div>
 
-        {/* 白紙から始めるボタン */}
-        <div className="mb-8 flex justify-center">
-          <Button
-            variant="outline"
-            className="gap-2 border-dashed border-zinc-300 text-zinc-600 hover:border-zinc-400"
-            onClick={handleBlankStart}
-          >
-            <FileText className="h-4 w-4" />
-            白紙から始める
-          </Button>
-        </div>
+        {/* Blank canvas */}
+        <button className="create-blank" onClick={handleBlankStart}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: 'var(--lp-cream-deep)',
+                display: 'grid',
+                placeItems: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <FileText style={{ width: 22, height: 22, color: 'var(--lp-ink-soft)' }} />
+            </div>
+            <div>
+              <h4
+                style={{
+                  margin: 0,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  color: 'var(--lp-ink)',
+                }}
+              >
+                白紙から始める
+              </h4>
+              <p
+                style={{
+                  margin: '4px 0 0',
+                  fontSize: '0.85rem',
+                  color: 'var(--lp-ink-mute)',
+                  lineHeight: 1.5,
+                }}
+              >
+                テンプレートを使わず、自由にデザインできます
+              </p>
+            </div>
+          </div>
+          <span className="lp-ghost-btn" style={{ flexShrink: 0 }}>
+            始める &rarr;
+          </span>
+        </button>
 
+        {/* Template selector */}
         <TemplateSelector onSelect={handleTemplateSelect} />
       </div>
     </div>
