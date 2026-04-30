@@ -5,10 +5,10 @@ import HeroEnvelope from './HeroEnvelope'
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden py-[70px] pb-[80px]" style={{ position: 'relative', zIndex: 2 }}>
-      <div className="mx-auto grid max-w-[1240px] items-center gap-[60px] px-8 lg:grid-cols-[1.05fr_1fr]">
+    <section className="relative overflow-hidden py-10 pb-12 lg:py-[70px] lg:pb-[80px]" style={{ position: 'relative', zIndex: 2 }}>
+      <div className="mx-auto grid max-w-[1240px] items-center gap-10 px-5 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-[60px]">
         {/* Left: copy */}
-        <div>
+        <div className="text-center lg:text-left">
           {/* Badge */}
           <span
             className="inline-flex items-center gap-[10px] rounded-full border px-[14px] py-[7px] pl-[8px] text-[13px]"
@@ -64,7 +64,7 @@ export default function HeroSection() {
 
           {/* Lede */}
           <p
-            className="mb-8 max-w-[540px]"
+            className="mx-auto mb-8 max-w-[540px] lg:mx-0"
             style={{ fontSize: 17, lineHeight: 1.95, color: 'var(--lp-ink-soft)' }}
           >
             誕生日・記念日・お礼。すべての特別な日に、<br />
@@ -73,10 +73,10 @@ export default function HeroSection() {
           </p>
 
           {/* CTA */}
-          <div className="flex flex-wrap gap-[14px]">
+          <div className="flex flex-wrap justify-center gap-[14px] lg:justify-start">
             <Link
               href="/create"
-              className="inline-flex items-center gap-[10px] rounded-full px-[22px] py-[14px] text-[15px] font-medium tracking-wide text-[var(--lp-cream-soft)] transition-transform hover:-translate-y-0.5"
+              className="lp-cta-shimmer inline-flex items-center gap-[10px] rounded-full px-[22px] py-[14px] text-[15px] font-medium tracking-wide text-[var(--lp-cream-soft)] transition-transform hover:-translate-y-0.5"
               style={{
                 background: 'var(--lp-ink)',
                 boxShadow: '0 6px 0 -3px var(--lp-ink), 0 12px 24px -10px rgba(43,37,32,0.5)',
@@ -94,13 +94,13 @@ export default function HeroSection() {
           </div>
 
           {/* Meta */}
-          <div className="mt-[22px] flex items-center gap-2 text-[13px]" style={{ color: 'var(--lp-ink-mute)' }}>
+          <div className="mt-[22px] flex items-center justify-center gap-2 text-[13px] lg:justify-start" style={{ color: 'var(--lp-ink-mute)' }}>
             <span className="h-[6px] w-[6px] rounded-full" style={{ background: 'var(--lp-sage)' }} />
             クレジットカード不要 · 3分で完成 · 登録なしOK
           </div>
 
           {/* Stats */}
-          <div className="mt-10 flex flex-wrap gap-9">
+          <div className="mt-10 flex flex-wrap justify-center gap-9 lg:justify-start">
             {[
               { num: '120+', label: 'templates' },
               { num: '38万通', label: 'cards sent' },
@@ -119,7 +119,7 @@ export default function HeroSection() {
         </div>
 
         {/* Right: envelope animation */}
-        <div className="relative py-5 pb-[60px]">
+        <div className="relative mx-auto max-w-[400px] py-5 pb-[60px] lg:max-w-none">
           <HeroEnvelope />
 
           {/* Floating paper bits */}

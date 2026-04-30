@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useReveal } from '@/hooks/useReveal'
 
 /* ─── Scene filter definitions ─── */
@@ -692,11 +693,11 @@ export default function GallerySection() {
       >
         {filteredCards.map((card) => (
           <div key={card.id} className="lp-reveal">
-            <div className="lp-card">
+            <Link href={`/create?template=${card.id}`} className="lp-card block" style={{ textDecoration: 'none' }}>
               <div className="lp-card-inner">
                 {card.render()}
               </div>
-            </div>
+            </Link>
 
             {/* Card info */}
             <div
@@ -733,9 +734,9 @@ export default function GallerySection() {
                   {SCENES.find(s => s.id === card.scene)?.label ?? ''}
                 </span>
               </div>
-              <button className="lp-card-use-btn">
+              <Link href={`/create?template=${card.id}`} className="lp-card-use-btn">
                 使う →
-              </button>
+              </Link>
             </div>
           </div>
         ))}

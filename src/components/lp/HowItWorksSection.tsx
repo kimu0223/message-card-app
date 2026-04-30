@@ -39,11 +39,11 @@ export default function HowItWorksSection() {
           </h2>
         </div>
 
-        <div className="mt-[60px] grid gap-[22px] sm:grid-cols-2 lg:grid-cols-4">
+        <div className="hiw-grid mt-[60px] grid gap-[22px] sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s, i) => (
             <div
               key={s.no}
-              className="lp-reveal relative rounded-[22px] border p-7 transition-transform duration-[400ms] hover:-translate-y-1"
+              className="hiw-step lp-reveal relative rounded-[22px] border p-7 transition-transform duration-[400ms] hover:-translate-y-1"
               data-delay={i + 1}
               style={{
                 background: 'var(--lp-paper)',

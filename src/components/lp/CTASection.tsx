@@ -53,7 +53,7 @@ export default function CTASection() {
         </p>
         <Link
           href="/create"
-          className="relative inline-flex items-center gap-[10px] rounded-full px-[22px] py-[14px] text-[15px] font-medium tracking-wide transition-transform hover:-translate-y-0.5"
+          className="lp-cta-shimmer relative inline-flex items-center gap-[10px] rounded-full px-[22px] py-[14px] text-[15px] font-medium tracking-wide transition-transform hover:-translate-y-0.5"
           style={{
             background: 'var(--lp-terracotta)',
             color: 'var(--lp-cream-soft)',
