@@ -5,32 +5,13 @@ import HeroEnvelope from './HeroEnvelope'
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden py-10 pb-12 lg:py-[70px] lg:pb-[80px]" style={{ position: 'relative', zIndex: 2 }}>
+    <section className="relative py-10 pb-12 lg:py-[70px] lg:pb-[80px]" style={{ position: 'relative', zIndex: 2 }}>
       <div className="mx-auto grid max-w-[1240px] items-center gap-10 px-5 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-[60px]">
         {/* Left: copy */}
         <div className="text-center lg:text-left">
-          {/* Badge */}
-          <span
-            className="inline-flex items-center gap-[10px] rounded-full border px-[14px] py-[7px] pl-[8px] text-[13px]"
-            style={{
-              background: 'var(--lp-paper)',
-              borderColor: 'var(--lp-paper-line)',
-              color: 'var(--lp-ink-soft)',
-              boxShadow: 'var(--lp-shadow-soft)',
-            }}
-          >
-            <span
-              className="grid h-[18px] w-[18px] place-items-center rounded-full text-[11px]"
-              style={{ background: 'var(--lp-terracotta)', color: 'var(--lp-cream-soft)' }}
-            >
-              ✦
-            </span>
-            AI搭載・登録不要で今すぐ体験
-          </span>
-
           {/* Title */}
           <h1
-            className="mt-[22px] mb-[26px]"
+            className="mb-[26px]"
             style={{
               fontFamily: 'var(--font-lp-serif)',
               fontWeight: 500,
