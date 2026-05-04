@@ -13,6 +13,7 @@ export function getGeminiClient(): GoogleGenAI {
 
 export const GEMINI_MODELS = {
   flash: 'gemini-2.0-flash',
+  flash3: 'gemini-3-flash-preview',
   pro:   'gemini-2.0-pro-exp',
   imagen: 'imagen-3.0-generate-002',
 } as const;

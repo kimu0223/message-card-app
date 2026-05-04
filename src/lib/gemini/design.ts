@@ -184,7 +184,7 @@ export async function generateDesignVariants(
   const size = req.size ?? 'a4_landscape';
 
   const response = await client.models.generateContent({
-    model: GEMINI_MODELS.flash,
+    model: GEMINI_MODELS.flash3,
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
@@ -239,7 +239,7 @@ export async function refineDesignVariant(
   const prompt = buildRefinementPrompt(refinement);
 
   const response = await client.models.generateContent({
-    model: GEMINI_MODELS.flash,
+    model: GEMINI_MODELS.flash3,
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
