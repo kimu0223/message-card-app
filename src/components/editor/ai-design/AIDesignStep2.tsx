@@ -22,8 +22,8 @@ export default function AIDesignStep2({ onSelect, onRegenerate }: AIDesignStep2P
         </p>
       </div>
 
-      {/* 2x2 Variant Grid */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Responsive Variant Grid: 1 col on mobile, 2 cols on sm+ */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {variants.map((variant, i) => (
           <DesignVariantPreview
             key={i}

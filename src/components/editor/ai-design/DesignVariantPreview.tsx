@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useState, useEffect } from 'react';
 import type { CanvasData } from '@/types/card';
 import { CARD_SIZES } from '@/types/card';
 
@@ -13,18 +14,44 @@ export default function DesignVariantPreview({ canvasData, selected, onClick }: 
   const { width, height } = CARD_SIZES[canvasData.size];
   const aspectRatio = width / height;
 
+  const containerRef = useRef<HTMLButtonElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(200);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width;
+        if (w > 0) {
+          setContainerWidth(w);
+        }
+      }
+    });
+
+    observer.observe(el);
+    // Set initial width
+    const initialWidth = el.getBoundingClientRect().width;
+    if (initialWidth > 0) {
+      setContainerWidth(initialWidth);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const bgStyle: React.CSSProperties = canvasData.background.type === 'gradient'
     ? { background: canvasData.background.value }
     : { backgroundColor: canvasData.background.value };
 
-  // Scale factor to fit preview (max 200px wide)
-  const previewWidth = 200;
-  const scale = previewWidth / width;
+  // Scale factor based on actual container width
+  const scale = containerWidth / width;
 
   return (
     <button
+      ref={containerRef}
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-xl border-2 transition-all hover:shadow-lg ${
+      className={`group relative w-full overflow-hidden rounded-xl border-2 transition-all hover:shadow-lg ${
         selected
           ? 'border-violet-500 shadow-lg ring-2 ring-violet-200'
           : 'border-zinc-200 hover:border-zinc-300'

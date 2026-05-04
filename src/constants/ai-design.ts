@@ -114,52 +114,100 @@ export const FONT_GUIDANCE: Record<AIDesignMood, { primary: string; accent: stri
   cute: { primary: 'M PLUS Rounded 1c', accent: 'Kosugi Maru' },
 };
 
+// COLOR_PALETTES: 各配列は [背景色(60%), メインカラー(30%), アクセントカラー(10%), テキスト色] の順
+// 60-30-10ルールを適用: 背景=最も広い面積、メイン=装飾/図形、アクセント=強調ポイント、テキスト=可読性確保
 export const COLOR_PALETTES: Record<AIDesignMood, string[][]> = {
   warm: [
-    ['#FDF6F0', '#C97B5C', '#6B8C6B', '#4A3728'],
-    ['#FFF8F0', '#E8A87C', '#85A392', '#3D2C2E'],
-    ['#F9F1E7', '#D4856B', '#7FA085', '#5C4033'],
-    ['#FFF5EB', '#B5651D', '#8FBC8F', '#2F1B14'],
+    ['#FDF6F0', '#C97B5C', '#E8B86D', '#3D2B1F'],
+    ['#FFF8F0', '#B8705A', '#7FA085', '#2C1810'],
+    ['#F5EDE4', '#D4856B', '#C4A55A', '#4A3228'],
+    ['#FFF5EB', '#A0522D', '#D4A574', '#2F1B14'],
   ],
   elegant: [
-    ['#1A1A2E', '#C9A96E', '#F5F0EB', '#4A4A6A'],
-    ['#0F0F1A', '#D4AF37', '#FAF7F2', '#2C2C54'],
-    ['#1E1E30', '#B8860B', '#FFFFF0', '#3B3B5C'],
-    ['#12121F', '#DAA520', '#F8F4E8', '#2E2E4A'],
+    ['#F8F5F0', '#1A1A2E', '#C9A96E', '#1A1A2E'],
+    ['#FAF7F2', '#2C2C54', '#D4AF37', '#0F0F1A'],
+    ['#1A1A2E', '#C9A96E', '#F5F0EB', '#F5F0EB'],
+    ['#12121F', '#B8860B', '#E8DFD0', '#F0ECE4'],
   ],
   pop: [
-    ['#FF6B6B', '#4ECDC4', '#FFE66D', '#2C3E50'],
-    ['#E74C3C', '#3498DB', '#F1C40F', '#2C3E50'],
-    ['#FF5252', '#00BFA5', '#FFD740', '#37474F'],
-    ['#FF4081', '#536DFE', '#FFAB40', '#263238'],
+    ['#FFF9E8', '#FF6B6B', '#4ECDC4', '#2C3E50'],
+    ['#F0FFFE', '#E74C3C', '#F1C40F', '#1A1A2E'],
+    ['#FFF8F0', '#FF5252', '#00BFA5', '#37474F'],
+    ['#F5F0FF', '#FF4081', '#FFD740', '#263238'],
   ],
   cool: [
-    ['#2D3436', '#636E72', '#00B894', '#DFE6E9'],
-    ['#1B1B2F', '#4A4A6A', '#00CEC9', '#E0E0E0'],
-    ['#232931', '#4ECCA3', '#393E46', '#EEEEEE'],
-    ['#2C3A47', '#1B9CFC', '#3B3B98', '#F8F9FA'],
+    ['#F8FFFE', '#2D3436', '#00B894', '#2D3436'],
+    ['#F5F7FA', '#1B1B2F', '#00CEC9', '#1B1B2F'],
+    ['#232931', '#4ECCA3', '#636E72', '#EEEEEE'],
+    ['#F8F9FA', '#2C3A47', '#1B9CFC', '#2C3A47'],
   ],
   simple: [
-    ['#FFFFFF', '#333333', '#E0E0E0', '#757575'],
-    ['#FAFAFA', '#212121', '#EEEEEE', '#616161'],
-    ['#F5F5F5', '#424242', '#E8E8E8', '#9E9E9E'],
-    ['#FFFFFF', '#1A1A1A', '#F0F0F0', '#808080'],
+    ['#FFFFFF', '#1A1A1A', '#C8A96E', '#333333'],
+    ['#FAFAFA', '#212121', '#4A90A4', '#2A2A2A'],
+    ['#F5F5F5', '#333333', '#B8860B', '#424242'],
+    ['#FFFFFF', '#1A1A1A', '#6B8C6B', '#2A2A2A'],
   ],
   cute: [
-    ['#FFE4EC', '#FF8FAB', '#A6D1E6', '#FFC3A0'],
-    ['#FFF0F5', '#FF69B4', '#87CEEB', '#FFDAB9'],
-    ['#FFE8F0', '#F48FB1', '#81D4FA', '#FFE0B2'],
-    ['#FFF5F7', '#EC407A', '#4FC3F7', '#FFCC80'],
+    ['#FFF5F7', '#FF8FAB', '#A6D1E6', '#5C3D4A'],
+    ['#FFF0F5', '#F06292', '#80DEEA', '#4A3040'],
+    ['#F8F0FF', '#BA68C8', '#FFB3C1', '#3D2952'],
+    ['#FFF8E1', '#FF8A80', '#81D4FA', '#4A3228'],
   ],
 };
 
 // --- Occasion-Specific Decoration Hints ---
-
-export const DECORATION_HINTS: Record<AIDesignOccasion, string[]> = {
-  birthday: ['star', 'circle', 'heart'],
-  thank_you: ['heart', 'circle'],
-  congratulations: ['star', 'circle'],
-  anniversary: ['heart', 'star'],
-  seasonal: ['circle', 'star'],
-  other: ['circle'],
+// 各シーンに対して、装飾の役割と推奨シェイプを定義
+export const DECORATION_HINTS: Record<AIDesignOccasion, { shapes: string[]; roles: string[] }> = {
+  birthday: {
+    shapes: ['star', 'circle', 'rect'],
+    roles: ['コーナーに散りばめた紙吹雪風の小さな星', '背景のソフトな円形ボケ', 'タイトル下のアンダーライン用細長い矩形'],
+  },
+  thank_you: {
+    shapes: ['heart', 'circle', 'rect'],
+    roles: ['メッセージ周囲のアクセントハート', '背景のやわらかいドット装飾', 'テキストを囲むフレーム用矩形'],
+  },
+  congratulations: {
+    shapes: ['star', 'circle', 'rect'],
+    roles: ['祝福を表す大小の星', '華やかさを出す円形装飾', 'バナー風の矩形フレーム'],
+  },
+  anniversary: {
+    shapes: ['heart', 'circle', 'star'],
+    roles: ['愛を象徴するメインハート', 'エレガントな円形フレーム', '控えめなキラキラ星'],
+  },
+  seasonal: {
+    shapes: ['circle', 'rect', 'star'],
+    roles: ['季節感を出す丸い装飾', '横長の帯デザイン', 'アクセント用の小さな星'],
+  },
+  other: {
+    shapes: ['circle', 'rect'],
+    roles: ['ニュートラルな丸形アクセント', 'シンプルなフレーム矩形'],
+  },
 };
+
+// --- Layout Pattern Descriptions (4 patterns for diversity) ---
+export const LAYOUT_PATTERNS = {
+  pattern1: {
+    name: 'ミニマル・センター',
+    description: '余白を最大限活かしたミニマルデザイン。テキストを中央やや上に配置し、装飾は1-2個の控えめなアクセントのみ。',
+    elementCount: '装飾0-2個 + テキスト1-2個',
+    layoutGuide: 'テキストはキャンバス中央の黄金比ポイント(上から38%付近)に配置。装飾は隅に小さく1つだけ。',
+  },
+  pattern2: {
+    name: 'クラシック・バランス',
+    description: '中央対称の伝統的レイアウト。装飾フレームでテキストを囲み、上下左右対称に配置。',
+    elementCount: '装飾3-4個 + テキスト2-3個',
+    layoutGuide: 'テキストは中央に堂々と配置。四隅または上下に対称的な装飾を配置。フレーム感を出す。',
+  },
+  pattern3: {
+    name: 'アシンメトリック・モダン',
+    description: '非対称でダイナミックなレイアウト。三分割法を使い、要素を意図的にオフセット配置。',
+    elementCount: '装飾2-3個 + テキスト2-3個',
+    layoutGuide: 'テキストを左寄りまたは右寄り(1/3 or 2/3地点)に配置。対角線上に装飾を配置してバランスを取る。',
+  },
+  pattern4: {
+    name: 'デコラティブ・フレーム',
+    description: '装飾多めの華やかなデザイン。枠やボーダーを装飾で構成し、中央にテキストを際立たせる。',
+    elementCount: '装飾4-6個 + テキスト2-3個',
+    layoutGuide: 'テキストは中央に配置し、周囲を装飾で華やかに囲む。コーナー装飾+上下アクセントでフレーム感。',
+  },
+} as const;

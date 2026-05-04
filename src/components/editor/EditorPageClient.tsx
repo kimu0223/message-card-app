@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   ChevronLeft, Eye, Share2, Download, Sparkles,
-  ZoomIn, ZoomOut, Check, Heart
+  ZoomIn, ZoomOut, Check, Heart, Menu, X
 } from 'lucide-react'
 import CardCanvas from '@/components/card/CardCanvas'
 import EditorPanel from '@/components/editor/EditorPanel'
@@ -38,6 +38,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
   const [showExport, setShowExport] = useState(false)
   const [currentShareId, setCurrentShareId] = useState(card.shareId)
   const [isSavedIndicator, setIsSavedIndicator] = useState(false)
+  const [showLeftPanel, setShowLeftPanel] = useState(false)
 
   const {
     title, setTitle,
@@ -131,6 +132,16 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
     <div className="flex h-[calc(100vh-56px)] flex-col bg-zinc-100">
       {/* エディタツールバー */}
       <div className="flex h-12 items-center border-b border-zinc-200 bg-white px-4 gap-3">
+        {/* 左パネルトグル (モバイル/タブレット) */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 lg:hidden"
+          onClick={() => setShowLeftPanel(v => !v)}
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
+
         {/* 戻るボタン */}
         <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="gap-1">
           <ChevronLeft className="h-4 w-4" />
@@ -194,9 +205,10 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
       </div>
 
       {/* メインエリア */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* 左パネル: エディタ設定 */}
-        <div className="w-64 shrink-0 overflow-y-auto border-r border-zinc-200 bg-white">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* 左パネル: エディタ設定 — PC では常時表示、モバイル/タブレットではオーバーレイ */}
+        {/* PC (lg+): 通常サイドバー */}
+        <div className="hidden lg:block w-64 shrink-0 overflow-y-auto border-r border-zinc-200 bg-white">
           <EditorPanel
             canvasData={canvasData}
             selectedElementId={selectedElementId}
@@ -208,8 +220,37 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
           />
         </div>
 
+        {/* モバイル/タブレット: 左パネルオーバーレイ */}
+        {showLeftPanel && (
+          <div className="lg:hidden fixed inset-0 z-40 flex">
+            {/* バックドロップ */}
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setShowLeftPanel(false)}
+            />
+            {/* パネル */}
+            <div className="relative z-10 w-72 max-w-[80vw] overflow-y-auto bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2">
+                <span className="text-sm font-semibold text-zinc-700">編集パネル</span>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowLeftPanel(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <EditorPanel
+                canvasData={canvasData}
+                selectedElementId={selectedElementId}
+                onUpdateElement={(id, updates) => updateElement(id, updates)}
+                onAddElement={addElement}
+                onSetSize={setSize}
+                onSetBackground={setBackground}
+                onSetAnimation={setAnimation}
+              />
+            </div>
+          </div>
+        )}
+
         {/* キャンバスエリア */}
-        <div className="relative flex flex-1 items-center justify-center overflow-auto bg-zinc-200 p-8" ref={canvasContainerRef} id="card-canvas-container">
+        <div className="relative flex flex-1 items-center justify-center overflow-auto bg-zinc-200 p-4 md:p-8" ref={canvasContainerRef} id="card-canvas-container">
           <div id="card-canvas-export">
             <CardCanvas
               canvasData={canvasData}
@@ -221,16 +262,48 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
           </div>
         </div>
 
-        {/* 右パネル: AIアシスト */}
+        {/* 右パネル: AIアシスト — PC ではサイドバー、モバイル/タブレットではオーバーレイ */}
         {showAIPanel && (
-          <div className="w-72 shrink-0 overflow-y-auto border-l border-zinc-200 bg-white">
-            <AIAssistPanel
-              isOpen={showAIPanel}
-              onClose={toggleAIPanel}
-              onApplyMessage={handleApplyAIMessage}
-              onApplyDesign={handleApplyAIDesign}
-            />
-          </div>
+          <>
+            {/* PC (lg+): 通常サイドバー */}
+            <div className="hidden lg:block w-72 shrink-0 overflow-y-auto border-l border-zinc-200 bg-white">
+              <AIAssistPanel
+                isOpen={showAIPanel}
+                onClose={toggleAIPanel}
+                onApplyMessage={handleApplyAIMessage}
+                onApplyDesign={handleApplyAIDesign}
+              />
+            </div>
+
+            {/* モバイル/タブレット: フルスクリーンオーバーレイ */}
+            <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
+              {/* バックドロップ */}
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={toggleAIPanel}
+              />
+              {/* パネル — モバイルでは全幅、タブレットでは右寄せ */}
+              <div className="relative z-10 ml-auto h-full w-full md:w-80 overflow-y-auto bg-white shadow-xl flex flex-col">
+                <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 shrink-0">
+                  <span className="text-sm font-semibold text-zinc-700 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    AIアシスト
+                  </span>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={toggleAIPanel}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  <AIAssistPanel
+                    isOpen={showAIPanel}
+                    onClose={toggleAIPanel}
+                    onApplyMessage={handleApplyAIMessage}
+                    onApplyDesign={handleApplyAIDesign}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
