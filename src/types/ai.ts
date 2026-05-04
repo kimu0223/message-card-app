@@ -1,32 +1,54 @@
-export type AIFeature = 'message_generation' | 'design_suggestion' | 'image_generation';
+import type { CardSize, CanvasData } from './card';
+
+export type AIFeature = 'message_generation' | 'design_generation' | 'design_refine' | 'image_generation';
+
+// --- Message Generation (existing) ---
 
 export interface AIMessageRequest {
-  occasion: string;       // 'birthday', 'wedding', etc.
-  relationship: string;   // '友人', '同僚', '恋人', etc.
-  tone: string;           // 'warm', 'formal', 'funny', etc.
+  occasion: string;
+  relationship: string;
+  tone: string;
   keywords?: string[];
   length: 'short' | 'medium' | 'long';
 }
 
 export interface AIMessageResponse {
-  messages: string[];   // 3 candidates
+  messages: string[];
   creditsUsed: number;
 }
 
-export interface AIDesignRequest {
-  occasion: string;
-  style: string;
-  colorPreference?: string;
+// --- Design Generation (new) ---
+
+export type AIDesignRecipient = 'lover' | 'friend' | 'family' | 'colleague' | 'teacher';
+export type AIDesignOccasion = 'birthday' | 'thank_you' | 'congratulations' | 'anniversary' | 'seasonal' | 'other';
+export type AIDesignMood = 'warm' | 'elegant' | 'pop' | 'cool' | 'simple' | 'cute';
+
+export interface AIDesignGenerateRequest {
+  recipient: AIDesignRecipient;
+  occasion: AIDesignOccasion;
+  mood: AIDesignMood;
+  size?: CardSize;
+  messageText?: string;
 }
 
-export interface AIDesignResponse {
-  suggestions: {
-    backgroundColors: string[];
-    fontFamily: string;
-    accentColor: string;
-  }[];
+export interface AIDesignRefinement {
+  baseVariant: CanvasData;
+  colorTemperature?: 'warmer' | 'neutral' | 'cooler';
+  decorationDensity?: 'sparse' | 'medium' | 'dense';
+  size?: CardSize;
+}
+
+export interface AIDesignGenerateResponse {
+  variants: CanvasData[];
   creditsUsed: number;
 }
+
+export interface AIDesignRefineResponse {
+  variant: CanvasData;
+  creditsUsed: number;
+}
+
+// --- Image Generation (future) ---
 
 export interface AIImageRequest {
   prompt: string;
@@ -38,6 +60,8 @@ export interface AIImageResponse {
   imageUrl: string;
   creditsUsed: number;
 }
+
+// --- Usage Logging ---
 
 export interface AIUsageLog {
   id: string;

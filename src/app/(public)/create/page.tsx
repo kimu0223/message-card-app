@@ -1,11 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, FileText } from 'lucide-react'
+import { ChevronLeft, FileText, Sparkles } from 'lucide-react'
 import TemplateSelector from '@/components/editor/TemplateSelector'
+import AIDesignWizard from '@/components/editor/ai-design/AIDesignWizard'
 import Logo from '@/components/shared/Logo'
 import type { Template } from '@/types/template'
+import type { CanvasData } from '@/types/card'
 
 const GUEST_STORAGE_KEY = 'guestEditorState'
 
@@ -33,6 +36,20 @@ const BLANK_CANVAS_DATA = {
 
 export default function CreatePage() {
   const router = useRouter()
+  const [showAIWizard, setShowAIWizard] = useState(false)
+
+  const handleAIDesignComplete = (canvasData: CanvasData) => {
+    try {
+      localStorage.setItem(
+        GUEST_STORAGE_KEY,
+        JSON.stringify({ canvasData, title: 'AIデザインカード' })
+      )
+    } catch {
+      // ignore
+    }
+    setShowAIWizard(false)
+    router.push('/create/editor')
+  }
 
   const handleTemplateSelect = (template: Template) => {
     try {
@@ -91,6 +108,54 @@ export default function CreatePage() {
           </p>
         </div>
 
+        {/* AI Design button */}
+        <button
+          className="create-blank"
+          onClick={() => setShowAIWizard(true)}
+          style={{ marginBottom: 12, borderColor: 'rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.04)' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 12,
+                background: 'rgba(139,92,246,0.1)',
+                display: 'grid',
+                placeItems: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Sparkles style={{ width: 22, height: 22, color: '#7c3aed' }} />
+            </div>
+            <div>
+              <h4
+                style={{
+                  margin: 0,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  color: '#7c3aed',
+                }}
+              >
+                AIにデザインしてもらう
+              </h4>
+              <p
+                style={{
+                  margin: '4px 0 0',
+                  fontSize: '0.85rem',
+                  color: 'var(--lp-ink-mute)',
+                  lineHeight: 1.5,
+                }}
+              >
+                3つの質問に答えるだけで、プロ品質のデザインを生成
+              </p>
+            </div>
+          </div>
+          <span className="lp-ghost-btn" style={{ flexShrink: 0, color: '#7c3aed' }}>
+            試す &rarr;
+          </span>
+        </button>
+
         {/* Blank canvas */}
         <button className="create-blank" onClick={handleBlankStart}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -138,6 +203,39 @@ export default function CreatePage() {
         {/* Template selector */}
         <TemplateSelector onSelect={handleTemplateSelect} />
       </div>
+
+      {/* AI Design Wizard Modal */}
+      {showAIWizard && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.4)',
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 420,
+              height: '85vh',
+              borderRadius: 16,
+              overflow: 'hidden',
+              background: 'white',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
+            }}
+          >
+            <AIDesignWizard
+              onComplete={handleAIDesignComplete}
+              onClose={() => setShowAIWizard(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

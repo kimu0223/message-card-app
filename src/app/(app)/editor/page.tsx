@@ -4,12 +4,48 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import TemplateSelector from '@/components/editor/TemplateSelector'
+import AIDesignWizard from '@/components/editor/ai-design/AIDesignWizard'
 import type { Template } from '@/types/template'
 import type { CanvasData } from '@/types/card'
 
 export default function NewEditorPage() {
   const router = useRouter()
   const [isCreating, setIsCreating] = useState(false)
+  const [showAIWizard, setShowAIWizard] = useState(false)
+
+  const handleAIDesignComplete = async (canvasData: CanvasData) => {
+    setShowAIWizard(false)
+    setIsCreating(true)
+
+    try {
+      const res = await fetch('/api/cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: 'AIデザインカード',
+          canvasData,
+          size: canvasData.size,
+          animation: canvasData.animation?.type ?? 'none',
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        if (err.error === 'limit_exceeded') {
+          toast.error('今月の作成上限（3枚）に達しました。')
+          return
+        }
+        throw new Error()
+      }
+
+      const { id } = await res.json()
+      router.push(`/editor/${id}`)
+    } catch {
+      toast.error('カードの作成に失敗しました。')
+    } finally {
+      setIsCreating(false)
+    }
+  }
 
   const handleTemplateSelect = async (template: Template) => {
     if (isCreating) return
@@ -116,8 +152,16 @@ export default function NewEditorPage() {
           <p className="mt-2 text-zinc-500">テンプレートを選ぶか、白紙から始めましょう</p>
         </div>
 
-        {/* 白紙カードボタン */}
-        <div className="mb-6 flex justify-center">
+        {/* AI Design + Blank card buttons */}
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => setShowAIWizard(true)}
+            disabled={isCreating}
+            className="flex items-center gap-3 rounded-xl border-2 border-violet-200 bg-violet-50 px-6 py-4 text-sm font-medium text-violet-700 transition hover:border-violet-300 hover:bg-violet-100 disabled:opacity-50"
+          >
+            <span className="text-2xl">✨</span>
+            AIにデザインしてもらう
+          </button>
           <button
             onClick={handleBlankCard}
             disabled={isCreating}
@@ -139,6 +183,18 @@ export default function NewEditorPage() {
             <div className="rounded-xl bg-white px-8 py-6 text-center shadow-xl">
               <div className="mb-3 text-3xl">✨</div>
               <p className="font-medium text-zinc-700">カードを準備中...</p>
+            </div>
+          </div>
+        )}
+
+        {/* AI Design Wizard Modal */}
+        {showAIWizard && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="h-[85vh] w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+              <AIDesignWizard
+                onComplete={handleAIDesignComplete}
+                onClose={() => setShowAIWizard(false)}
+              />
             </div>
           </div>
         )}

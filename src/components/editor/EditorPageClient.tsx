@@ -103,6 +103,12 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
     toast.success('メッセージを適用しました')
   }
 
+  const handleApplyAIDesign = (newCanvasData: CanvasData) => {
+    setCanvasData(newCanvasData)
+    toggleAIPanel()
+    toast.success('AIデザインを適用しました')
+  }
+
   const handleToggleFavorite = async () => {
     const newVal = !isFavorite
     setIsFavorite(newVal)
@@ -222,6 +228,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
               isOpen={showAIPanel}
               onClose={toggleAIPanel}
               onApplyMessage={handleApplyAIMessage}
+              onApplyDesign={handleApplyAIDesign}
             />
           </div>
         )}

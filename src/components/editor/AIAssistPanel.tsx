@@ -6,17 +6,21 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, Sparkles, X, Check } from 'lucide-react'
+import { Loader2, Sparkles, X, Check, Palette, MessageSquare } from 'lucide-react'
 import { useAI } from '@/hooks/useAI'
+import AIDesignWizard from './ai-design/AIDesignWizard'
 import type { AIMessageRequest } from '@/types/ai'
+import type { CanvasData } from '@/types/card'
 
 interface AIAssistPanelProps {
   isOpen: boolean
   onClose: () => void
   onApplyMessage: (message: string) => void
+  onApplyDesign?: (canvasData: CanvasData) => void
 }
 
-export default function AIAssistPanel({ isOpen, onClose, onApplyMessage }: AIAssistPanelProps) {
+export default function AIAssistPanel({ isOpen, onClose, onApplyMessage, onApplyDesign }: AIAssistPanelProps) {
+  const [activeTab, setActiveTab] = useState<'message' | 'design'>('message')
   const [occasion, setOccasion] = useState('birthday')
   const [relationship, setRelationship] = useState('友人')
   const [tone, setTone] = useState('warm')
@@ -57,6 +61,41 @@ export default function AIAssistPanel({ isOpen, onClose, onApplyMessage }: AIAss
         </button>
       </div>
 
+      {/* Tab switcher */}
+      <div className="flex border-b border-zinc-100">
+        <button
+          onClick={() => setActiveTab('message')}
+          className={`flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
+            activeTab === 'message'
+              ? 'border-b-2 border-violet-500 text-violet-700'
+              : 'text-zinc-500 hover:text-zinc-700'
+          }`}
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          メッセージ
+        </button>
+        <button
+          onClick={() => setActiveTab('design')}
+          className={`flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
+            activeTab === 'design'
+              ? 'border-b-2 border-violet-500 text-violet-700'
+              : 'text-zinc-500 hover:text-zinc-700'
+          }`}
+        >
+          <Palette className="h-3.5 w-3.5" />
+          デザイン
+        </button>
+      </div>
+
+      {/* Design tab */}
+      {activeTab === 'design' ? (
+        <AIDesignWizard
+          onComplete={(canvasData) => {
+            onApplyDesign?.(canvasData)
+          }}
+          onClose={onClose}
+        />
+      ) : (
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <div>
           <Label className="text-xs font-medium text-zinc-600">シチュエーション</Label>
@@ -167,6 +206,7 @@ export default function AIAssistPanel({ isOpen, onClose, onApplyMessage }: AIAss
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }
