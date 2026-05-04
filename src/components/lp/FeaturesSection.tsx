@@ -65,55 +65,24 @@ export default function FeaturesSection() {
   useReveal()
 
   return (
-    <section className="relative py-[110px]" id="features" style={{ position: 'relative', zIndex: 2 }}>
-      <div className="mx-auto max-w-[1240px] px-8">
+    <section className="lp-section" id="features">
+      <div className="lp-container">
         <div className="lp-reveal">
-          <span
-            className="inline-flex items-center gap-[10px]"
-            style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 14, letterSpacing: '0.04em', color: 'var(--lp-terracotta)' }}
-          >
-            <span style={{ width: 28, height: 1, background: 'var(--lp-terracotta)', opacity: 0.6, display: 'inline-block' }} />
-            Features
-          </span>
-          <h2
-            className="mt-[14px] mb-[18px]"
-            style={{
-              fontFamily: 'var(--font-lp-serif)',
-              fontWeight: 500,
-              fontSize: 'clamp(32px, 4vw, 52px)',
-              lineHeight: 1.25,
-              color: 'var(--lp-ink)',
-            }}
-          >
-            心を動かす、4つの仕掛け。
-          </h2>
+          <span className="lp-eyebrow-v2">Features</span>
+          <h2 className="lp-section-title">心を動かす、4つの仕掛け。</h2>
         </div>
 
-        <div className="mt-[60px] grid gap-6 md:grid-cols-2">
+        <div className="lp-features">
           {features.map((f, i) => (
-            <div
-              key={f.k}
-              className="lp-reveal grid gap-[22px] rounded-[22px] border p-9"
-              data-delay={(i % 2) + 1}
-              style={{
-                gridTemplateColumns: '56px 1fr',
-                alignItems: 'start',
-                background: 'var(--lp-paper)',
-                borderColor: 'var(--lp-paper-line)',
-                boxShadow: 'var(--lp-shadow-soft)',
-              }}
-            >
-              <div
-                className="grid h-14 w-14 place-items-center rounded-[14px]"
-                style={{ background: 'var(--lp-cream-deep)', color: 'var(--lp-terracotta)' }}
-              >
+            <div key={f.k} className="lp-feature lp-reveal" data-delay={(i % 2) + 1}>
+              <div className="lp-feature-icon">
                 <FeatureIcon kind={f.k} />
               </div>
               <div>
                 <h3 style={{ fontFamily: 'var(--font-lp-serif)', fontWeight: 500, fontSize: 22, margin: '4px 0 10px' }}>
                   {f.t}
                 </h3>
-                <p className="m-0 text-sm leading-[1.85]" style={{ color: 'var(--lp-ink-soft)' }}>
+                <p style={{ margin: 0, fontSize: 14, lineHeight: 1.85, color: 'var(--lp-ink-soft)' }}>
                   {f.b}
                 </p>
               </div>

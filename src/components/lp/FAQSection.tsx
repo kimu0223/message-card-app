@@ -16,53 +16,21 @@ export default function FAQSection() {
   useReveal()
 
   return (
-    <section className="relative py-[110px]" id="faq" style={{ position: 'relative', zIndex: 2 }}>
-      <div className="mx-auto max-w-[1240px] px-8">
+    <section className="lp-section" id="faq">
+      <div className="lp-container">
         <div className="lp-reveal">
-          <span
-            className="inline-flex items-center gap-[10px]"
-            style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 14, letterSpacing: '0.04em', color: 'var(--lp-terracotta)' }}
-          >
-            <span style={{ width: 28, height: 1, background: 'var(--lp-terracotta)', opacity: 0.6, display: 'inline-block' }} />
-            FAQ
-          </span>
-          <h2
-            className="mt-[14px] mb-[18px]"
-            style={{
-              fontFamily: 'var(--font-lp-serif)',
-              fontWeight: 500,
-              fontSize: 'clamp(32px, 4vw, 52px)',
-              lineHeight: 1.25,
-              color: 'var(--lp-ink)',
-            }}
-          >
-            よくあるご質問
-          </h2>
+          <span className="lp-eyebrow-v2">FAQ</span>
+          <h2 className="lp-section-title">よくあるご質問</h2>
         </div>
 
-        <div className="mt-11 flex max-w-[820px] flex-col gap-3">
+        <div className="lp-faq-list">
           {items.map((it, i) => (
-            <details
-              key={i}
-              className="lp-reveal group overflow-hidden rounded-[14px] border transition-shadow open:shadow-[var(--lp-shadow-soft)]"
-              data-delay={(i % 3) + 1}
-              style={{ background: 'var(--lp-paper)', borderColor: 'var(--lp-paper-line)' }}
-            >
-              <summary
-                className="flex cursor-pointer list-none items-center justify-between gap-4 px-[26px] py-[22px] [&::-webkit-details-marker]:hidden"
-                style={{ fontFamily: 'var(--font-lp-serif)', fontWeight: 500, fontSize: 17, color: 'var(--lp-ink)' }}
-              >
+            <details className="lp-faq-item lp-reveal" key={i} data-delay={(i % 3) + 1}>
+              <summary className="lp-faq-q">
                 {it.q}
-                <span
-                  className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-full transition-transform duration-300 group-open:rotate-45"
-                  style={{ background: 'var(--lp-cream-deep)', color: 'var(--lp-terracotta)', fontFamily: 'var(--font-lp-display)', fontSize: 18 }}
-                >
-                  +
-                </span>
+                <span className="lp-faq-plus">+</span>
               </summary>
-              <div className="px-[26px] pb-6 text-[15px] leading-[1.85]" style={{ color: 'var(--lp-ink-soft)' }}>
-                {it.a}
-              </div>
+              <div className="lp-faq-a">{it.a}</div>
             </details>
           ))}
         </div>
