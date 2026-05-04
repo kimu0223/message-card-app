@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   ChevronLeft, Eye, Share2, Sparkles,
-  ZoomIn, ZoomOut, CloudOff,
+  ZoomIn, ZoomOut, CloudOff, Menu, X,
 } from 'lucide-react'
 import CardCanvas from '@/components/card/CardCanvas'
 import EditorPanel from '@/components/editor/EditorPanel'
@@ -20,6 +20,7 @@ const GUEST_STORAGE_KEY = 'guestEditorState'
 export default function GuestEditorPageClient() {
   const router = useRouter()
   const [showPreview, setShowPreview] = useState(false)
+  const [showLeftPanel, setShowLeftPanel] = useState(false)
   const [loginPromptReason, setLoginPromptReason] = useState<'save' | 'share' | 'ai' | null>(null)
 
   const {
@@ -104,6 +105,16 @@ export default function GuestEditorPageClient() {
 
       {/* エディタツールバー */}
       <div className="flex h-12 items-center border-b border-zinc-200 bg-white px-4 gap-3">
+        {/* 左パネルトグル (モバイル/タブレット) */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 lg:hidden"
+          onClick={() => setShowLeftPanel(v => !v)}
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
+
         <Button variant="ghost" size="sm" onClick={() => router.push('/create')} className="gap-1">
           <ChevronLeft className="h-4 w-4" />
           <span className="hidden sm:inline">テンプレート</span>
@@ -149,9 +160,9 @@ export default function GuestEditorPageClient() {
       </div>
 
       {/* メインエリア */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* 左パネル */}
-        <div className="w-64 shrink-0 overflow-y-auto border-r border-zinc-200 bg-white">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* 左パネル: PC では常時表示 */}
+        <div className="hidden lg:block w-64 shrink-0 overflow-y-auto border-r border-zinc-200 bg-white">
           <EditorPanel
             canvasData={canvasData}
             selectedElementId={selectedElementId}
@@ -163,8 +174,35 @@ export default function GuestEditorPageClient() {
           />
         </div>
 
+        {/* 左パネル: モバイル/タブレットではオーバーレイ */}
+        {showLeftPanel && (
+          <div className="lg:hidden fixed inset-0 z-40 flex">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setShowLeftPanel(false)}
+            />
+            <div className="relative z-10 w-72 max-w-[80vw] overflow-y-auto bg-white shadow-xl">
+              <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2">
+                <span className="text-sm font-semibold text-zinc-700">編集パネル</span>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowLeftPanel(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <EditorPanel
+                canvasData={canvasData}
+                selectedElementId={selectedElementId}
+                onUpdateElement={(id, updates) => updateElement(id, updates)}
+                onAddElement={addElement}
+                onSetSize={setSize}
+                onSetBackground={setBackground}
+                onSetAnimation={setAnimation}
+              />
+            </div>
+          </div>
+        )}
+
         {/* キャンバスエリア */}
-        <div className="relative flex flex-1 items-center justify-center overflow-auto bg-zinc-200 p-8">
+        <div className="relative flex flex-1 items-center justify-center overflow-auto bg-zinc-200 p-4 md:p-8">
           <div id="card-canvas-export">
             <CardCanvas
               canvasData={canvasData}
@@ -178,25 +216,55 @@ export default function GuestEditorPageClient() {
 
         {/* AIパネル代替: ログイン促進バナー */}
         {showAIPanel && (
-          <div className="w-72 shrink-0 border-l border-zinc-200 bg-white p-6 flex flex-col items-center justify-center text-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-              <Sparkles className="h-8 w-8 text-emerald-600" />
+          <>
+            {/* PC */}
+            <div className="hidden lg:flex w-72 shrink-0 border-l border-zinc-200 bg-white p-6 flex-col items-center justify-center text-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                <Sparkles className="h-8 w-8 text-emerald-600" />
+              </div>
+              <h3 className="font-bold text-zinc-800">AIメッセージ生成</h3>
+              <p className="text-sm text-zinc-500">
+                ログインするとAIがシーンに合わせた
+                メッセージを提案してくれます。
+              </p>
+              <Button
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+                onClick={() => setLoginPromptReason('ai')}
+              >
+                ログインして使用
+              </Button>
+              <button onClick={toggleAIPanel} className="text-xs text-zinc-400 hover:text-zinc-600">
+                閉じる
+              </button>
             </div>
-            <h3 className="font-bold text-zinc-800">AIメッセージ生成</h3>
-            <p className="text-sm text-zinc-500">
-              ログインするとAIがシーンに合わせた
-              メッセージを提案してくれます。
-            </p>
-            <Button
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
-              onClick={() => setLoginPromptReason('ai')}
-            >
-              ログインして使用
-            </Button>
-            <button onClick={toggleAIPanel} className="text-xs text-zinc-400 hover:text-zinc-600">
-              閉じる
-            </button>
-          </div>
+
+            {/* モバイル/タブレット: オーバーレイ */}
+            <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={toggleAIPanel}
+              />
+              <div className="relative z-10 ml-auto h-full w-full md:w-80 overflow-y-auto bg-white shadow-xl flex flex-col items-center justify-center text-center gap-4 p-6">
+                <Button variant="ghost" size="sm" className="absolute right-2 top-2 h-8 w-8 p-0" onClick={toggleAIPanel}>
+                  <X className="h-4 w-4" />
+                </Button>
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                  <Sparkles className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="font-bold text-zinc-800">AIメッセージ生成</h3>
+                <p className="text-sm text-zinc-500">
+                  ログインするとAIがシーンに合わせた
+                  メッセージを提案してくれます。
+                </p>
+                <Button
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+                  onClick={() => setLoginPromptReason('ai')}
+                >
+                  ログインして使用
+                </Button>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
