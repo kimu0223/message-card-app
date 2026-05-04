@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  ChevronLeft, Eye, Share2, Download, Sparkles,
+  ChevronLeft, Eye, Share2, Sparkles,
   ZoomIn, ZoomOut, Check, Heart, Menu, X
 } from 'lucide-react'
 import CardCanvas from '@/components/card/CardCanvas'
@@ -283,24 +283,13 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
                 onClick={toggleAIPanel}
               />
               {/* パネル — モバイルでは全幅、タブレットでは右寄せ */}
-              <div className="relative z-10 ml-auto h-full w-full md:w-80 overflow-y-auto bg-white shadow-xl flex flex-col">
-                <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 shrink-0">
-                  <span className="text-sm font-semibold text-zinc-700 flex items-center gap-1.5">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                    AIアシスト
-                  </span>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={toggleAIPanel}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                  <AIAssistPanel
-                    isOpen={showAIPanel}
-                    onClose={toggleAIPanel}
-                    onApplyMessage={handleApplyAIMessage}
-                    onApplyDesign={handleApplyAIDesign}
-                  />
-                </div>
+              <div className="relative z-10 ml-auto h-full w-full md:w-80 overflow-y-auto bg-white shadow-xl">
+                <AIAssistPanel
+                  isOpen={showAIPanel}
+                  onClose={toggleAIPanel}
+                  onApplyMessage={handleApplyAIMessage}
+                  onApplyDesign={handleApplyAIDesign}
+                />
               </div>
             </div>
           </>
