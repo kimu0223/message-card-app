@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, FileText, Sparkles } from 'lucide-react'
 import TemplateSelector from '@/components/editor/TemplateSelector'
 import AIDesignWizard from '@/components/editor/ai-design/AIDesignWizard'
 import Logo from '@/components/shared/Logo'
 import type { Template } from '@/types/template'
+import type { TemplateCategory } from '@/types/template'
 import type { CanvasData } from '@/types/card'
 
 const GUEST_STORAGE_KEY = 'guestEditorState'
@@ -35,7 +36,17 @@ const BLANK_CANVAS_DATA = {
 }
 
 export default function CreatePage() {
+  return (
+    <Suspense>
+      <CreatePageContent />
+    </Suspense>
+  )
+}
+
+function CreatePageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category') as TemplateCategory | null
   const [showAIWizard, setShowAIWizard] = useState(false)
 
   const handleAIDesignComplete = (canvasData: CanvasData) => {
@@ -201,7 +212,7 @@ export default function CreatePage() {
         </button>
 
         {/* Template selector */}
-        <TemplateSelector onSelect={handleTemplateSelect} />
+        <TemplateSelector onSelect={handleTemplateSelect} initialCategory={initialCategory} />
       </div>
 
       {/* AI Design Wizard Modal */}

@@ -28,11 +28,12 @@ const STYLES: { value: TemplateStyle | 'all'; label: string }[] = [
 interface TemplateSelectorProps {
   onSelect: (template: Template) => void
   onBack?: () => void
+  initialCategory?: TemplateCategory | null
 }
 
-export default function TemplateSelector({ onSelect, onBack }: TemplateSelectorProps) {
-  const [step, setStep] = useState<'category' | 'template'>('category')
-  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | null>(null)
+export default function TemplateSelector({ onSelect, onBack, initialCategory }: TemplateSelectorProps) {
+  const [step, setStep] = useState<'category' | 'template'>(initialCategory ? 'template' : 'category')
+  const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | null>(initialCategory ?? null)
   const [selectedStyle, setSelectedStyle] = useState<TemplateStyle | 'all'>('all')
   const [templates, setTemplates] = useState<Template[]>([])
   const [isLoading, setIsLoading] = useState(false)
