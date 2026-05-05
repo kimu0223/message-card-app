@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import { blogPosts } from '@/lib/blog'
 import BlogCard from '@/components/blog/BlogCard'
+import { withBrandName } from '@/lib/brand'
 
 export const metadata: Metadata = {
-  title: 'ブログ | CardMagic',
+  title: withBrandName('ブログ'),
   description: 'メッセージカードのデザインや文章のヒント、使い方ガイドをお届けします。',
 }
 

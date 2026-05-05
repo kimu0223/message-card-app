@@ -8,6 +8,7 @@ import {
   JetBrains_Mono,
 } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { brandDisplayName, brandName, brandTagline } from "@/lib/brand";
 import "./globals.css";
 import "@/styles/lp.css";
 
@@ -55,8 +56,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CardMagic — 心ふるえる、一通の手紙を。",
-  description: "アニメーション付きメッセージカードをAIとテンプレートで簡単作成。URLひとつで相手に届けましょう。",
+  title: brandDisplayName,
+  applicationName: brandName,
+  description: `${brandTagline} アニメーション付きメッセージカードをAIとテンプレートで簡単作成。URLひとつで相手に届けましょう。`,
 };
 
 export default function RootLayout({

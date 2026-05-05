@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { brandNameEn } from '@/lib/brand'
 
 const CONFETTI_COLORS = ['#C97B5C', '#8FA68A', '#B89263', '#E8A989', '#6E8669']
 const INITIAL_DELAY = 900
@@ -50,7 +51,7 @@ export default function HeroEnvelope() {
             たくさんの幸せが訪れますように。
           </div>
           <div style={{ marginTop: 'auto', fontFamily: 'var(--font-lp-hand)', fontSize: 18, color: 'var(--lp-terracotta)', transform: 'rotate(-2deg)', alignSelf: 'flex-end' }}>
-            — from CardMagic
+            — from {brandNameEn}
           </div>
           {/* Confetti */}
           <div className="fc-confetti" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -69,7 +70,7 @@ export default function HeroEnvelope() {
       {/* Envelope back */}
       <div className={`env-back ${open ? 'open' : ''}`}>
         <div className="env-stamp">
-          <div style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 12, color: 'var(--lp-terracotta-deep)' }}>CM</div>
+          <div style={{ fontFamily: 'var(--font-lp-display)', fontStyle: 'italic', fontSize: 12, color: 'var(--lp-terracotta-deep)' }}>OK</div>
         </div>
         <div className="env-address">
           <div className="env-addr-line" />
@@ -78,7 +79,7 @@ export default function HeroEnvelope() {
         </div>
         <div className="env-postmark">
           <div style={{ textAlign: 'center', lineHeight: 1.1 }}>
-            <div style={{ fontSize: 8, letterSpacing: '0.15em', fontFamily: 'var(--font-lp-mono)' }}>CARDMAGIC</div>
+            <div style={{ fontSize: 8, letterSpacing: '0.15em', fontFamily: 'var(--font-lp-mono)' }}>{brandNameEn.toUpperCase()}</div>
             <div style={{ fontSize: 7, marginTop: 2, fontFamily: 'var(--font-lp-mono)' }}>{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, ' · ')}</div>
           </div>
         </div>
@@ -89,7 +90,7 @@ export default function HeroEnvelope() {
 
       {/* Wax seal */}
       <div className={`env-wax ${open ? 'open' : ''}`}>
-        <div className="env-wax-inner">M</div>
+        <div className="env-wax-inner">O</div>
       </div>
 
       {/* Hint */}

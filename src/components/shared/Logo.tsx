@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { brandName, brandNameEn } from '@/lib/brand'
 
 interface LogoProps {
   href?: string
@@ -7,7 +8,8 @@ interface LogoProps {
 
 export default function Logo({ href = '/', size = 'md' }: LogoProps) {
   const iconSize = size === 'sm' ? 30 : 32
-  const fontSize = size === 'sm' ? 22 : 24
+  const brandFontSize = size === 'sm' ? 18 : 20
+  const subFontSize = size === 'sm' ? 10 : 11
   const iconFontSize = size === 'sm' ? 16 : 18
   const iconRadius = size === 'sm' ? 7 : 8
 
@@ -22,10 +24,29 @@ export default function Logo({ href = '/', size = 'md' }: LogoProps) {
           fontSize: iconFontSize,
         }}
       >
-        M
+        O
       </div>
-      <span style={{ fontWeight: 400, fontSize }}>
-        Card<em className="lp-logo-accent">Magic</em>
+      <span
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          lineHeight: 1.05,
+        }}
+      >
+        <span style={{ fontWeight: 500, fontSize: brandFontSize, fontFamily: 'var(--font-lp-serif)' }}>
+          {brandName}
+        </span>
+        <span
+          className="lp-logo-accent"
+          style={{
+            fontSize: subFontSize,
+            letterSpacing: '0.12em',
+            textTransform: 'none',
+          }}
+        >
+          {brandNameEn}
+        </span>
       </span>
     </>
   )

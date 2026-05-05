@@ -6,6 +6,7 @@ import HowToPrintContent from '@/content/blog/how-to-print'
 import CardArrangementContent from '@/content/blog/card-arrangement'
 import BirthdayMessageContent from '@/content/blog/birthday-message'
 import WeddingMessageContent from '@/content/blog/wedding-message'
+import { brandName } from '@/lib/brand'
 
 const contentMap: Record<string, React.ComponentType> = {
   'how-to-print': HowToPrintContent,
@@ -27,7 +28,7 @@ export async function generateMetadata({
   if (!post) return {}
 
   return {
-    title: `${post.title} | CardMagic`,
+    title: `${post.title} | ${brandName}`,
     description: post.description,
     openGraph: {
       title: post.title,

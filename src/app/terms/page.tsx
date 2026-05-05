@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import LPHeader from '@/components/lp/LPHeader'
 import LPFooter from '@/components/lp/LPFooter'
+import { brandName, withBrandName } from '@/lib/brand'
 
 export const metadata: Metadata = {
-  title: '利用規約 | CardMagic',
+  title: withBrandName('利用規約'),
   description:
-    'CardMagicの利用規約です。サービスのご利用条件について説明します。',
+    `${brandName}の利用規約です。サービスのご利用条件について説明します。`,
 }
 
 export default function TermsPage() {
@@ -46,7 +47,7 @@ export default function TermsPage() {
             {/* 前文 */}
             <section>
               <p>
-                本利用規約（以下「本規約」）は、CardMagic（以下「当サービス」）の利用に関する条件を定めるものです。ユーザーの皆様（以下「ユーザー」）は、本規約に同意のうえ当サービスをご利用ください。
+                本利用規約（以下「本規約」）は、{brandName}（以下「当サービス」）の利用に関する条件を定めるものです。ユーザーの皆様（以下「ユーザー」）は、本規約に同意のうえ当サービスをご利用ください。
               </p>
             </section>
 
@@ -331,7 +332,7 @@ export default function TermsPage() {
                 }}
               >
                 <p className="font-semibold" style={{ color: 'var(--lp-ink)' }}>
-                  CardMagic 運営事務局
+                  {brandName} 運営事務局
                 </p>
                 <p className="mt-1">
                   メール:{' '}

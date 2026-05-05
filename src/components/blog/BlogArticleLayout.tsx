@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { BlogPost } from '@/lib/blog'
+import { brandName } from '@/lib/brand'
 
 interface BlogArticleLayoutProps {
   post: BlogPost
@@ -75,7 +76,7 @@ export default function BlogArticleLayout({ post, children }: BlogArticleLayoutP
       {/* CTA */}
       <section className="rounded-2xl bg-emerald-50 px-6 py-8 text-center">
         <p className="mb-1 text-sm font-medium text-emerald-600">さっそく試してみよう</p>
-        <h2 className="mb-4 text-xl font-bold text-zinc-900">CardMagicでカードを作ってみる</h2>
+        <h2 className="mb-4 text-xl font-bold text-zinc-900">{brandName}でカードを作ってみる</h2>
         <p className="mb-6 text-sm text-zinc-500">
           無料で始められます。デザインセンスがなくても3分で感動的なカードが完成します。
         </p>

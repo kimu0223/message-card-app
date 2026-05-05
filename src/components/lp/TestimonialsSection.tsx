@@ -1,6 +1,7 @@
 'use client'
 
 import { useReveal } from '@/hooks/useReveal'
+import { brandName } from '@/lib/brand'
 
 const testimonials = [
   {
@@ -9,7 +10,7 @@ const testimonials = [
     initials: '田',
     color: 'var(--lp-terracotta)',
     quote:
-      '妻の誕生日に何を贈るか毎年悩んでいましたが、CardMagicで初めてメッセージカードを作ったら「今までで一番嬉しい」と泣いて喜んでくれました。デザインセンスゼロの自分でも、3分で感動的なカードが作れるのは本当にすごいです。',
+      `妻の誕生日に何を贈るか毎年悩んでいましたが、${brandName}で初めてメッセージカードを作ったら「今までで一番嬉しい」と泣いて喜んでくれました。デザインセンスゼロの自分でも、3分で感動的なカードが作れるのは本当にすごいです。`,
   },
   {
     name: '佐藤 美咲',

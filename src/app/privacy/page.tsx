@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import LPHeader from '@/components/lp/LPHeader'
 import LPFooter from '@/components/lp/LPFooter'
+import { brandName, withBrandName } from '@/lib/brand'
 
 export const metadata: Metadata = {
-  title: 'プライバシーポリシー | CardMagic',
+  title: withBrandName('プライバシーポリシー'),
   description:
-    'CardMagicのプライバシーポリシーです。お客様の個人情報の取り扱いについてご説明します。',
+    `${brandName}のプライバシーポリシーです。お客様の個人情報の取り扱いについてご説明します。`,
 }
 
 export default function PrivacyPage() {
@@ -46,7 +47,7 @@ export default function PrivacyPage() {
             {/* 前文 */}
             <section>
               <p>
-                CardMagic（以下「当サービス」）は、お客様の個人情報の保護を重要な責務と考えております。本プライバシーポリシーは、当サービスがどのような情報を収集し、どのように利用・保護するかについて説明するものです。当サービスをご利用いただくことで、本ポリシーに同意いただいたものとみなします。
+                {brandName}（以下「当サービス」）は、お客様の個人情報の保護を重要な責務と考えております。本プライバシーポリシーは、当サービスがどのような情報を収集し、どのように利用・保護するかについて説明するものです。当サービスをご利用いただくことで、本ポリシーに同意いただいたものとみなします。
               </p>
             </section>
 
@@ -280,7 +281,7 @@ export default function PrivacyPage() {
                 }}
               >
                 <p className="font-semibold" style={{ color: 'var(--lp-ink)' }}>
-                  CardMagic 運営事務局
+                  {brandName} 運営事務局
                 </p>
                 <p className="mt-1">
                   メール:{' '}

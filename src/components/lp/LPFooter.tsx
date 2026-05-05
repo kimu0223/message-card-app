@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Logo from '@/components/shared/Logo'
+import { brandName } from '@/lib/brand'
 
 export default function LPFooter() {
   return (
@@ -17,7 +18,7 @@ export default function LPFooter() {
             <Link href="/terms">利用規約</Link>
             <Link href="/privacy">プライバシー</Link>
           </div>
-          <div>&copy; 2026 CardMagic. All rights reserved.</div>
+          <div>&copy; 2026 {brandName}. All rights reserved.</div>
         </div>
       </div>
     </footer>
