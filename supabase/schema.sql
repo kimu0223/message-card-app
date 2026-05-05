@@ -128,10 +128,15 @@ create table public.credit_transactions (
 );
 
 create index idx_credit_tx_user_id on public.credit_transactions(user_id);
+create unique index idx_credit_tx_purchase_payment_intent_unique
+  on public.credit_transactions(stripe_payment_intent_id)
+  where type = 'purchase' and stripe_payment_intent_id is not null;
 
 alter table public.credit_transactions enable row level security;
 create policy "Users can view own transactions" on public.credit_transactions
   for select using (auth.uid() = user_id);
+create policy "Users can insert own transactions" on public.credit_transactions
+  for insert with check (auth.uid() = user_id);
 
 -- ============================================================
 -- ai_usage_logs
@@ -151,6 +156,8 @@ create index idx_ai_logs_created_at on public.ai_usage_logs(created_at);
 alter table public.ai_usage_logs enable row level security;
 create policy "Users can view own AI logs" on public.ai_usage_logs
   for select using (auth.uid() = user_id);
+create policy "Users can insert own AI logs" on public.ai_usage_logs
+  for insert with check (auth.uid() = user_id);
 
 -- ============================================================
 -- Storage buckets

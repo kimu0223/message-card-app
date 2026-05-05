@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronLeft, Loader2, Lock } from 'lucide-react'
+import { CREDIT_COSTS } from '@/constants/plans'
 import type { Template, TemplateCategory, TemplateStyle } from '@/types/template'
 
 const CATEGORIES: { value: TemplateCategory; label: string; emoji: string }[] = [
@@ -72,6 +73,11 @@ export default function TemplateSelector({ onSelect, onBack }: TemplateSelectorP
   }
 
   const handleBack = () => {
+    if (step === 'category') {
+      onBack?.()
+      return
+    }
+
     setStep('category')
     setSelectedCategory(null)
   }
@@ -144,11 +150,11 @@ export default function TemplateSelector({ onSelect, onBack }: TemplateSelectorP
           {filteredTemplates.map(template => (
             <button
               key={template.id}
-              onClick={() => !template.isPremium && onSelect(template)}
-              className={`group relative overflow-hidden rounded-xl border-2 border-zinc-200 bg-white text-left transition hover:shadow-md ${
+              onClick={() => onSelect(template)}
+              className={`group relative overflow-hidden rounded-xl border-2 bg-white text-left transition hover:shadow-md ${
                 template.isPremium
-                  ? 'cursor-not-allowed opacity-75'
-                  : 'hover:border-zinc-400 cursor-pointer'
+                  ? 'border-amber-200 hover:border-amber-400 cursor-pointer'
+                  : 'border-zinc-200 hover:border-zinc-400 cursor-pointer'
               }`}
             >
               {/* サムネイル */}
@@ -172,10 +178,15 @@ export default function TemplateSelector({ onSelect, onBack }: TemplateSelectorP
                   {template.isPremium && (
                     <div className="flex items-center gap-1">
                       <Lock className="h-3 w-3 text-amber-500" />
-                      <Badge variant="secondary" className="text-xs">Pro</Badge>
+                      <Badge variant="secondary" className="border-amber-200 bg-amber-50 text-xs text-amber-700">Pro</Badge>
                     </div>
                   )}
                 </div>
+                {template.isPremium && (
+                  <p className="mt-2 text-xs text-amber-700">
+                    利用時に <span className="font-semibold">{CREDIT_COSTS.premiumTemplate}cr</span>
+                  </p>
+                )}
               </div>
             </button>
           ))}

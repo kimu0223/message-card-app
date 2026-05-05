@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import DashboardClient from '@/components/dashboard/DashboardClient'
 import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import EmptyState from '@/components/dashboard/EmptyState'
+import { PLANS } from '@/constants/plans'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -24,7 +25,7 @@ export default async function DashboardPage() {
       .single(),
   ])
 
-  const freeLimit = parseInt(process.env.FREE_PLAN_MONTHLY_CARDS_LIMIT ?? '3')
+  const freeLimit = PLANS.free.monthlyCardLimit ?? 0
   const usageThisMonth = profile?.cards_created_this_month ?? 0
   const isAtLimit = profile?.plan === 'free' && usageThisMonth >= freeLimit
   const plan = profile?.plan ?? 'free'

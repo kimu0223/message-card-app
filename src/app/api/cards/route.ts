@@ -27,6 +27,13 @@ export async function POST(request: Request) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const body = await request.json()
+  const { title, templateId, canvasData, size, animation } = body
+
+  if (!canvasData) {
+    return NextResponse.json({ error: 'canvasData is required' }, { status: 400 })
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('plan, credits, cards_created_this_month, monthly_reset_at')
@@ -35,6 +42,10 @@ export async function POST(request: Request) {
 
   const plan = profile?.plan ?? 'free'
   const freeLimit = PLANS.free.monthlyCardLimit!
+  let totalCreditsCharged = 0
+  let totalCreditsRequired = 0
+  let overFreeLimit = false
+  let isPremiumTemplate = false
 
   // 月リセットチェック
   let usedThisMonth = profile?.cards_created_this_month ?? 0
@@ -49,19 +60,50 @@ export async function POST(request: Request) {
         monthly_reset_at: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
       }).eq('id', user.id)
     } else if (usedThisMonth >= freeLimit) {
-      // Free上限到達 → クレジット消費を試行
-      const { success } = await deductCredits(supabase, user.id, CREDIT_COSTS.card, 'カード作成（Free上限超過）')
-      if (!success) {
-        return NextResponse.json({ error: 'limit_exceeded', needCredits: CREDIT_COSTS.card }, { status: 403 })
+      overFreeLimit = true
+      totalCreditsRequired += CREDIT_COSTS.card
+    }
+
+    if (templateId) {
+      const { data: template, error: templateError } = await supabase
+        .from('templates')
+        .select('is_premium')
+        .eq('id', templateId)
+        .maybeSingle()
+
+      if (templateError) {
+        return NextResponse.json({ error: templateError.message }, { status: 500 })
+      }
+
+      if (!template) {
+        return NextResponse.json({ error: 'Invalid templateId' }, { status: 400 })
+      }
+
+      isPremiumTemplate = Boolean(template.is_premium)
+      if (isPremiumTemplate) {
+        totalCreditsRequired += CREDIT_COSTS.premiumTemplate
       }
     }
-  }
 
-  const body = await request.json()
-  const { title, templateId, canvasData, size, animation } = body
+    if (totalCreditsRequired > 0) {
+      const chargeReasons = [
+        overFreeLimit ? 'カード作成（Free上限超過）' : null,
+        isPremiumTemplate ? 'プレミアムテンプレート利用' : null,
+      ].filter(Boolean)
 
-  if (!canvasData) {
-    return NextResponse.json({ error: 'canvasData is required' }, { status: 400 })
+      const { success } = await deductCredits(
+        supabase,
+        user.id,
+        totalCreditsRequired,
+        chargeReasons.join(' + ')
+      )
+
+      if (!success) {
+        return NextResponse.json({ error: 'limit_exceeded', needCredits: totalCreditsRequired }, { status: 403 })
+      }
+
+      totalCreditsCharged = totalCreditsRequired
+    }
   }
 
   const { data: card, error } = await supabase
@@ -79,8 +121,10 @@ export async function POST(request: Request) {
 
   if (error) {
     // カード作成失敗時、クレジットを消費していた場合は返金
-    if (plan === 'free' && usedThisMonth >= freeLimit) {
-      await addCredits(supabase, user.id, CREDIT_COSTS.card, 'カード作成失敗による返金')
+    if (totalCreditsCharged > 0) {
+      await addCredits(supabase, user.id, totalCreditsCharged, 'カード作成失敗による返金', {
+        transactionType: 'refund',
+      })
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

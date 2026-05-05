@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { getStripeClient } from '@/lib/stripe/client'
-import { createClient } from '@/lib/supabase/server'
 import { CREDIT_PACKAGES } from '@/constants/plans'
 import { addCredits } from '@/lib/credits'
 import type Stripe from 'stripe'
@@ -26,7 +26,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  const supabase = await createClient()
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   try {
     switch (event.type) {
@@ -38,13 +41,24 @@ export async function POST(request: Request) {
         if (metadata.type === 'credit_pack' && metadata.user_id) {
           const pkg = CREDIT_PACKAGES.find(p => p.priceId === metadata.price_id)
           if (pkg) {
-            await addCredits(
+            const paymentIntentId = typeof session.payment_intent === 'string'
+              ? session.payment_intent
+              : undefined
+
+            const { success } = await addCredits(
               supabase,
               metadata.user_id,
               pkg.credits,
               `クレジットパック購入（${pkg.credits}クレジット）`,
-              session.payment_intent as string | undefined
+              {
+                paymentIntentId,
+                transactionType: 'purchase',
+              }
             )
+
+            if (!success) {
+              throw new Error(`Failed to add credits for checkout session ${session.id}`)
+            }
           }
         }
         break
@@ -70,7 +84,6 @@ export async function POST(request: Request) {
           updated_at: new Date().toISOString(),
         }).eq('id', profile.id)
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const periodEnd = (subscription as unknown as Record<string, unknown>).current_period_end as number | undefined
         await supabase.from('subscriptions').upsert({
           user_id: profile.id,
