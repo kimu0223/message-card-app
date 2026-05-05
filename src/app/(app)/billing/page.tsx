@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, Zap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Check, Zap, Coins } from 'lucide-react'
 import UpgradeButton from '@/components/billing/UpgradeButton'
+import CreditPackButton from '@/components/billing/CreditPackButton'
+import { PLANS, CREDIT_PACKAGES } from '@/constants/plans'
 
 export default async function BillingPage() {
   const supabase = await createClient()
@@ -35,6 +37,15 @@ export default async function BillingPage() {
         </div>
       )}
 
+      {/* クレジット残高 */}
+      <div className="mb-8 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
+        <Coins className="h-6 w-6 text-amber-600" />
+        <div>
+          <p className="font-semibold text-amber-900">クレジット残高: {profile?.credits ?? 0}</p>
+          <p className="text-sm text-amber-700">Free枠を超えた場合にクレジットで利用できます（有効期限なし）</p>
+        </div>
+      </div>
+
       {/* プランカード */}
       <div className="grid gap-6 sm:grid-cols-2">
         {/* Free */}
@@ -48,13 +59,7 @@ export default async function BillingPage() {
             <span className="text-zinc-500">/月</span>
           </div>
           <ul className="space-y-3 text-sm text-zinc-600">
-            {[
-              'メッセージカード 月3枚まで',
-              '5種類のテンプレート',
-              'AIメッセージ生成 月5回',
-              'PNG/PDFダウンロード',
-              'シェアURL生成',
-            ].map(f => (
+            {PLANS.free.features.map(f => (
               <li key={f} className="flex items-center gap-2">
                 <Check className="h-4 w-4 shrink-0 text-emerald-500" />
                 {f}
@@ -63,7 +68,7 @@ export default async function BillingPage() {
           </ul>
           {!isPro && (
             <div className="mt-6 text-center text-sm text-zinc-500">
-              今月: {profile?.cards_created_this_month ?? 0}/3 枚作成
+              今月: {profile?.cards_created_this_month ?? 0}/{PLANS.free.monthlyCardLimit} 枚作成
             </div>
           )}
         </div>
@@ -79,15 +84,7 @@ export default async function BillingPage() {
             <span className="text-zinc-500">/月</span>
           </div>
           <ul className="space-y-3 text-sm text-zinc-600">
-            {[
-              'メッセージカード 無制限',
-              'すべてのテンプレート（プレミアム含む）',
-              'AIメッセージ生成 無制限',
-              'AIデザイン提案',
-              'PNG/PDF高画質ダウンロード',
-              'カスタムアニメーション',
-              '優先サポート',
-            ].map(f => (
+            {PLANS.pro.features.map(f => (
               <li key={f} className="flex items-center gap-2">
                 <Check className="h-4 w-4 shrink-0 text-violet-500" />
                 {f}
@@ -105,6 +102,41 @@ export default async function BillingPage() {
           </div>
         </div>
       </div>
+
+      {/* クレジットパック */}
+      {!isPro && (
+        <div className="mt-12">
+          <h2 className="mb-2 text-xl font-bold text-zinc-900">クレジットパック</h2>
+          <p className="mb-6 text-sm text-zinc-500">Free枠を超えても、クレジットで追加利用できます。有効期限はありません。</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {CREDIT_PACKAGES.map(pkg => (
+              <div key={pkg.credits} className={`relative rounded-xl border-2 p-5 ${pkg.label === 'おすすめ' ? 'border-amber-400 bg-amber-50' : 'border-zinc-200 bg-white'}`}>
+                {pkg.label && (
+                  <div className="absolute -top-3 left-4 rounded-full bg-amber-500 px-3 py-0.5 text-xs font-bold text-white">
+                    {pkg.label}
+                  </div>
+                )}
+                <div className="mb-2 text-2xl font-bold text-zinc-900">{pkg.credits} <span className="text-base font-normal text-zinc-500">クレジット</span></div>
+                <div className="mb-4 text-lg font-semibold text-zinc-700">¥{pkg.price.toLocaleString()}</div>
+                <div className="mb-4 text-xs text-zinc-500">
+                  1クレジット = ¥{Math.round(pkg.price / pkg.credits)}
+                </div>
+                <CreditPackButton priceId={pkg.priceId} label={`¥${pkg.price.toLocaleString()} で購入`} />
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
+            <p className="font-medium mb-2">クレジット消費目安:</p>
+            <ul className="space-y-1 text-xs">
+              <li>カード作成（Free上限超過時）: 1クレジット/枚</li>
+              <li>AIメッセージ生成（Free上限超過時）: 1クレジット/回</li>
+              <li>AIデザイン生成（Free上限超過時）: 2クレジット/回</li>
+              <li>プレミアムテンプレート利用: 1クレジット/枚</li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

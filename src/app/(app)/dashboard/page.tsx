@@ -45,7 +45,7 @@ export default async function DashboardPage() {
         {/* Plan */}
         <div className="dash-stat featured">
           <span className="dash-stat-label">Plan</span>
-          <span className="dash-stat-value">{plan === 'pro' ? 'Pro' : plan === 'standard' ? 'Std' : 'Free'}</span>
+          <span className="dash-stat-value">{plan === 'pro' ? 'Pro' : 'Free'}</span>
           <span className="dash-stat-foot">
             {plan === 'free' ? 'アップグレードで無制限に' : '全機能をご利用中'}
           </span>

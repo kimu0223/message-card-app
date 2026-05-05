@@ -5,12 +5,13 @@ import KeywordFAQSection from '@/components/lp/KeywordFAQSection'
 import HowItWorksSection from '@/components/lp/HowItWorksSection'
 import PricingSection from '@/components/lp/PricingSection'
 import CTASection from '@/components/lp/CTASection'
+import { brandName } from '@/lib/brand'
 
 // キーワード別LPデータ
 const LP_KEYWORDS = [
   {
     keyword: 'tegami',
-    title: '手紙をデジタルカードに変える | CardMagic',
+    title: `手紙をデジタルカードに変える | ${brandName}`,
     heroTitle: '気持ちを届ける\n手紙をデジタルで。',
     heroSubtext:
       '手書きの温かさをデジタルで表現。アニメーション付きメッセージカードで、大切な人に想いを伝えましょう。',
@@ -34,7 +35,7 @@ const LP_KEYWORDS = [
   },
   {
     keyword: 'birthday-tegami',
-    title: '誕生日の手紙・メッセージカード | CardMagic',
+    title: `誕生日の手紙・メッセージカード | ${brandName}`,
     heroTitle: '誕生日の想いを\nアニメーションで届けよう。',
     heroSubtext:
       '誕生日の手紙を感動的なデジタルカードに。AIがメッセージを提案し、3分で完成。LINEで送れます。',
@@ -45,7 +46,7 @@ const LP_KEYWORDS = [
       },
       {
         q: 'バースデーアニメーション（コンフェッティ等）は無料ですか？',
-        a: 'Standardプラン以上でご利用いただけます。まず無料で試してみてください。',
+        a: 'Proプランで全アニメーションがご利用いただけます。まず無料で試してみてください。',
       },
       {
         q: '前日でも間に合いますか？',
@@ -58,7 +59,7 @@ const LP_KEYWORDS = [
   },
   {
     keyword: 'kinenbi-tegami',
-    title: '記念日の手紙・メッセージカード | CardMagic',
+    title: `記念日の手紙・メッセージカード | ${brandName}`,
     heroTitle: '記念日の特別な想いを\nカードに込めて。',
     heroSubtext:
       '結婚記念日・交際記念日など、大切な記念日に贈るアニメーション付きカード。AIで感動的なメッセージを作成。',
@@ -82,7 +83,7 @@ const LP_KEYWORDS = [
   },
   {
     keyword: 'kekkonshiki-shoutaijo',
-    title: '結婚式 招待状をデジタルで | CardMagic',
+    title: `結婚式 招待状をデジタルで | ${brandName}`,
     heroTitle: '結婚式の招待状を\nデジタルで美しく。',
     heroSubtext:
       '紙の招待状に加えてデジタル版も。アニメーション付きウェディングカードでゲストに特別感を演出。',
@@ -106,7 +107,7 @@ const LP_KEYWORDS = [
   },
   {
     keyword: 'kekkonshiki-message',
-    title: '結婚式 メッセージカード | CardMagic',
+    title: `結婚式 メッセージカード | ${brandName}`,
     heroTitle: '結婚式に贈る\n祝福のメッセージ。',
     heroSubtext:
       '新郎新婦へのお祝いメッセージをアニメーション付きカードで。AIが心温まるウェディングメッセージを提案。',
@@ -130,7 +131,7 @@ const LP_KEYWORDS = [
   },
   {
     keyword: 'oiwai-message',
-    title: 'お祝い メッセージカード | CardMagic',
+    title: `お祝い メッセージカード | ${brandName}`,
     heroTitle: 'お祝いの気持ちを\n心のこもったカードで。',
     heroSubtext:
       '昇進・開業・出産など、あらゆるお祝いシーンに対応。AIがシーンに合ったメッセージを提案します。',
@@ -154,7 +155,7 @@ const LP_KEYWORDS = [
   },
   {
     keyword: 'taishoku-message',
-    title: '退職 メッセージカード | 感謝を伝える | CardMagic',
+    title: `退職 メッセージカード | 感謝を伝える | ${brandName}`,
     heroTitle: 'お世話になった方へ\n退職のお礼を伝えよう。',
     heroSubtext:
       'お世話になった上司・同僚への退職メッセージをアニメーション付きカードで。AIが感謝の言葉を提案します。',
@@ -178,7 +179,7 @@ const LP_KEYWORDS = [
   },
   {
     keyword: 'sotsugyou-message',
-    title: '卒業 メッセージカード | CardMagic',
+    title: `卒業 メッセージカード | ${brandName}`,
     heroTitle: '卒業おめでとう。\n新しい旅立ちを祝福しよう。',
     heroSubtext:
       '卒業する友人・恩師・生徒へのメッセージをアニメーション付きカードで。AIが心温まる言葉を提案します。',
@@ -202,8 +203,6 @@ const LP_KEYWORDS = [
   },
 ] as const
 
-type LPKeyword = (typeof LP_KEYWORDS)[number]['keyword']
-
 function findKeywordData(keyword: string) {
   return LP_KEYWORDS.find((item) => item.keyword === keyword) ?? null
 }
@@ -224,7 +223,7 @@ export async function generateMetadata({
 
   if (!data) {
     return {
-      title: 'Not Found | CardMagic',
+      title: `Not Found | ${brandName}`,
     }
   }
 
@@ -238,7 +237,7 @@ export async function generateMetadata({
       title: data.title,
       description: data.metaDescription,
       url: data.canonicalPath,
-      siteName: 'CardMagic',
+      siteName: brandName,
       locale: 'ja_JP',
       type: 'website',
     },

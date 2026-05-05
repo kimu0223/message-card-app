@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getStripeClient } from '@/lib/stripe/client'
+import { CREDIT_PACKAGES } from '@/constants/plans'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { priceId } = await request.json()
+  const { priceId, type } = await request.json()
   if (!priceId) {
     return NextResponse.json({ error: 'priceId is required' }, { status: 400 })
   }
@@ -38,14 +39,21 @@ export async function POST(request: Request) {
         .eq('id', user.id)
     }
 
+    // クレジットパック購入（一回払い）か、Proサブスクか判定
+    const isCreditPack = type === 'credit_pack' ||
+      CREDIT_PACKAGES.some(pkg => pkg.priceId === priceId)
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: 'subscription',
+      mode: isCreditPack ? 'payment' : 'subscription',
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?canceled=true`,
-      metadata: { user_id: user.id },
+      metadata: {
+        user_id: user.id,
+        ...(isCreditPack ? { type: 'credit_pack', price_id: priceId } : {}),
+      },
     })
 
     return NextResponse.json({ url: session.url })

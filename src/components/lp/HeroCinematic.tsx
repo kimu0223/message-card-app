@@ -213,8 +213,8 @@ export default function HeroCinematic() {
 
             <p className="hero-p"
                style={{ opacity: lede, transform: `translateY(${(1 - lede) * 18}px)` }}>
-              誕生日・記念日・お礼 &mdash; すべての特別な日に。<br className="break-md" />
-              AIとテンプレートで作る、アニメーション付きメッセージカード。
+              テンプレートを選んで、言葉を添えるだけ。<br className="break-md" />
+              3分で届く、アニメーション付きメッセージカード。
             </p>
 
             <div className="hero-cta-row"

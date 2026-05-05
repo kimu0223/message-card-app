@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getStripeClient } from '@/lib/stripe/client'
 import { createClient } from '@/lib/supabase/server'
+import { CREDIT_PACKAGES } from '@/constants/plans'
+import { addCredits } from '@/lib/credits'
 import type Stripe from 'stripe'
 
 export async function POST(request: Request) {
@@ -24,12 +26,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  // Webhook ではサービスロールキーでDBを操作したいが、
-  // server.ts の createServiceClient は cookies() を使うので webhook では直接 Supabase JS を使う
   const supabase = await createClient()
 
   try {
     switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+        const metadata = session.metadata ?? {}
+
+        // クレジットパック購入完了
+        if (metadata.type === 'credit_pack' && metadata.user_id) {
+          const pkg = CREDIT_PACKAGES.find(p => p.priceId === metadata.price_id)
+          if (pkg) {
+            await addCredits(
+              supabase,
+              metadata.user_id,
+              pkg.credits,
+              `クレジットパック購入（${pkg.credits}クレジット）`,
+              session.payment_intent as string | undefined
+            )
+          }
+        }
+        break
+      }
+
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription

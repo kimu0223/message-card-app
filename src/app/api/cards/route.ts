@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { PLANS, CREDIT_COSTS } from '@/constants/plans'
+import { deductCredits, addCredits } from '@/lib/credits'
 
 export async function GET() {
   const supabase = await createClient()
@@ -25,27 +27,33 @@ export async function POST(request: Request) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Free プランの月次制限チェック
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, cards_created_this_month, monthly_reset_at')
+    .select('plan, credits, cards_created_this_month, monthly_reset_at')
     .eq('id', user.id)
     .single()
 
-  const freeLimit = parseInt(process.env.FREE_PLAN_MONTHLY_CARDS_LIMIT ?? '3')
+  const plan = profile?.plan ?? 'free'
+  const freeLimit = PLANS.free.monthlyCardLimit!
 
-  if (profile?.plan === 'free') {
-    const resetAt = profile.monthly_reset_at ? new Date(profile.monthly_reset_at) : new Date()
+  // 月リセットチェック
+  let usedThisMonth = profile?.cards_created_this_month ?? 0
+  if (plan === 'free') {
+    const resetAt = profile?.monthly_reset_at ? new Date(profile.monthly_reset_at) : new Date()
     const now = new Date()
 
-    // 月リセット
     if (now >= resetAt) {
+      usedThisMonth = 0
       await supabase.from('profiles').update({
         cards_created_this_month: 0,
         monthly_reset_at: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
       }).eq('id', user.id)
-    } else if ((profile.cards_created_this_month ?? 0) >= freeLimit) {
-      return NextResponse.json({ error: 'limit_exceeded' }, { status: 403 })
+    } else if (usedThisMonth >= freeLimit) {
+      // Free上限到達 → クレジット消費を試行
+      const { success } = await deductCredits(supabase, user.id, CREDIT_COSTS.card, 'カード作成（Free上限超過）')
+      if (!success) {
+        return NextResponse.json({ error: 'limit_exceeded', needCredits: CREDIT_COSTS.card }, { status: 403 })
+      }
     }
   }
 
@@ -69,13 +77,21 @@ export async function POST(request: Request) {
     .select('id')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    // カード作成失敗時、クレジットを消費していた場合は返金
+    if (plan === 'free' && usedThisMonth >= freeLimit) {
+      await addCredits(supabase, user.id, CREDIT_COSTS.card, 'カード作成失敗による返金')
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
-  // 月次カウントをインクリメント
-  await supabase
-    .from('profiles')
-    .update({ cards_created_this_month: (profile?.cards_created_this_month ?? 0) + 1 })
-    .eq('id', user.id)
+  // 月次カウントをインクリメント（Freeプランのみ）
+  if (plan === 'free') {
+    await supabase
+      .from('profiles')
+      .update({ cards_created_this_month: usedThisMonth + 1 })
+      .eq('id', user.id)
+  }
 
   return NextResponse.json(card, { status: 201 })
 }
