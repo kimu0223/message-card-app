@@ -33,8 +33,14 @@ export function useAIDesign() {
       }
 
       if (res.status === 429) {
-        setError('limit_exceeded');
-        toast.error('今月のAIデザイン生成回数の上限に達しました');
+        const data = await res.json().catch(() => ({}));
+        if (data.error === 'guest_limit_exceeded') {
+          setError('guest_limit_exceeded');
+          // エラーUIはWizard内で表示するためtoastは出さない
+        } else {
+          setError('limit_exceeded');
+          toast.error('今月のAIデザイン生成回数の上限に達しました');
+        }
         return null;
       }
 
@@ -64,6 +70,11 @@ export function useAIDesign() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(refinement),
       });
+
+      if (res.status === 401) {
+        setError('login_required');
+        return null;
+      }
 
       if (!res.ok) throw new Error('Refinement failed');
 

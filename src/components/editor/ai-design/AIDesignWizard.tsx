@@ -109,7 +109,41 @@ export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }:
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {/* login_required エラー時のフォールバックUI */}
+        {/* ゲスト体験上限UIl（生成1回を使い切った） */}
+        {error === 'guest_limit_exceeded' && (
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center px-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+              <Sparkles className="h-7 w-7 text-amber-500" />
+            </div>
+            <div>
+              <p className="font-semibold text-zinc-800">体験枠を使い切りました</p>
+              <p className="mt-1 text-sm text-zinc-500">
+                ゲストは1回まで体験できます。<br />
+                ログインすると毎月1回無料でご利用いただけます。
+              </p>
+            </div>
+            {onLoginRequired ? (
+              <button
+                onClick={onLoginRequired}
+                className="rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-700"
+              >
+                無料で登録する
+              </button>
+            ) : (
+              <a
+                href="/login"
+                className="rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-700"
+              >
+                無料で登録する
+              </a>
+            )}
+            <button onClick={handleClose} className="text-xs text-zinc-400 hover:text-zinc-600">
+              閉じる
+            </button>
+          </div>
+        )}
+
+        {/* ログイン必須UI（refine時・または既存のlogin_required） */}
         {error === 'login_required' && (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center px-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-100">
@@ -117,7 +151,9 @@ export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }:
             </div>
             <div>
               <p className="font-semibold text-zinc-800">ログインが必要です</p>
-              <p className="mt-1 text-sm text-zinc-500">AIデザイン生成を利用するにはログインしてください。</p>
+              <p className="mt-1 text-sm text-zinc-500">
+                AIデザイン生成を利用するにはログインしてください。
+              </p>
             </div>
             {onLoginRequired ? (
               <button
@@ -139,14 +175,14 @@ export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }:
             </button>
           </div>
         )}
-        {error !== 'login_required' && step === 1 && <AIDesignStep1 />}
-        {error !== 'login_required' && step === 2 && (
+        {error !== 'login_required' && error !== 'guest_limit_exceeded' && step === 1 && <AIDesignStep1 />}
+        {error !== 'login_required' && error !== 'guest_limit_exceeded' && step === 2 && (
           <AIDesignStep2
             onSelect={handleSelectVariant}
             onRegenerate={handleRegenerate}
           />
         )}
-        {error !== 'login_required' && step === 3 && (
+        {error !== 'login_required' && error !== 'guest_limit_exceeded' && step === 3 && (
           <AIDesignStep3
             onRefine={handleRefine}
             onSkip={handleSkipRefine}
@@ -156,7 +192,7 @@ export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }:
       </div>
 
       {/* Footer (Step 1 only) */}
-      {step === 1 && error !== 'login_required' && (
+      {step === 1 && error !== 'login_required' && error !== 'guest_limit_exceeded' && (
         <div className="border-t border-zinc-100 p-4 space-y-2">
           <button
             onClick={handleGenerate}
