@@ -7,14 +7,6 @@ import { CARD_TEMPLATES, CARD_SCENES, type CardScene } from './CardTemplates'
 
 type SceneId = CardScene['id']
 
-// LP scene → TemplateSelector category mapping
-const SCENE_TO_CATEGORY: Record<string, string> = {
-  birthday: 'birthday',
-  wedding: 'anniversary',
-  farewell: 'business',
-  thanks: 'thank_you',
-  parents: 'seasonal',
-}
 
 export default function GallerySection() {
   useReveal()
@@ -56,7 +48,7 @@ export default function GallerySection() {
             const Comp = c.Comp
             return (
               <div key={c.id} className="lp-reveal" data-delay={(i % 4) + 1}>
-                <Link href={`/create?category=${SCENE_TO_CATEGORY[c.scene] ?? ''}`} className="lp-card block" style={{ textDecoration: 'none' }}>
+                <Link href={`/create?templateId=${c.id}`} className="lp-card block" style={{ textDecoration: 'none' }}>
                   <div className="lp-card-inner" style={{ padding: 0 }}>
                     <Comp />
                   </div>
@@ -70,7 +62,7 @@ export default function GallerySection() {
                       {CARD_SCENES.find(s => s.id === c.scene)?.label ?? ''}
                     </span>
                   </div>
-                  <Link href={`/create?category=${SCENE_TO_CATEGORY[c.scene] ?? ''}`} className="lp-btn lp-btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }}>
+                  <Link href={`/create?templateId=${c.id}`} className="lp-btn lp-btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }}>
                     使う &rarr;
                   </Link>
                 </div>

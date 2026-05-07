@@ -6,6 +6,7 @@ import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import { CARD_SIZES } from '@/types/card'
 import type { CanvasData, CanvasElement, TextElement } from '@/types/card'
+import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
 
 interface CardCanvasProps {
   canvasData: CanvasData
@@ -31,8 +32,12 @@ export default function CardCanvas({
   const stageHeight = sizeConfig.height * zoom
 
   const bg = canvasData.background
-  const bgStyle: React.CSSProperties =
-    bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
+  const templateDef = canvasData.templateId
+    ? CARD_TEMPLATES.find(t => t.id === canvasData.templateId)
+    : null
+  const bgStyle: React.CSSProperties = templateDef
+    ? {}
+    : bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
 
   useEffect(() => {
     if (!transformerRef.current || !stageRef.current) return
@@ -73,6 +78,11 @@ export default function CardCanvas({
 
   return (
     <div className="relative shadow-xl" style={{ width: stageWidth, height: stageHeight, ...bgStyle }}>
+      {templateDef && (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          <templateDef.Comp />
+        </div>
+      )}
       <Stage
         ref={stageRef}
         width={stageWidth}

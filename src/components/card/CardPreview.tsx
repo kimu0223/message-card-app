@@ -7,6 +7,7 @@ import { X, Share2, Download } from 'lucide-react'
 import { CARD_SIZES } from '@/types/card'
 import type { CanvasData, TextElement } from '@/types/card'
 import ConfettiAnimation from '@/components/card/animations/ConfettiAnimation'
+import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
 
 interface CardPreviewProps {
   canvasData: CanvasData
@@ -50,10 +51,13 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
 
   const motionProps = getMotionProps()
   const bg = canvasData.background
-  const backgroundStyle: React.CSSProperties =
-    bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
-
   const sizeConfig = CARD_SIZES[canvasData.size]
+  const templateDef = canvasData.templateId
+    ? CARD_TEMPLATES.find(t => t.id === canvasData.templateId)
+    : null
+  const backgroundStyle: React.CSSProperties = templateDef
+    ? {}
+    : bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
   const aspectRatio = sizeConfig.width / sizeConfig.height
 
   const sortedTextElements = canvasData.elements
@@ -84,9 +88,14 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
             animate={motionProps.animate}
             transition={motionProps.transition}
             className="relative overflow-hidden rounded-2xl shadow-2xl"
-            style={{ width: '100%', maxWidth: 600, aspectRatio, ...backgroundStyle }}
+            style={{ position: 'relative', width: '100%', maxWidth: 600, aspectRatio, ...backgroundStyle }}
           >
-            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+            {templateDef && (
+              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                <templateDef.Comp />
+              </div>
+            )}
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
               {sortedTextElements.map(el => (
                 <p
                   key={el.id}

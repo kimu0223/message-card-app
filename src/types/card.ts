@@ -77,6 +77,7 @@ export interface CanvasData {
   background: Background;
   elements: CanvasElement[];
   animation: AnimationConfig | null;
+  templateId?: string; // LP template reference
 }
 
 export interface CardSizeConfig {
