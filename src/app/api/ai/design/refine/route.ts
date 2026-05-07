@@ -9,22 +9,20 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // ゲストユーザーも利用可能。ログイン済みの場合のみ日次レート制限を適用する。
+  if (user) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from('ai_usage_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('feature', 'design_refine')
+      .gte('created_at', today.toISOString());
 
-  // Simple daily rate limit for refinements
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const { count } = await supabase
-    .from('ai_usage_logs')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('feature', 'design_refine')
-    .gte('created_at', today.toISOString());
-
-  if ((count ?? 0) >= DAILY_REFINE_LIMIT) {
-    return NextResponse.json({ error: 'limit_exceeded' }, { status: 429 });
+    if ((count ?? 0) >= DAILY_REFINE_LIMIT) {
+      return NextResponse.json({ error: 'limit_exceeded' }, { status: 429 });
+    }
   }
 
   let body: AIDesignRefinement;
@@ -46,12 +44,15 @@ export async function POST(request: Request) {
   try {
     const result = await refineDesignVariant(body);
 
-    await supabase.from('ai_usage_logs').insert({
-      user_id: user.id,
-      feature: 'design_refine',
-      tokens_used: 0,
-      credits_consumed: 0,
-    });
+    // ログイン済みユーザーのみ使用量を記録
+    if (user) {
+      await supabase.from('ai_usage_logs').insert({
+        user_id: user.id,
+        feature: 'design_refine',
+        tokens_used: 0,
+        credits_consumed: 0,
+      });
+    }
 
     return NextResponse.json(result);
   } catch (error) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Sparkles, ArrowLeft, X } from 'lucide-react';
+import { Sparkles, ArrowLeft, X, LogIn } from 'lucide-react';
 import { useAIDesignWizardStore } from '@/store/aiDesignWizardStore';
 import { useAIDesign } from '@/hooks/useAIDesign';
 import AIDesignStep1 from './AIDesignStep1';
@@ -13,12 +13,13 @@ import type { AIDesignRefinement } from '@/types/ai';
 interface AIDesignWizardProps {
   onComplete: (canvasData: CanvasData) => void;
   onClose: () => void;
+  onLoginRequired?: () => void;
 }
 
-export default function AIDesignWizard({ onComplete, onClose }: AIDesignWizardProps) {
+export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }: AIDesignWizardProps) {
   const {
     step, recipient, occasion, mood, size,
-    variants, selectedVariantIndex, isGenerating,
+    variants, selectedVariantIndex, isGenerating, error,
     nextStep, prevStep, reset,
   } = useAIDesignWizardStore();
   const { generateDesigns, refineDesign } = useAIDesign();
@@ -108,14 +109,44 @@ export default function AIDesignWizard({ onComplete, onClose }: AIDesignWizardPr
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {step === 1 && <AIDesignStep1 />}
-        {step === 2 && (
+        {/* login_required エラー時のフォールバックUI */}
+        {error === 'login_required' && (
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center px-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-100">
+              <LogIn className="h-7 w-7 text-violet-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-zinc-800">ログインが必要です</p>
+              <p className="mt-1 text-sm text-zinc-500">AIデザイン生成を利用するにはログインしてください。</p>
+            </div>
+            {onLoginRequired ? (
+              <button
+                onClick={onLoginRequired}
+                className="rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-700"
+              >
+                ログインする
+              </button>
+            ) : (
+              <a
+                href="/login"
+                className="rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-700"
+              >
+                ログインする
+              </a>
+            )}
+            <button onClick={handleClose} className="text-xs text-zinc-400 hover:text-zinc-600">
+              閉じる
+            </button>
+          </div>
+        )}
+        {error !== 'login_required' && step === 1 && <AIDesignStep1 />}
+        {error !== 'login_required' && step === 2 && (
           <AIDesignStep2
             onSelect={handleSelectVariant}
             onRegenerate={handleRegenerate}
           />
         )}
-        {step === 3 && (
+        {error !== 'login_required' && step === 3 && (
           <AIDesignStep3
             onRefine={handleRefine}
             onSkip={handleSkipRefine}
@@ -125,7 +156,7 @@ export default function AIDesignWizard({ onComplete, onClose }: AIDesignWizardPr
       </div>
 
       {/* Footer (Step 1 only) */}
-      {step === 1 && (
+      {step === 1 && error !== 'login_required' && (
         <div className="border-t border-zinc-100 p-4 space-y-2">
           <button
             onClick={handleGenerate}

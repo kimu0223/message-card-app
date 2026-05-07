@@ -17,38 +17,38 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan, credits')
-    .eq('id', user.id)
-    .single();
-
-  const isPro = profile?.plan === 'pro';
-
+  // ゲストユーザーも利用可能。ログイン済みの場合のみ使用量・クレジット管理を行う。
   let needsCreditDeduction = false;
-  if (!isPro) {
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
 
-    const { count } = await supabase
-      .from('ai_usage_logs')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('feature', 'design_generation')
-      .gte('created_at', startOfMonth.toISOString());
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, credits')
+      .eq('id', user.id)
+      .single();
 
-    if ((count ?? 0) >= FREE_LIMIT) {
-      // Free上限超過 → クレジット残高チェック（消費はAI成功後）
-      const credits = profile?.credits ?? 0;
-      if (credits < CREDIT_COSTS.aiDesign) {
-        return NextResponse.json({ error: 'limit_exceeded', needCredits: CREDIT_COSTS.aiDesign }, { status: 429 });
+    const isPro = profile?.plan === 'pro';
+
+    if (!isPro) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const { count } = await supabase
+        .from('ai_usage_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('feature', 'design_generation')
+        .gte('created_at', startOfMonth.toISOString());
+
+      if ((count ?? 0) >= FREE_LIMIT) {
+        // Free上限超過 → クレジット残高チェック（消費はAI成功後）
+        const credits = profile?.credits ?? 0;
+        if (credits < CREDIT_COSTS.aiDesign) {
+          return NextResponse.json({ error: 'limit_exceeded', needCredits: CREDIT_COSTS.aiDesign }, { status: 429 });
+        }
+        needsCreditDeduction = true;
       }
-      needsCreditDeduction = true;
     }
   }
 
@@ -81,20 +81,22 @@ export async function POST(request: Request) {
   try {
     const result = await generateDesignVariants(body);
 
-    // AI成功後にクレジット消費
-    if (needsCreditDeduction) {
-      const { success } = await deductCredits(supabase, user.id, CREDIT_COSTS.aiDesign, 'AIデザイン生成（Free上限超過）');
-      if (!success) {
-        return NextResponse.json({ error: 'limit_exceeded', needCredits: CREDIT_COSTS.aiDesign }, { status: 429 });
+    // ログイン済みユーザーのみ使用量ログ・クレジット消費を記録
+    if (user) {
+      if (needsCreditDeduction) {
+        const { success } = await deductCredits(supabase, user.id, CREDIT_COSTS.aiDesign, 'AIデザイン生成（Free上限超過）');
+        if (!success) {
+          return NextResponse.json({ error: 'limit_exceeded', needCredits: CREDIT_COSTS.aiDesign }, { status: 429 });
+        }
       }
-    }
 
-    await supabase.from('ai_usage_logs').insert({
-      user_id: user.id,
-      feature: 'design_generation',
-      tokens_used: 0,
-      credits_consumed: needsCreditDeduction ? CREDIT_COSTS.aiDesign : 0,
-    });
+      await supabase.from('ai_usage_logs').insert({
+        user_id: user.id,
+        feature: 'design_generation',
+        tokens_used: 0,
+        credits_consumed: needsCreditDeduction ? CREDIT_COSTS.aiDesign : 0,
+      });
+    }
 
     return NextResponse.json(result);
   } catch (error) {
