@@ -2307,3 +2307,118 @@ details.lp-reveal[open] summary ~ div {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 28px;
 }
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 640px) {
+  /* Dashboard */
+  .dash-hero {
+    padding: 24px 16px 0 !important;
+  }
+
+  .mycards {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .dash-greeting {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dash-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* LP page */
+  .lp-page {
+    overflow-x: hidden;
+  }
+
+  /* Hero section */
+  .lp-hero-inner {
+    flex-direction: column !important;
+    gap: 2rem;
+    padding: 2rem 1rem !important;
+  }
+
+  .lp-hero-text {
+    text-align: center;
+  }
+
+  /* Subnav */
+  .lp-subnav {
+    padding: 0 1rem;
+  }
+
+  .lp-subnav-meta {
+    display: none;
+  }
+
+  /* Create page */
+  .create-hero {
+    padding: 2rem 0 1.5rem !important;
+  }
+
+  .create-title {
+    font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+  }
+
+  .create-lede {
+    font-size: 0.875rem !important;
+  }
+
+  .create-blank {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 1rem !important;
+  }
+
+  /* Envelope stage */
+  .envelope-stage {
+    max-width: 300px;
+  }
+
+  /* Gallery tabs */
+  .lp-gallery-tab {
+    font-size: 12px !important;
+    padding: 4px 10px !important;
+  }
+
+  /* Template grid */
+  .lp-template-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Hero envelope */
+  .floating-card {
+    width: 160px !important;
+    height: 200px !important;
+  }
+
+  .floating-card-inner {
+    padding: 12px !important;
+  }
+
+  .floating-card-inner > div:nth-child(3) {
+    font-size: 18px !important;
+  }
+
+  /* Section padding */
+  section {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .lp-hero-inner {
+    padding: 1.5rem 0.75rem !important;
+  }
+
+  .create-title {
+    font-size: 1.4rem !important;
+  }
+}

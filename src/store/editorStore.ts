@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CanvasData, CanvasElement, Background, AnimationConfig, CardSize } from '@/types/card'
+import type { CanvasData, CanvasElement, Background, AnimationConfig, CardSize, EnvelopeConfig } from '@/types/card'
 
 const defaultCanvasData: CanvasData = {
   version: '1.0',
@@ -36,6 +36,7 @@ interface EditorState {
   setSize: (size: CardSize) => void
   setBackground: (bg: Background) => void
   setAnimation: (animation: AnimationConfig | null) => void
+  setEnvelope: (envelope: EnvelopeConfig | undefined) => void
   setIsSaving: (saving: boolean) => void
   setLastSavedAt: (date: Date) => void
   setZoom: (zoom: number) => void
@@ -98,6 +99,10 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   setAnimation: (animation) => set((state) => ({
     canvasData: { ...state.canvasData, animation },
+  })),
+
+  setEnvelope: (envelope) => set((state) => ({
+    canvasData: { ...state.canvasData, envelope },
   })),
 
   setIsSaving: (saving) => set({ isSaving: saving }),

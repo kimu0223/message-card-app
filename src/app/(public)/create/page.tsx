@@ -126,7 +126,7 @@ function CreatePageContent() {
       </nav>
 
       {/* ─── Main content ─── */}
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 2rem 4rem' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 1rem 3rem' }} className="sm:px-8">
         {/* Hero */}
         <div className="create-hero">
           <div className="lp-eyebrow">
@@ -202,7 +202,7 @@ function CreatePageContent() {
         </div>
 
         {/* Template grid */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-3">
           {filteredTemplates.map(template => {
             const Comp = template.Comp
             const sceneDef = CARD_SCENES.find(s => s.id === template.scene)
@@ -257,7 +257,7 @@ function CreatePageContent() {
       {/* AI Design Wizard Modal */}
       {showAIWizard && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)', padding: 16 }}>
-          <div style={{ width: '100%', maxWidth: 420, height: '85vh', borderRadius: 16, overflow: 'hidden', background: 'white', boxShadow: '0 24px 48px rgba(0,0,0,0.2)' }}>
+          <div style={{ width: '100%', maxWidth: 420, height: '90vh', maxHeight: '90vh', borderRadius: 16, overflow: 'hidden', background: 'white', boxShadow: '0 24px 48px rgba(0,0,0,0.2)' }}>
             <AIDesignWizard
               onComplete={handleAIDesignComplete}
               onClose={() => setShowAIWizard(false)}

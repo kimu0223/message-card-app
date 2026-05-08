@@ -4,64 +4,98 @@ import type { AIDesignRecipient, AIDesignOccasion, AIDesignMood } from '@/types/
 
 export const MOOD_PRESELECTION_MAP: Record<AIDesignRecipient, Record<AIDesignOccasion, AIDesignMood>> = {
   lover: {
-    birthday: 'elegant',
-    thank_you: 'warm',
-    congratulations: 'pop',
-    anniversary: 'elegant',
-    seasonal: 'warm',
-    other: 'warm',
+    birthday: 'elegant', thank_you: 'warm', congratulations: 'pop', anniversary: 'romantic',
+    seasonal: 'warm', other: 'warm', graduation: 'romantic', farewell: 'romantic',
+    get_well: 'warm', christmas: 'romantic', new_year: 'elegant', valentines: 'romantic',
+    new_baby: 'warm', wedding: 'elegant', housewarming: 'warm',
   },
   friend: {
-    birthday: 'pop',
-    thank_you: 'warm',
-    congratulations: 'pop',
-    anniversary: 'cute',
-    seasonal: 'cute',
-    other: 'simple',
+    birthday: 'pop', thank_you: 'warm', congratulations: 'festive', anniversary: 'cute',
+    seasonal: 'cute', other: 'simple', graduation: 'festive', farewell: 'warm',
+    get_well: 'cute', christmas: 'festive', new_year: 'cute', valentines: 'cute',
+    new_baby: 'cute', wedding: 'floral', housewarming: 'warm',
   },
   family: {
-    birthday: 'warm',
-    thank_you: 'warm',
-    congratulations: 'warm',
-    anniversary: 'elegant',
-    seasonal: 'warm',
-    other: 'simple',
+    birthday: 'warm', thank_you: 'warm', congratulations: 'warm', anniversary: 'elegant',
+    seasonal: 'natural', other: 'simple', graduation: 'festive', farewell: 'warm',
+    get_well: 'natural', christmas: 'warm', new_year: 'natural', valentines: 'warm',
+    new_baby: 'cute', wedding: 'floral', housewarming: 'warm',
   },
   colleague: {
-    birthday: 'simple',
-    thank_you: 'simple',
-    congratulations: 'cool',
-    anniversary: 'cool',
-    seasonal: 'simple',
-    other: 'simple',
+    birthday: 'simple', thank_you: 'simple', congratulations: 'cool', anniversary: 'cool',
+    seasonal: 'simple', other: 'simple', graduation: 'cool', farewell: 'elegant',
+    get_well: 'simple', christmas: 'simple', new_year: 'elegant', valentines: 'simple',
+    new_baby: 'simple', wedding: 'elegant', housewarming: 'simple',
   },
   teacher: {
-    birthday: 'elegant',
-    thank_you: 'elegant',
-    congratulations: 'elegant',
-    anniversary: 'elegant',
-    seasonal: 'simple',
-    other: 'elegant',
+    birthday: 'elegant', thank_you: 'elegant', congratulations: 'elegant', anniversary: 'elegant',
+    seasonal: 'simple', other: 'elegant', graduation: 'elegant', farewell: 'floral',
+    get_well: 'natural', christmas: 'elegant', new_year: 'elegant', valentines: 'simple',
+    new_baby: 'warm', wedding: 'elegant', housewarming: 'simple',
+  },
+  boss: {
+    birthday: 'elegant', thank_you: 'elegant', congratulations: 'simple', anniversary: 'elegant',
+    seasonal: 'simple', other: 'simple', graduation: 'cool', farewell: 'elegant',
+    get_well: 'simple', christmas: 'simple', new_year: 'elegant', valentines: 'simple',
+    new_baby: 'warm', wedding: 'elegant', housewarming: 'simple',
+  },
+  sibling: {
+    birthday: 'pop', thank_you: 'warm', congratulations: 'pop', anniversary: 'warm',
+    seasonal: 'cute', other: 'warm', graduation: 'festive', farewell: 'warm',
+    get_well: 'cute', christmas: 'festive', new_year: 'natural', valentines: 'cute',
+    new_baby: 'cute', wedding: 'floral', housewarming: 'warm',
+  },
+  grandparent: {
+    birthday: 'warm', thank_you: 'elegant', congratulations: 'warm', anniversary: 'elegant',
+    seasonal: 'natural', other: 'warm', graduation: 'elegant', farewell: 'warm',
+    get_well: 'natural', christmas: 'warm', new_year: 'natural', valentines: 'warm',
+    new_baby: 'natural', wedding: 'floral', housewarming: 'warm',
+  },
+  child: {
+    birthday: 'pop', thank_you: 'cute', congratulations: 'festive', anniversary: 'cute',
+    seasonal: 'cute', other: 'pop', graduation: 'festive', farewell: 'warm',
+    get_well: 'cute', christmas: 'festive', new_year: 'cute', valentines: 'cute',
+    new_baby: 'cute', wedding: 'floral', housewarming: 'pop',
+  },
+  client: {
+    birthday: 'simple', thank_you: 'elegant', congratulations: 'cool', anniversary: 'elegant',
+    seasonal: 'simple', other: 'simple', graduation: 'cool', farewell: 'elegant',
+    get_well: 'simple', christmas: 'elegant', new_year: 'elegant', valentines: 'simple',
+    new_baby: 'simple', wedding: 'elegant', housewarming: 'simple',
   },
 };
 
 // --- UI Option Definitions ---
 
 export const RECIPIENT_OPTIONS: { value: AIDesignRecipient; label: string; emoji: string }[] = [
-  { value: 'lover', label: '恋人・パートナー', emoji: '💕' },
-  { value: 'friend', label: '友人', emoji: '🤝' },
-  { value: 'family', label: '家族', emoji: '👨‍👩‍👧' },
-  { value: 'colleague', label: '同僚・上司', emoji: '💼' },
-  { value: 'teacher', label: '先生・恩師', emoji: '🎓' },
+  { value: 'lover',       label: '恋人・パートナー', emoji: '💕' },
+  { value: 'friend',      label: '友人',             emoji: '🤝' },
+  { value: 'family',      label: '家族',             emoji: '👨‍👩‍👧' },
+  { value: 'sibling',     label: '兄弟・姉妹',       emoji: '👫' },
+  { value: 'grandparent', label: '祖父母',           emoji: '👴' },
+  { value: 'child',       label: '子供へ',           emoji: '🧒' },
+  { value: 'colleague',   label: '同僚',             emoji: '💼' },
+  { value: 'boss',        label: '上司',             emoji: '👔' },
+  { value: 'teacher',     label: '先生・恩師',       emoji: '🎓' },
+  { value: 'client',      label: '取引先',           emoji: '🤝' },
 ];
 
 export const OCCASION_OPTIONS: { value: AIDesignOccasion; label: string; emoji: string }[] = [
-  { value: 'birthday', label: '誕生日', emoji: '🎂' },
-  { value: 'thank_you', label: 'ありがとう', emoji: '🙏' },
-  { value: 'congratulations', label: 'お祝い', emoji: '🎉' },
-  { value: 'anniversary', label: '記念日', emoji: '💍' },
-  { value: 'seasonal', label: '季節のご挨拶', emoji: '🌸' },
-  { value: 'other', label: 'その他', emoji: '✉️' },
+  { value: 'birthday',        label: '誕生日',           emoji: '🎂' },
+  { value: 'thank_you',       label: 'ありがとう',       emoji: '🙏' },
+  { value: 'congratulations', label: 'お祝い',           emoji: '🎉' },
+  { value: 'anniversary',     label: '記念日',           emoji: '💍' },
+  { value: 'graduation',      label: '卒業・入学',       emoji: '🎓' },
+  { value: 'wedding',         label: '結婚・入籍',       emoji: '💒' },
+  { value: 'new_baby',        label: '出産・誕生',       emoji: '👶' },
+  { value: 'farewell',        label: '退職・送別',       emoji: '🌅' },
+  { value: 'get_well',        label: '快気・応援',       emoji: '🌿' },
+  { value: 'valentines',      label: 'バレンタイン',     emoji: '💝' },
+  { value: 'christmas',       label: 'クリスマス',       emoji: '🎄' },
+  { value: 'new_year',        label: '年賀・お正月',     emoji: '🎍' },
+  { value: 'housewarming',    label: '引越し祝い',       emoji: '🏠' },
+  { value: 'seasonal',        label: '季節のご挨拶',     emoji: '🌸' },
+  { value: 'other',           label: 'その他',           emoji: '✉️' },
 ];
 
 export const MOOD_OPTIONS: { value: AIDesignMood; label: string; description: string; colors: string[] }[] = [
@@ -101,21 +135,48 @@ export const MOOD_OPTIONS: { value: AIDesignMood; label: string; description: st
     description: 'やわらかく愛らしいデザイン',
     colors: ['#FFE4EC', '#FF8FAB', '#A6D1E6'],
   },
+  {
+    value: 'floral',
+    label: 'フローラル',
+    description: '花いっぱいの華やかなデザイン',
+    colors: ['#FFF0F5', '#E8728A', '#8FA68A'],
+  },
+  {
+    value: 'festive',
+    label: 'フェスティブ',
+    description: 'お祝い感あふれる賑やかなデザイン',
+    colors: ['#FFF9E8', '#FF8C00', '#E63946'],
+  },
+  {
+    value: 'romantic',
+    label: 'ロマンティック',
+    description: '深みのある愛情あふれるデザイン',
+    colors: ['#1A0A10', '#8B1C3A', '#C9A96E'],
+  },
+  {
+    value: 'natural',
+    label: 'ナチュラル',
+    description: 'アースカラーのオーガニックなデザイン',
+    colors: ['#F2EDE4', '#8B7355', '#6E8669'],
+  },
 ];
 
 // --- Design Generation: Font & Color Palette Guidance ---
 
 export const FONT_GUIDANCE: Record<AIDesignMood, { primary: string; accent: string }> = {
-  warm: { primary: 'Noto Serif JP', accent: 'M PLUS Rounded 1c' },
-  elegant: { primary: 'Noto Serif JP', accent: 'Noto Sans JP' },
-  pop: { primary: 'M PLUS Rounded 1c', accent: 'Kosugi Maru' },
-  cool: { primary: 'Noto Sans JP', accent: 'Sawarabi Gothic' },
-  simple: { primary: 'Noto Sans JP', accent: 'Noto Serif JP' },
-  cute: { primary: 'M PLUS Rounded 1c', accent: 'Kosugi Maru' },
+  warm:     { primary: 'Noto Serif JP',       accent: 'M PLUS Rounded 1c' },
+  elegant:  { primary: 'Noto Serif JP',       accent: 'Noto Sans JP' },
+  pop:      { primary: 'M PLUS Rounded 1c',   accent: 'Kosugi Maru' },
+  cool:     { primary: 'Noto Sans JP',         accent: 'Sawarabi Gothic' },
+  simple:   { primary: 'Noto Sans JP',         accent: 'Noto Serif JP' },
+  cute:     { primary: 'M PLUS Rounded 1c',   accent: 'Kosugi Maru' },
+  floral:   { primary: 'Noto Serif JP',       accent: 'M PLUS Rounded 1c' },
+  festive:  { primary: 'M PLUS Rounded 1c',   accent: 'Kosugi Maru' },
+  romantic: { primary: 'Noto Serif JP',       accent: 'Noto Serif JP' },
+  natural:  { primary: 'Noto Serif JP',       accent: 'Noto Sans JP' },
 };
 
 // COLOR_PALETTES: 各配列は [背景色(60%), メインカラー(30%), アクセントカラー(10%), テキスト色] の順
-// 60-30-10ルールを適用: 背景=最も広い面積、メイン=装飾/図形、アクセント=強調ポイント、テキスト=可読性確保
 export const COLOR_PALETTES: Record<AIDesignMood, string[][]> = {
   warm: [
     ['#FDF6F0', '#C97B5C', '#E8B86D', '#3D2B1F'],
@@ -153,10 +214,33 @@ export const COLOR_PALETTES: Record<AIDesignMood, string[][]> = {
     ['#F8F0FF', '#BA68C8', '#FFB3C1', '#3D2952'],
     ['#FFF8E1', '#FF8A80', '#81D4FA', '#4A3228'],
   ],
+  floral: [
+    ['#FFF0F5', '#E8728A', '#8FA68A', '#5A2538'],
+    ['#FFF5F8', '#C75566', '#A6B89F', '#3D1A25'],
+    ['#FFF8FC', '#FF91A4', '#6E8669', '#4A2030'],
+    ['#FFEEF5', '#DB7093', '#98BA8A', '#3B1620'],
+  ],
+  festive: [
+    ['#FFFCF0', '#FF8C00', '#E63946', '#2B2520'],
+    ['#FFF9F0', '#F77F00', '#D62839', '#1A1210'],
+    ['#FEF9EC', '#FCBF49', '#D62839', '#2B2520'],
+    ['#FFFDE8', '#FFB703', '#E63946', '#1A1A2E'],
+  ],
+  romantic: [
+    ['#1A0A10', '#8B1C3A', '#C9A96E', '#F5EBD7'],
+    ['#120610', '#7B1535', '#B89263', '#F0E6D0'],
+    ['#1F0A18', '#9C2147', '#C9A96E', '#EDE3CE'],
+    ['#150A12', '#6B1430', '#D4AF37', '#FFFCF5'],
+  ],
+  natural: [
+    ['#F2EDE4', '#8B7355', '#6E8669', '#2B2520'],
+    ['#EDE8DE', '#7A6448', '#5C7A52', '#2B2520'],
+    ['#F5F0E8', '#967C5C', '#74906A', '#2B2520'],
+    ['#EDE5D8', '#8C7060', '#5A7A60', '#3D2B1F'],
+  ],
 };
 
 // --- Occasion-Specific Decoration Hints ---
-// 各シーンに対して、装飾の役割と推奨シェイプを定義
 export const DECORATION_HINTS: Record<AIDesignOccasion, { shapes: string[]; roles: string[] }> = {
   birthday: {
     shapes: ['star', 'circle', 'rect'],
@@ -181,6 +265,42 @@ export const DECORATION_HINTS: Record<AIDesignOccasion, { shapes: string[]; role
   other: {
     shapes: ['circle', 'rect'],
     roles: ['ニュートラルな丸形アクセント', 'シンプルなフレーム矩形'],
+  },
+  graduation: {
+    shapes: ['star', 'circle', 'rect'],
+    roles: ['卒業を祝う輝く星', '旅立ちを表す円形モチーフ', '学位記風の矩形フレーム'],
+  },
+  farewell: {
+    shapes: ['circle', 'rect', 'star'],
+    roles: ['夕日をイメージした大きな円', '地平線を表す横長矩形', '感謝を表す輝く星'],
+  },
+  get_well: {
+    shapes: ['circle', 'heart', 'star'],
+    roles: ['回復を願う優しい円形', '応援の気持ちを込めたハート', '希望の光を表す星'],
+  },
+  christmas: {
+    shapes: ['star', 'circle', 'rect'],
+    roles: ['クリスマスを彩る星飾り', '雪のような丸い飾り', 'プレゼントボックス風矩形'],
+  },
+  new_year: {
+    shapes: ['circle', 'rect', 'star'],
+    roles: ['門松をイメージした装飾', '初日の出のような円形', '新年の輝きを表す星'],
+  },
+  valentines: {
+    shapes: ['heart', 'circle', 'star'],
+    roles: ['愛を象徴するメインハート', '柔らかなピンクの円形装飾', '輝くキラキラ星'],
+  },
+  new_baby: {
+    shapes: ['circle', 'star', 'heart'],
+    roles: ['やわらかい円形の泡模様', '新たな命を祝う小さな星', '愛情を込めたハート'],
+  },
+  wedding: {
+    shapes: ['heart', 'circle', 'rect'],
+    roles: ['永遠の愛のハート', 'リング風の円形フレーム', '格式ある矩形ボーダー'],
+  },
+  housewarming: {
+    shapes: ['rect', 'circle', 'star'],
+    roles: ['家の形を模した矩形', '温かみのある円形', '新生活を祝う星'],
   },
 };
 

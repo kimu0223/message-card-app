@@ -37,7 +37,43 @@ export const ANIMATION_CONFIGS: Record<AnimationType, AnimationConfig> = {
     delay: 300,
     loop: true,
   },
+  float: {
+    type: 'float',
+    duration: 3000,
+    delay: 0,
+    loop: true,
+  },
+  heartbeat: {
+    type: 'heartbeat',
+    duration: 800,
+    delay: 300,
+    loop: true,
+  },
+  typewriter: {
+    type: 'typewriter',
+    duration: 2000,
+    delay: 200,
+    loop: false,
+  },
+  snow: {
+    type: 'snow',
+    duration: 5000,
+    delay: 0,
+    loop: true,
+  },
+  sakura: {
+    type: 'sakura',
+    duration: 5000,
+    delay: 0,
+    loop: true,
+  },
+  fireworks: {
+    type: 'fireworks',
+    duration: 4000,
+    delay: 0,
+    loop: false,
+  },
 };
 
-export const FREE_ANIMATIONS: AnimationType[] = ['none', 'fade_in'];
-export const PRO_ANIMATIONS: AnimationType[] = ['confetti', 'slide_up', 'bounce', 'sparkle'];
+export const FREE_ANIMATIONS: AnimationType[] = ['none', 'fade_in', 'slide_up'];
+export const PRO_ANIMATIONS: AnimationType[] = ['confetti', 'bounce', 'sparkle', 'float', 'heartbeat', 'typewriter', 'snow', 'sakura', 'fireworks'];

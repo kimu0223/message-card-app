@@ -13,7 +13,7 @@ import EditorPanel from '@/components/editor/EditorPanel'
 import CardPreview from '@/components/card/CardPreview'
 import LoginPromptModal from '@/components/auth/LoginPromptModal'
 import { useEditorStore } from '@/store/editorStore'
-import type { CanvasData, CanvasElement } from '@/types/card'
+import type { CanvasData, CanvasElement, EnvelopeConfig } from '@/types/card'
 
 const GUEST_STORAGE_KEY = 'guestEditorState'
 
@@ -29,7 +29,7 @@ export default function GuestEditorPageClient() {
     selectedElementId, setSelectedElementId,
     zoom, setZoom,
     showAIPanel, toggleAIPanel,
-    updateElement, addElement, setSize, setBackground, setAnimation,
+    updateElement, addElement, setSize, setBackground, setAnimation, setEnvelope,
   } = useEditorStore()
 
   // localStorageから初期化
@@ -171,6 +171,7 @@ export default function GuestEditorPageClient() {
             onSetSize={setSize}
             onSetBackground={setBackground}
             onSetAnimation={setAnimation}
+            onSetEnvelope={(env: EnvelopeConfig | undefined) => setEnvelope(env)}
           />
         </div>
 

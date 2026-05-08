@@ -16,7 +16,7 @@ import CardPreview from '@/components/card/CardPreview'
 import ShareDialog from '@/components/share/ShareDialog'
 import ExportPanel from '@/components/share/ExportPanel'
 import { useEditorStore } from '@/store/editorStore'
-import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement } from '@/types/card'
+import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, EnvelopeConfig } from '@/types/card'
 
 interface EditorPageClientProps {
   card: {
@@ -47,7 +47,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
     zoom, setZoom,
     showAIPanel, toggleAIPanel,
     isSaving, setIsSaving, setLastSavedAt,
-    updateElement, addElement, setSize, setBackground, setAnimation,
+    updateElement, addElement, setSize, setBackground, setAnimation, setEnvelope,
   } = useEditorStore()
 
   // 初期化
@@ -217,6 +217,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
             onSetSize={setSize}
             onSetBackground={setBackground}
             onSetAnimation={setAnimation}
+            onSetEnvelope={(env: EnvelopeConfig | undefined) => setEnvelope(env)}
           />
         </div>
 
@@ -244,6 +245,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
                 onSetSize={setSize}
                 onSetBackground={setBackground}
                 onSetAnimation={setAnimation}
+                onSetEnvelope={(env: EnvelopeConfig | undefined) => setEnvelope(env)}
               />
             </div>
           </div>

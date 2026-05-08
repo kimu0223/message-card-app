@@ -8,7 +8,20 @@ export type AnimationType =
   | 'slide_up'
   | 'bounce'
   | 'sparkle'
-  | 'none';
+  | 'none'
+  | 'float'
+  | 'heartbeat'
+  | 'typewriter'
+  | 'snow'
+  | 'sakura'
+  | 'fireworks';
+
+export type EnvelopeStyle = 'none' | 'classic' | 'kraft' | 'floral' | 'navy' | 'sakura';
+
+export interface EnvelopeConfig {
+  style: EnvelopeStyle;
+  senderName?: string;
+}
 
 export type BackgroundType = 'color' | 'gradient' | 'image';
 
@@ -78,6 +91,7 @@ export interface CanvasData {
   elements: CanvasElement[];
   animation: AnimationConfig | null;
   templateId?: string; // LP template reference
+  envelope?: EnvelopeConfig; // デジタルシェア用封筒
 }
 
 export interface CardSizeConfig {

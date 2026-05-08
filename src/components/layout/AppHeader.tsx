@@ -71,7 +71,7 @@ export default function AppHeader({ user, profile }: AppHeaderProps) {
             }}
           >
             <Plus className="h-4 w-4" />
-            新規作成
+            <span className="hidden sm:inline">新規作成</span>
           </Link>
         </nav>
 

@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, type TargetAndTransition } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button'
 import { Share2, ExternalLink } from 'lucide-react'
@@ -10,6 +10,11 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { CanvasData, TextElement } from '@/types/card'
 import ConfettiAnimation from '@/components/card/animations/ConfettiAnimation'
+import SnowAnimation from '@/components/card/animations/SnowAnimation'
+import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
+import FireworksAnimation from '@/components/card/animations/FireworksAnimation'
+import EnvelopeReveal from '@/components/share/EnvelopeReveal'
+import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
 
 interface PublicCardViewProps {
   title: string
@@ -17,15 +22,60 @@ interface PublicCardViewProps {
   shareId: string
 }
 
-export default function PublicCardView({ title, canvasData, shareId }: PublicCardViewProps) {
-  const [confettiActive, setConfettiActive] = useState(false)
+function TypewriterText({ text, startDelay = 0, speed = 45 }: { text: string; startDelay?: number; speed?: number }) {
+  const [displayed, setDisplayed] = useState('')
+  const indexRef = useRef(0)
 
   useEffect(() => {
-    if (canvasData.animation?.type === 'confetti') {
-      const timer = setTimeout(() => setConfettiActive(true), 300)
-      return () => clearTimeout(timer)
+    indexRef.current = 0
+    setDisplayed('')
+    const start = setTimeout(() => {
+      const interval = setInterval(() => {
+        if (indexRef.current >= text.length) { clearInterval(interval); return }
+        indexRef.current++
+        setDisplayed(text.slice(0, indexRef.current))
+      }, speed)
+      return () => clearInterval(interval)
+    }, startDelay)
+    return () => clearTimeout(start)
+  }, [text, startDelay, speed])
+
+  return <>{displayed}</>
+}
+
+export default function PublicCardView({ title, canvasData, shareId }: PublicCardViewProps) {
+  const envelopeStyle = canvasData.envelope?.style
+  const hasEnvelope = !!envelopeStyle && envelopeStyle !== 'none'
+
+  const [envelopeOpened, setEnvelopeOpened] = useState(!hasEnvelope)
+  const [confettiActive, setConfettiActive] = useState(false)
+  const [snowActive, setSnowActive] = useState(false)
+  const [sakuraActive, setSakuraActive] = useState(false)
+  const [fireworksActive, setFireworksActive] = useState(false)
+
+  const animType = canvasData.animation?.type
+
+  useEffect(() => {
+    if (!envelopeOpened) return
+    const delay = hasEnvelope ? 700 : 300
+
+    if (animType === 'confetti') {
+      const t = setTimeout(() => setConfettiActive(true), delay)
+      return () => clearTimeout(t)
     }
-  }, [canvasData.animation])
+    if (animType === 'snow') {
+      const t = setTimeout(() => setSnowActive(true), delay)
+      return () => clearTimeout(t)
+    }
+    if (animType === 'sakura') {
+      const t = setTimeout(() => setSakuraActive(true), delay)
+      return () => clearTimeout(t)
+    }
+    if (animType === 'fireworks') {
+      const t = setTimeout(() => setFireworksActive(true), delay)
+      return () => clearTimeout(t)
+    }
+  }, [envelopeOpened, animType, hasEnvelope])
 
   const handleShare = async () => {
     const url = window.location.href
@@ -37,77 +87,128 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
     }
   }
 
-  const type = canvasData.animation?.type
   const getMotionProps = () => {
-    if (type === 'slide_up') return { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8 } }
-    if (type === 'bounce') return { initial: { scale: 0.8, opacity: 0 }, animate: { scale: 1, opacity: 1 }, transition: { duration: 0.6 } }
-    return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 1 } }
+    if (!envelopeOpened) return { initial: { opacity: 0 }, animate: { opacity: 0 }, transition: { duration: 0 } }
+
+    switch (animType) {
+      case 'slide_up':
+        return { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8 } }
+      case 'bounce':
+        return { initial: { scale: 0.8, opacity: 0 }, animate: { scale: 1, opacity: 1 }, transition: { duration: 0.6 } }
+      case 'float':
+        return {
+          initial: { opacity: 0, y: 0 },
+          animate: { opacity: 1, y: [0, -10, 0, -10, 0] } as TargetAndTransition,
+          transition: { opacity: { duration: 0.6 }, y: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.6 } },
+        }
+      case 'heartbeat':
+        return {
+          initial: { opacity: 0, scale: 1 },
+          animate: { opacity: 1, scale: [1, 1.04, 1, 1.04, 1] } as TargetAndTransition,
+          transition: { opacity: { duration: 0.5 }, scale: { duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.5 } },
+        }
+      case 'typewriter':
+        return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.3 } }
+      default:
+        return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.9 } }
+    }
   }
 
   const motionProps = getMotionProps()
   const bg = canvasData.background
-  const backgroundStyle: React.CSSProperties =
-    bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
+  const templateDef = canvasData.templateId
+    ? CARD_TEMPLATES.find(t => t.id === canvasData.templateId)
+    : null
+  const backgroundStyle: React.CSSProperties = templateDef
+    ? {}
+    : bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
 
   const sortedTextElements = canvasData.elements
     .filter(el => el.type === 'text')
     .sort((a, b) => a.zIndex - b.zIndex) as TextElement[]
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-900 p-6">
-      <ConfettiAnimation active={confettiActive} />
+    <>
+      {/* 封筒開封演出 */}
+      {!envelopeOpened && hasEnvelope && (
+        <EnvelopeReveal
+          style={envelopeStyle}
+          senderName={canvasData.envelope?.senderName}
+          onOpen={() => setEnvelopeOpened(true)}
+        />
+      )}
 
-      <div className="w-full max-w-3xl">
-        <motion.div
-          initial={motionProps.initial}
-          animate={motionProps.animate}
-          transition={motionProps.transition}
-          className="relative overflow-hidden rounded-2xl shadow-2xl"
-          style={{ aspectRatio: '4/3', ...backgroundStyle }}
-        >
-          <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-            {sortedTextElements.map(el => (
-              <p
-                key={el.id}
-                className="mb-4 whitespace-pre-wrap"
-                style={{
-                  fontFamily: el.fontFamily,
-                  fontSize: `clamp(14px, ${el.fontSize * 0.05}vw, ${el.fontSize}px)`,
-                  fontWeight: el.fontWeight,
-                  fontStyle: el.fontStyle,
-                  color: el.color,
-                  lineHeight: el.lineHeight,
-                  textAlign: el.align,
-                }}
-              >
-                {el.text}
-              </p>
-            ))}
-          </div>
-        </motion.div>
+      {/* カード本体 */}
+      {envelopeOpened && (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-900 p-3 sm:p-6">
+          <ConfettiAnimation active={confettiActive} />
+          <SnowAnimation active={snowActive} />
+          <SakuraAnimation active={sakuraActive} />
+          <FireworksAnimation active={fireworksActive} />
 
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm text-zinc-400">
-            <Link href="/" className="hover:text-white transition">💌 Message Card App</Link>
-            で作成
-          </p>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              className="bg-transparent text-white border-zinc-600 hover:bg-zinc-800"
+          <div className="w-full max-w-sm sm:max-w-2xl">
+            <motion.div
+              initial={motionProps.initial}
+              animate={motionProps.animate}
+              transition={motionProps.transition}
+              className="relative overflow-hidden rounded-2xl shadow-2xl"
+              style={{ aspectRatio: '4/3', ...backgroundStyle }}
             >
-              <Share2 className="mr-2 h-4 w-4" />
-              シェア
-            </Button>
-            <Link href="/editor" className={cn(buttonVariants({ size: 'sm' }), 'gap-2')}>
-              <ExternalLink className="h-4 w-4" />
-              自分も作る
-            </Link>
+              {templateDef && (
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                  <templateDef.Comp />
+                </div>
+              )}
+              <div
+                className="flex h-full flex-col items-center justify-center p-5 sm:p-10 text-center"
+                style={{ position: 'relative', zIndex: 1 }}
+              >
+                {sortedTextElements.map((el, idx) => (
+                  <p
+                    key={el.id}
+                    className="mb-3 whitespace-pre-wrap"
+                    style={{
+                      fontFamily: el.fontFamily,
+                      fontSize: `clamp(11px, ${el.fontSize * 0.045}vw, ${el.fontSize}px)`,
+                      fontWeight: el.fontWeight,
+                      fontStyle: el.fontStyle,
+                      color: el.color,
+                      lineHeight: el.lineHeight,
+                      textAlign: el.align,
+                    }}
+                  >
+                    {animType === 'typewriter'
+                      ? <TypewriterText text={el.text} startDelay={idx * 800} speed={40} />
+                      : el.text}
+                  </p>
+                ))}
+              </div>
+            </motion.div>
+
+            <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-zinc-400 text-center sm:text-left">
+                <Link href="/" className="hover:text-white transition">💌 贈りことば</Link>
+                &nbsp;で作成
+              </p>
+              <div className="flex gap-2 justify-center sm:justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="flex-1 sm:flex-none bg-transparent text-white border-zinc-600 hover:bg-zinc-800"
+                >
+                  <Share2 className="mr-2 h-4 w-4" />
+                  シェア
+                </Button>
+                <Link href="/create" className={cn(buttonVariants({ size: 'sm' }), 'flex-1 sm:flex-none gap-2')}>
+                  <ExternalLink className="h-4 w-4" />
+                  自分も作る
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   )
 }

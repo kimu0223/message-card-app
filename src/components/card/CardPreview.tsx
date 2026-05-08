@@ -1,12 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type TargetAndTransition } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { X, Share2, Download } from 'lucide-react'
 import { CARD_SIZES } from '@/types/card'
 import type { CanvasData, TextElement } from '@/types/card'
 import ConfettiAnimation from '@/components/card/animations/ConfettiAnimation'
+import SnowAnimation from '@/components/card/animations/SnowAnimation'
+import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
+import FireworksAnimation from '@/components/card/animations/FireworksAnimation'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
 
 interface CardPreviewProps {
@@ -19,33 +22,51 @@ interface CardPreviewProps {
 
 export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDownload }: CardPreviewProps) {
   const [confettiActive, setConfettiActive] = useState(false)
+  const [snowActive, setSnowActive] = useState(false)
+  const [sakuraActive, setSakuraActive] = useState(false)
+  const [fireworksActive, setFireworksActive] = useState(false)
+
+  const animType = canvasData.animation?.type
 
   useEffect(() => {
-    if (isOpen && canvasData.animation?.type === 'confetti') {
-      const t = setTimeout(() => setConfettiActive(true), 400)
-      return () => clearTimeout(t)
+    if (!isOpen) {
+      setConfettiActive(false)
+      setSnowActive(false)
+      setSakuraActive(false)
+      setFireworksActive(false)
+      return
     }
-    const t = setTimeout(() => setConfettiActive(false), 0)
-    return () => clearTimeout(t)
-  }, [isOpen, canvasData.animation])
 
-  const type = canvasData.animation?.type
+    const t1 = setTimeout(() => {
+      if (animType === 'confetti') setConfettiActive(true)
+      if (animType === 'snow') setSnowActive(true)
+      if (animType === 'sakura') setSakuraActive(true)
+      if (animType === 'fireworks') setFireworksActive(true)
+    }, 400)
+
+    return () => clearTimeout(t1)
+  }, [isOpen, animType])
+
   const getMotionProps = () => {
-    if (type === 'slide_up') return {
-      initial: { opacity: 0, y: 60 },
-      animate: { opacity: 1, y: 0 },
-      transition: { duration: 0.8 },
-    }
-    if (type === 'bounce') return {
-      initial: { scale: 0.7, opacity: 0 },
-      animate: { scale: 1, opacity: 1 },
-      transition: { duration: 0.6 },
-    }
-    // fade_in and default
-    return {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      transition: { duration: 0.8 },
+    switch (animType) {
+      case 'slide_up':
+        return { initial: { opacity: 0, y: 60 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8 } }
+      case 'bounce':
+        return { initial: { scale: 0.7, opacity: 0 }, animate: { scale: 1, opacity: 1 }, transition: { duration: 0.6 } }
+      case 'float':
+        return {
+          initial: { opacity: 0, y: 0 },
+          animate: { opacity: 1, y: [0, -10, 0, -10, 0] } as TargetAndTransition,
+          transition: { opacity: { duration: 0.5 }, y: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 } },
+        }
+      case 'heartbeat':
+        return {
+          initial: { opacity: 0, scale: 1 },
+          animate: { opacity: 1, scale: [1, 1.04, 1, 1.04, 1] } as TargetAndTransition,
+          transition: { opacity: { duration: 0.5 }, scale: { duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: 0.5 } },
+        }
+      default:
+        return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.8 } }
     }
   }
 
@@ -71,14 +92,17 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 p-6"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 p-4 sm:p-6"
           onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
         >
           <ConfettiAnimation active={confettiActive} />
+          <SnowAnimation active={snowActive} />
+          <SakuraAnimation active={sakuraActive} />
+          <FireworksAnimation active={fireworksActive} />
 
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+            className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
           >
             <X className="h-5 w-5" />
           </button>
@@ -87,15 +111,15 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
             initial={motionProps.initial}
             animate={motionProps.animate}
             transition={motionProps.transition}
-            className="relative overflow-hidden rounded-2xl shadow-2xl"
-            style={{ position: 'relative', width: '100%', maxWidth: 600, aspectRatio, ...backgroundStyle }}
+            className="relative overflow-hidden rounded-2xl shadow-2xl w-full"
+            style={{ maxWidth: 560, aspectRatio, ...backgroundStyle }}
           >
             {templateDef && (
               <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
                 <templateDef.Comp />
               </div>
             )}
-            <div className="flex h-full flex-col items-center justify-center p-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
+            <div className="flex h-full flex-col items-center justify-center p-6 sm:p-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
               {sortedTextElements.map(el => (
                 <p
                   key={el.id}
@@ -117,7 +141,7 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
             </div>
           </motion.div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-4 sm:mt-6 flex gap-3">
             {onShare && (
               <Button
                 variant="outline"
