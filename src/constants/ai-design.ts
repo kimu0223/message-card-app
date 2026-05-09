@@ -215,10 +215,14 @@ export const COLOR_PALETTES: Record<AIDesignMood, string[][]> = {
     ['#FFF8E1', '#FF8A80', '#81D4FA', '#4A3228'],
   ],
   floral: [
-    ['#FFF0F5', '#E8728A', '#8FA68A', '#5A2538'],
-    ['#FFF5F8', '#C75566', '#A6B89F', '#3D1A25'],
-    ['#FFF8FC', '#FF91A4', '#6E8669', '#4A2030'],
-    ['#FFEEF5', '#DB7093', '#98BA8A', '#3B1620'],
+    // 水彩パステル: 淡いローズ × セージグリーン（英国庭園風）
+    ['#FEFAF9', '#D4748A', '#7A9E7E', '#3D1A25'],
+    // ラベンダー × ピーチ（春の庭園）
+    ['#FAF0FF', '#B56EC4', '#E8A87C', '#3D1250'],
+    // アイボリー × ブラッシュピンク（水彩スケッチ風）
+    ['#FFFBF5', '#E8A0B0', '#B5C9A0', '#4A2030'],
+    // ブルーベール × コーラル（透明感あふれる水彩）
+    ['#F5F8FF', '#9AB0E8', '#E8907A', '#1A2555'],
   ],
   festive: [
     ['#FFFCF0', '#FF8C00', '#E63946', '#2B2520'],
@@ -229,7 +233,7 @@ export const COLOR_PALETTES: Record<AIDesignMood, string[][]> = {
   romantic: [
     ['#1A0A10', '#8B1C3A', '#C9A96E', '#F5EBD7'],
     ['#120610', '#7B1535', '#B89263', '#F0E6D0'],
-    ['#1F0A18', '#9C2147', '#C9A96E', '#EDE3CE'],
+    ['#120818', '#7A2060', '#C9A96E', '#EDE3CE'],
     ['#150A12', '#6B1430', '#D4AF37', '#FFFCF5'],
   ],
   natural: [
@@ -259,8 +263,12 @@ export const DECORATION_HINTS: Record<AIDesignOccasion, { shapes: string[]; role
     roles: ['愛を象徴するメインハート', 'エレガントな円形フレーム', '控えめなキラキラ星'],
   },
   seasonal: {
-    shapes: ['circle', 'rect', 'star'],
-    roles: ['季節感を出す丸い装飾', '横長の帯デザイン', 'アクセント用の小さな星'],
+    shapes: ['circle', 'circle', 'rect'],
+    roles: [
+      '花びら風の淡い大円: opacity 0.08-0.15の円を右上と左下コーナーに大きめ(width:200-300px)で配置',
+      '中サイズの重ね円: opacity 0.2-0.35の円を大円の内側にずらして重ね、水彩の滲み感を演出',
+      '細いセパレーター矩形: テキストとの境界に細長い矩形(height:2-4px)でエレガントに分割',
+    ],
   },
   other: {
     shapes: ['circle', 'rect'],
@@ -288,15 +296,23 @@ export const DECORATION_HINTS: Record<AIDesignOccasion, { shapes: string[]; role
   },
   valentines: {
     shapes: ['heart', 'circle', 'star'],
-    roles: ['愛を象徴するメインハート', '柔らかなピンクの円形装飾', '輝くキラキラ星'],
+    roles: [
+      '愛を象徴するメインハート: 中央やや上にopacity 0.6-0.8で配置',
+      '花びら風の淡い円: opacity 0.1-0.2の大きめ円を3-4個重ねてふわっとした背景感',
+      '散りばめた小さな星: コーナー周辺にopacity 0.4-0.6でアクセント',
+    ],
   },
   new_baby: {
     shapes: ['circle', 'star', 'heart'],
     roles: ['やわらかい円形の泡模様', '新たな命を祝う小さな星', '愛情を込めたハート'],
   },
   wedding: {
-    shapes: ['heart', 'circle', 'rect'],
-    roles: ['永遠の愛のハート', 'リング風の円形フレーム', '格式ある矩形ボーダー'],
+    shapes: ['circle', 'heart', 'rect'],
+    roles: [
+      'リースを模した円形の重なり: 大中小の円をopacity 0.12-0.25で重ねてフラワーリング感を出す',
+      '愛を象徴するハート: コーナーまたは中央にopacity 0.5-0.7で配置',
+      '格式ある細いボーダー矩形: キャンバス全体を囲む細枠（strokeWidthのみ）',
+    ],
   },
   housewarming: {
     shapes: ['rect', 'circle', 'star'],
@@ -305,6 +321,7 @@ export const DECORATION_HINTS: Record<AIDesignOccasion, { shapes: string[]; role
 };
 
 // --- Layout Pattern Descriptions (4 patterns for diversity) ---
+// floralの装飾ヒントは DECORATION_HINTS の seasonal と thank_you にも反映される
 export const LAYOUT_PATTERNS = {
   pattern1: {
     name: 'ミニマル・センター',

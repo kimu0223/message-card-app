@@ -30,6 +30,59 @@ function buildDesignPrompt(req: AIDesignGenerateRequest): string {
   const safeW = width - padX * 2;  // テキスト配置可能幅
   const safeH = height - padY * 2; // テキスト配置可能高さ
 
+  // ムード別の特別デザイン指示
+  const moodSpecialGuide = (() => {
+    switch (req.mood) {
+      case 'floral':
+        return `
+## 【フローラルデザインの極意】★最重要★
+参考：日本の高品質カードデザインは水彩タッチの花びら表現が特徴です。
+- **背景**: 必ずgradientを使う。例: "linear-gradient(150deg, #FEFAF9 0%, #FFF0F8 50%, #F5FFF5 100%)" のような淡いグラデーション
+- **花びら表現の方法**: circleシェイプを複数重ねる！
+  * 大きな円(width:150-250px): opacity 0.08-0.12 → 霞んだ花の気配を作る
+  * 中くらいの円(width:80-120px): opacity 0.2-0.3 → 花の塊感
+  * 小さな円(width:30-60px): opacity 0.5-0.7 → 花びら1枚の存在感
+  * これらをコーナー（右上・左下）に cluster 配置（3-5個ずつ重ねる）
+- **葉の表現**: 細長いrect(width:8-15px, height:40-80px)をrotation ±30-60°で葉脈風に配置
+- **心がけ**: テキストエリアは装飾を置かずクリーンに保つ。花はあくまで「縁」を彩る
+- **アニメーション**: "float"を推奨（ふわっとした雰囲気に合う）
+`;
+      case 'cute':
+        return `
+## 【キュートデザインの極意】
+- **背景**: 淡いパステルグラデーション (例: "linear-gradient(135deg, #FFF5F7 0%, #F0F8FF 100%)")
+- **水彩ドット表現**: 大小さまざまなcircle(opacity 0.15-0.45)をランダムに散らして水彩ドット感
+- **ハートアクセント**: 小さなheart(30-50px)をコーナー周辺に2-3個
+- **アニメーション**: "bounce"推奨
+`;
+      case 'warm':
+        return `
+## 【ウォームデザインの極意】
+- **背景**: 暖色グラデーション (例: "linear-gradient(160deg, #FFF8F0 0%, #FFF0E5 100%)")
+- **柔らかい円形**: 大きめcircle(opacity 0.12-0.2)で包まれる安心感
+- **アニメーション**: "fade_in"推奨
+`;
+      case 'elegant':
+        return `
+## 【エレガントデザインの極意】
+- **背景**: 高コントラストまたは微妙なグラデーション
+- **幾何学的な装飾**: 細いborderフレーム(rect with strokeWidthのみ、fill透明)、細いセパレーター線
+- **装飾は最小限**: 2-3個だけ、意図的に配置
+- **アニメーション**: "slide_up"または"fade_in"推奨
+`;
+      case 'romantic':
+        return `
+## 【ロマンティックデザインの極意】
+- **背景**: 深みのある濃いグラデーション (例: "linear-gradient(145deg, #1A0A10 0%, #2A1030 100%)")
+- **ハート重ね**: 大中小のheart(opacity 0.2-0.6)を中央付近に重ねて配置
+- **光の演出**: 大きめcircle(opacity 0.06-0.1)で柔らかい光のボケ
+- **アニメーション**: "heartbeat"推奨
+`;
+      default:
+        return '';
+    }
+  })();
+
   return `
 あなたは一流のグラフィックデザイナーです。メッセージカードのデザインデータをJSON形式で4パターン生成してください。
 プロのデザイナーとして、レイアウト・配色・タイポグラフィ・装飾すべてに意図を持った美しいデザインを作ってください。
@@ -40,6 +93,7 @@ function buildDesignPrompt(req: AIDesignGenerateRequest): string {
 - 雰囲気: ${req.mood}
 - キャンバスサイズ: ${width}x${height}px (${size})
 ${req.messageText ? `- メッセージテキスト: 「${sanitizeUserText(req.messageText)}」` : '- メッセージテキスト: 相手やシーンに適した心のこもった日本語メッセージを考えてください(20-40文字程度)'}
+${moodSpecialGuide}
 
 ## フォント指定
 - タイトル/メインメッセージ用: "${fonts.primary}"
@@ -64,11 +118,16 @@ ${req.messageText ? `- メッセージテキスト: 「${sanitizeUserText(req.me
 ${decorations.roles.map((r, i) => `- ${decorations.shapes[i] ?? decorations.shapes[0]}: ${r}`).join('\n')}
 
 **重要: 装飾はランダムに置かない。以下のいずれかの「デザイン上の役割」を必ず持たせること:**
-1. フレーム: テキスト周囲を囲んでメッセージを際立たせる(rect/circle)
-2. アンダーライン/セパレーター: タイトルとサブテキストを視覚的に分ける(細長いrect)
-3. コーナーアクセント: 四隅のうち対角2箇所に配置して視線を中央に誘導(circle/star/heart)
-4. 背景アクセント: 大きめ・低透明度でテクスチャ感を出す(circle/rect)
-5. シンボル: シーンを象徴する形を1つだけ印象的に配置(heart/star)
+1. フレーム: テキスト周囲を囲んでメッセージを際立たせる(rect/circle) ※strokeのみでfill透明もOK
+2. アンダーライン/セパレーター: タイトルとサブテキストを視覚的に分ける(細長いrect, height:2-4px)
+3. コーナークラスター: 右上・左下などコーナーに circle を2-4個重ねてopacity変化させる（水彩花のボケ感）
+4. 背景ボケ: 大きめcircle(width:150-300px)をopacity 0.06-0.15で配置して奥行き感を出す
+5. シンボル: シーンを象徴する形を1つだけ印象的に配置(heart/star, opacity 0.6-0.9)
+
+**【opacity重ねの技法】floralやcuteなど花系のmoodでは必ず使うこと:**
+- 同じ座標付近に size違いの circle を3-4個配置
+- opacity: 0.08(最大) → 0.18(中) → 0.35(小) → 0.65(最小) と中心に向かって濃くする
+- これにより単純なシェイプでも「水彩の花びら」のようなふわっとした表現が可能
 
 ## レイアウト基準値 (このキャンバスの座標)
 - キャンバス中央: (${cx}, ${cy})
@@ -84,7 +143,7 @@ ${decorations.roles.map((r, i) => `- ${decorations.shapes[i] ?? decorations.shap
 ${LAYOUT_PATTERNS.pattern1.description}
 - ${LAYOUT_PATTERNS.pattern1.elementCount}
 - ${LAYOUT_PATTERNS.pattern1.layoutGuide}
-- 背景: ソリッドカラー推奨
+- 背景: ソリッドカラーまたは極めて微妙なグラデーション
 - アニメーション: fade_in (1200ms)
 
 ### パターン2: ${LAYOUT_PATTERNS.pattern2.name}
@@ -98,15 +157,15 @@ ${LAYOUT_PATTERNS.pattern2.description}
 ${LAYOUT_PATTERNS.pattern3.description}
 - ${LAYOUT_PATTERNS.pattern3.elementCount}
 - ${LAYOUT_PATTERNS.pattern3.layoutGuide}
-- 背景: グラデーション推奨(10-20度の微妙な角度)
+- 背景: グラデーション推奨(130-160度の対角グラデーション)
 - アニメーション: bounce (1000ms)
 
 ### パターン4: ${LAYOUT_PATTERNS.pattern4.name}
 ${LAYOUT_PATTERNS.pattern4.description}
 - ${LAYOUT_PATTERNS.pattern4.elementCount}
 - ${LAYOUT_PATTERNS.pattern4.layoutGuide}
-- 背景: ソリッドカラーまたはグラデーション
-- アニメーション: sparkle (1500ms)
+- 背景: グラデーション推奨
+- アニメーション: float (1500ms) ※floralやcuteはfloat、romanticはheartbeat
 
 ## タイポグラフィ階層ルール
 テキスト要素は以下の階層を守ってください:
@@ -163,7 +222,7 @@ ${LAYOUT_PATTERNS.pattern4.description}
     }
   ],
   "animation": {
-    "type": "fade_in" | "slide_up" | "confetti" | "bounce" | "sparkle",
+    "type": "fade_in" | "slide_up" | "confetti" | "bounce" | "float" | "heartbeat" | "none",
     "duration": 800-2000,
     "delay": 0,
     "loop": false
@@ -173,7 +232,7 @@ ${LAYOUT_PATTERNS.pattern4.description}
 ## 厳守ルール
 1. **座標とサイズ**: すべてのx,y,width,heightは0以上の数値。テキストのx+widthは${width}以下、y+heightは${height}以下にすること
 2. **zIndex**: 0から昇順。背景装飾(0-2) → フレーム装飾(3-4) → テキスト(5-7)の順
-3. **要素数**: 各パターンのelementsは最大8要素。テキストは必ず1つ以上含める
+3. **要素数**: 各パターンのelementsは最大10要素。テキストは必ず1つ以上含める。floralやcuteは circle を複数重ねるため7-10要素を活用すること
 4. **ID**: "el_" + ランダム英数字8文字。全パターン通じてユニークにすること
 5. **テキスト幅**: メインメッセージのwidthは${Math.round(safeW * 0.6)}~${safeW}px程度を確保(読みやすさのため)
 6. **装飾opacity**: 背景的な装飾はopacity 0.08-0.2、アクセント装飾は0.4-0.8、フレーム装飾は0.15-0.4

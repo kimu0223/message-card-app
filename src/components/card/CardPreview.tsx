@@ -5,12 +5,61 @@ import { motion, AnimatePresence, type TargetAndTransition } from 'framer-motion
 import { Button } from '@/components/ui/button'
 import { X, Share2, Download } from 'lucide-react'
 import { CARD_SIZES } from '@/types/card'
-import type { CanvasData, TextElement } from '@/types/card'
+import type { CanvasData, TextElement, ShapeElement, CanvasElement } from '@/types/card'
 import ConfettiAnimation from '@/components/card/animations/ConfettiAnimation'
 import SnowAnimation from '@/components/card/animations/SnowAnimation'
 import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
 import FireworksAnimation from '@/components/card/animations/FireworksAnimation'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
+
+function CardShapesLayer({ elements, canvasW, canvasH }: {
+  elements: CanvasElement[]
+  canvasW: number
+  canvasH: number
+}) {
+  const shapes = elements
+    .filter(el => el.type === 'shape')
+    .sort((a, b) => a.zIndex - b.zIndex) as ShapeElement[]
+  if (shapes.length === 0) return null
+  return (
+    <svg
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' }}
+      viewBox={`0 0 ${canvasW} ${canvasH}`}
+      preserveAspectRatio="xMidYMid meet"
+    >
+      {shapes.map(el => {
+        const t = el.rotation ? `rotate(${el.rotation} ${el.x} ${el.y})` : undefined
+        const st = el.stroke === 'transparent' ? 'none' : el.stroke
+        if (el.shapeType === 'rect') return (
+          <rect key={el.id} x={el.x - el.width / 2} y={el.y - el.height / 2}
+            width={el.width} height={el.height} rx={3}
+            fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+        )
+        if (el.shapeType === 'circle') return (
+          <ellipse key={el.id} cx={el.x} cy={el.y}
+            rx={el.width / 2} ry={el.height / 2}
+            fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+        )
+        if (el.shapeType === 'heart') {
+          const w = el.width, h = el.height, cx = el.x, cy = el.y
+          const d = `M${cx},${cy + h * 0.35} C${cx - w * 0.6},${cy - h * 0.05} ${cx - w * 0.65},${cy - h * 0.45} ${cx},${cy - h * 0.28} C${cx + w * 0.65},${cy - h * 0.45} ${cx + w * 0.6},${cy - h * 0.05} ${cx},${cy + h * 0.35} Z`
+          return <path key={el.id} d={d} fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+        }
+        if (el.shapeType === 'star') {
+          const r = Math.min(el.width, el.height) * 0.5
+          const ir = r * 0.4
+          const pts = Array.from({ length: 10 }, (_, i) => {
+            const a = (i * Math.PI / 5) - Math.PI / 2
+            const rad = i % 2 === 0 ? r : ir
+            return `${el.x + Math.cos(a) * rad},${el.y + Math.sin(a) * rad}`
+          }).join(' ')
+          return <polygon key={el.id} points={pts} fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+        }
+        return null
+      })}
+    </svg>
+  )
+}
 
 interface CardPreviewProps {
   canvasData: CanvasData
@@ -119,6 +168,7 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
                 <templateDef.Comp />
               </div>
             )}
+            <CardShapesLayer elements={canvasData.elements} canvasW={sizeConfig.width} canvasH={sizeConfig.height} />
             <div className="flex h-full flex-col items-center justify-center p-6 sm:p-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
               {sortedTextElements.map(el => (
                 <p

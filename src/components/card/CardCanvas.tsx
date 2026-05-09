@@ -1,11 +1,11 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import { Stage, Layer, Text, Rect, Transformer } from 'react-konva'
+import { Stage, Layer, Text, Rect, Ellipse, Star, Shape, Transformer } from 'react-konva'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import { CARD_SIZES } from '@/types/card'
-import type { CanvasData, CanvasElement, TextElement } from '@/types/card'
+import type { CanvasData, CanvasElement, TextElement, ShapeElement } from '@/types/card'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
 
 interface CardCanvasProps {
@@ -104,6 +104,79 @@ export default function CardCanvas({
           />
 
           {sortedElements.map(el => {
+            if (el.type === 'shape') {
+              const shapeEl = el as ShapeElement
+              const strokeVal = shapeEl.stroke === 'transparent' ? '' : shapeEl.stroke
+              const commonDrag = {
+                draggable: true,
+                onClick: (e: KonvaEventObject<MouseEvent>) => { e.cancelBubble = true; onElementSelect(el.id) },
+                onDragEnd: (e: KonvaEventObject<DragEvent>) => handleDragEnd(el.id, e),
+                onTransformEnd: (e: KonvaEventObject<Event>) => handleTransformEnd(el.id, e),
+              }
+              if (shapeEl.shapeType === 'rect') {
+                return (
+                  <Rect
+                    key={el.id} id={el.id}
+                    x={shapeEl.x - shapeEl.width / 2} y={shapeEl.y - shapeEl.height / 2}
+                    width={shapeEl.width} height={shapeEl.height}
+                    rotation={shapeEl.rotation} opacity={shapeEl.opacity}
+                    fill={shapeEl.fill} stroke={strokeVal} strokeWidth={shapeEl.strokeWidth}
+                    cornerRadius={3}
+                    {...commonDrag}
+                  />
+                )
+              }
+              if (shapeEl.shapeType === 'circle') {
+                return (
+                  <Ellipse
+                    key={el.id} id={el.id}
+                    x={shapeEl.x} y={shapeEl.y}
+                    radiusX={shapeEl.width / 2} radiusY={shapeEl.height / 2}
+                    rotation={shapeEl.rotation} opacity={shapeEl.opacity}
+                    fill={shapeEl.fill} stroke={strokeVal} strokeWidth={shapeEl.strokeWidth}
+                    {...commonDrag}
+                  />
+                )
+              }
+              if (shapeEl.shapeType === 'heart') {
+                return (
+                  <Shape
+                    key={el.id} id={el.id}
+                    x={shapeEl.x - shapeEl.width / 2} y={shapeEl.y - shapeEl.height / 2}
+                    width={shapeEl.width} height={shapeEl.height}
+                    rotation={shapeEl.rotation} opacity={shapeEl.opacity}
+                    fill={shapeEl.fill} stroke={strokeVal} strokeWidth={shapeEl.strokeWidth}
+                    sceneFunc={(ctx, shape) => {
+                      const w = shape.width()
+                      const h = shape.height()
+                      ctx.beginPath()
+                      ctx.moveTo(w / 2, h * 0.85)
+                      ctx.bezierCurveTo(w * -0.1, h * 0.55, w * -0.15, h * 0.05, w / 2, h * 0.22)
+                      ctx.bezierCurveTo(w * 1.15, h * 0.05, w * 1.1, h * 0.55, w / 2, h * 0.85)
+                      ctx.closePath()
+                      ctx.fillStrokeShape(shape)
+                    }}
+                    {...commonDrag}
+                  />
+                )
+              }
+              if (shapeEl.shapeType === 'star') {
+                return (
+                  <Star
+                    key={el.id} id={el.id}
+                    x={shapeEl.x} y={shapeEl.y}
+                    numPoints={5}
+                    innerRadius={Math.min(shapeEl.width, shapeEl.height) * 0.2}
+                    outerRadius={Math.min(shapeEl.width, shapeEl.height) * 0.5}
+                    rotation={shapeEl.rotation} opacity={shapeEl.opacity}
+                    fill={shapeEl.fill} stroke={strokeVal} strokeWidth={shapeEl.strokeWidth}
+                    {...commonDrag}
+                  />
+                )
+              }
+              return null
+            }
+
             if (el.type !== 'text') return null
             const textEl = el as TextElement
             if (editingId === el.id) return null
