@@ -197,6 +197,7 @@ export default function GuestEditorPageClient() {
                 onSetSize={setSize}
                 onSetBackground={setBackground}
                 onSetAnimation={setAnimation}
+                onSetEnvelope={(env: EnvelopeConfig | undefined) => setEnvelope(env)}
               />
             </div>
           </div>

@@ -169,7 +169,7 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
                     className="mb-3 whitespace-pre-wrap"
                     style={{
                       fontFamily: el.fontFamily,
-                      fontSize: `clamp(11px, ${el.fontSize * 0.045}vw, ${el.fontSize}px)`,
+                      fontSize: `clamp(12px, ${el.fontSize * 0.045}vw, ${el.fontSize * 0.6}px)`,
                       fontWeight: el.fontWeight,
                       fontStyle: el.fontStyle,
                       color: el.color,
