@@ -12,9 +12,7 @@ import SnowAnimation from '@/components/card/animations/SnowAnimation'
 import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
 import FireworksAnimation from '@/components/card/animations/FireworksAnimation'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
-import { exportToPNG, exportToPDF } from '@/lib/canvas/exporter'
-
-const EXPORT_TARGET_ID = 'card-preview-export-target'
+import { exportCardToPNG, exportCardToPDF } from '@/lib/canvas/exporter'
 
 function CardShapesLayer({ elements, canvasW, canvasH }: {
   elements: CanvasElement[]
@@ -104,7 +102,7 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, file
   const handleDownloadPNG = async () => {
     setDlState('png')
     try {
-      await exportToPNG(EXPORT_TARGET_ID, filename)
+      await exportCardToPNG(canvasData, filename)
       toast.success('PNG でダウンロードしました')
     } catch {
       toast.error('ダウンロードに失敗しました')
@@ -116,7 +114,7 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, file
   const handleDownloadPDF = async () => {
     setDlState('pdf')
     try {
-      await exportToPDF(EXPORT_TARGET_ID, filename)
+      await exportCardToPDF(canvasData, filename)
       toast.success('PDF でダウンロードしました')
     } catch {
       toast.error('ダウンロードに失敗しました')
@@ -193,9 +191,7 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, file
             className="relative overflow-hidden rounded-2xl shadow-2xl w-full"
             style={{ maxWidth: 560, aspectRatio }}
           >
-            {/* エクスポート対象: 背景・シェイプ・テキストを含む内部div */}
             <div
-              id={EXPORT_TARGET_ID}
               style={{ position: 'absolute', inset: 0, overflow: 'hidden', ...backgroundStyle }}
             >
               {templateDef && (
