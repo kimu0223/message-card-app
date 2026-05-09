@@ -277,7 +277,7 @@ export default function GuestEditorPageClient() {
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
           onShare={() => { setShowPreview(false); setLoginPromptReason('share') }}
-          onDownload={() => setShowPreview(false)}
+          filename={title}
         />
       )}
 

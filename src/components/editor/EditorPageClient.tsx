@@ -14,7 +14,6 @@ import EditorPanel from '@/components/editor/EditorPanel'
 import AIAssistPanel from '@/components/editor/AIAssistPanel'
 import CardPreview from '@/components/card/CardPreview'
 import ShareDialog from '@/components/share/ShareDialog'
-import ExportPanel from '@/components/share/ExportPanel'
 import { useEditorStore } from '@/store/editorStore'
 import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, EnvelopeConfig } from '@/types/card'
 
@@ -35,7 +34,6 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
   const [isFavorite, setIsFavorite] = useState(card.isFavorite)
   const [showPreview, setShowPreview] = useState(false)
   const [showShare, setShowShare] = useState(false)
-  const [showExport, setShowExport] = useState(false)
   const [currentShareId, setCurrentShareId] = useState(card.shareId)
   const [isSavedIndicator, setIsSavedIndicator] = useState(false)
   const [showLeftPanel, setShowLeftPanel] = useState(false)
@@ -305,7 +303,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
           onShare={() => { setShowPreview(false); setShowShare(true) }}
-          onDownload={() => setShowExport(true)}
+          filename={title}
         />
       )}
 
@@ -320,17 +318,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
         />
       )}
 
-      {showExport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="mb-4 font-semibold">エクスポート</h3>
-            <ExportPanel targetElementId="card-canvas-export" filename={title} />
-            <Button variant="ghost" className="mt-4 w-full" onClick={() => setShowExport(false)}>
-              閉じる
-            </Button>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }

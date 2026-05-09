@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence, type TargetAndTransition } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { X, Share2, Download } from 'lucide-react'
+import { X, Share2, FileImage, FileText, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { CARD_SIZES } from '@/types/card'
 import type { CanvasData, TextElement, ShapeElement, CanvasElement } from '@/types/card'
 import ConfettiAnimation from '@/components/card/animations/ConfettiAnimation'
@@ -11,6 +12,9 @@ import SnowAnimation from '@/components/card/animations/SnowAnimation'
 import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
 import FireworksAnimation from '@/components/card/animations/FireworksAnimation'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
+import { exportToPNG, exportToPDF } from '@/lib/canvas/exporter'
+
+const EXPORT_TARGET_ID = 'card-preview-export-target'
 
 function CardShapesLayer({ elements, canvasW, canvasH }: {
   elements: CanvasElement[]
@@ -66,14 +70,15 @@ interface CardPreviewProps {
   isOpen: boolean
   onClose: () => void
   onShare?: () => void
-  onDownload?: () => void
+  filename?: string
 }
 
-export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDownload }: CardPreviewProps) {
+export default function CardPreview({ canvasData, isOpen, onClose, onShare, filename = 'card' }: CardPreviewProps) {
   const [confettiActive, setConfettiActive] = useState(false)
   const [snowActive, setSnowActive] = useState(false)
   const [sakuraActive, setSakuraActive] = useState(false)
   const [fireworksActive, setFireworksActive] = useState(false)
+  const [dlState, setDlState] = useState<'png' | 'pdf' | null>(null)
 
   const animType = canvasData.animation?.type
 
@@ -95,6 +100,30 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
 
     return () => clearTimeout(t1)
   }, [isOpen, animType])
+
+  const handleDownloadPNG = async () => {
+    setDlState('png')
+    try {
+      await exportToPNG(EXPORT_TARGET_ID, filename)
+      toast.success('PNG でダウンロードしました')
+    } catch {
+      toast.error('ダウンロードに失敗しました')
+    } finally {
+      setDlState(null)
+    }
+  }
+
+  const handleDownloadPDF = async () => {
+    setDlState('pdf')
+    try {
+      await exportToPDF(EXPORT_TARGET_ID, filename)
+      toast.success('PDF でダウンロードしました')
+    } catch {
+      toast.error('ダウンロードに失敗しました')
+    } finally {
+      setDlState(null)
+    }
+  }
 
   const getMotionProps = () => {
     switch (animType) {
@@ -162,33 +191,39 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
             animate={motionProps.animate}
             transition={motionProps.transition}
             className="relative overflow-hidden rounded-2xl shadow-2xl w-full"
-            style={{ maxWidth: 560, aspectRatio, ...backgroundStyle }}
+            style={{ maxWidth: 560, aspectRatio }}
           >
-            {templateDef && (
-              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                <templateDef.Comp />
+            {/* エクスポート対象: 背景・シェイプ・テキストを含む内部div */}
+            <div
+              id={EXPORT_TARGET_ID}
+              style={{ position: 'absolute', inset: 0, overflow: 'hidden', ...backgroundStyle }}
+            >
+              {templateDef && (
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                  <templateDef.Comp />
+                </div>
+              )}
+              <CardShapesLayer elements={canvasData.elements} canvasW={sizeConfig.width} canvasH={sizeConfig.height} />
+              <div className="flex h-full flex-col items-center justify-center p-6 sm:p-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
+                {sortedTextElements.map(el => (
+                  <p
+                    key={el.id}
+                    className="mb-4 whitespace-pre-wrap"
+                    style={{
+                      fontFamily: el.fontFamily,
+                      fontSize: `clamp(12px, ${el.fontSize * 0.04}vw, ${el.fontSize * 0.6}px)`,
+                      fontWeight: el.fontWeight,
+                      fontStyle: el.fontStyle,
+                      color: el.color,
+                      lineHeight: el.lineHeight,
+                      textAlign: el.align,
+                      opacity: el.opacity,
+                    }}
+                  >
+                    {el.text}
+                  </p>
+                ))}
               </div>
-            )}
-            <CardShapesLayer elements={canvasData.elements} canvasW={sizeConfig.width} canvasH={sizeConfig.height} />
-            <div className="flex h-full flex-col items-center justify-center p-6 sm:p-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
-              {sortedTextElements.map(el => (
-                <p
-                  key={el.id}
-                  className="mb-4 whitespace-pre-wrap"
-                  style={{
-                    fontFamily: el.fontFamily,
-                    fontSize: `clamp(12px, ${el.fontSize * 0.04}vw, ${el.fontSize * 0.6}px)`,
-                    fontWeight: el.fontWeight,
-                    fontStyle: el.fontStyle,
-                    color: el.color,
-                    lineHeight: el.lineHeight,
-                    textAlign: el.align,
-                    opacity: el.opacity,
-                  }}
-                >
-                  {el.text}
-                </p>
-              ))}
             </div>
           </motion.div>
 
@@ -203,12 +238,26 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
                 シェア
               </Button>
             )}
-            {onDownload && (
-              <Button onClick={onDownload}>
-                <Download className="mr-2 h-4 w-4" />
-                ダウンロード
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              onClick={handleDownloadPNG}
+              disabled={dlState !== null}
+              className="bg-transparent text-white border-white/30 hover:bg-white/10"
+            >
+              {dlState === 'png'
+                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                : <FileImage className="mr-2 h-4 w-4" />}
+              PNG
+            </Button>
+            <Button
+              onClick={handleDownloadPDF}
+              disabled={dlState !== null}
+            >
+              {dlState === 'pdf'
+                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                : <FileText className="mr-2 h-4 w-4" />}
+              PDF
+            </Button>
           </div>
         </motion.div>
       )}
