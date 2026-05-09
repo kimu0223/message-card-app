@@ -130,9 +130,10 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, onDo
     : bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
   const aspectRatio = sizeConfig.width / sizeConfig.height
 
+  // y座標でソート（上に配置した要素が先に表示される）
   const sortedTextElements = canvasData.elements
     .filter(el => el.type === 'text')
-    .sort((a, b) => a.zIndex - b.zIndex) as TextElement[]
+    .sort((a, b) => a.y - b.y) as TextElement[]
 
   return (
     <AnimatePresence>
