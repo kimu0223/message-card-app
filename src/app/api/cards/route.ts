@@ -21,6 +21,10 @@ export async function GET() {
   return NextResponse.json(data)
 }
 
+// 管理者ユーザーID: カード作成制限・クレジット消費を完全スキップ
+const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS ?? '')
+  .split(',').map(s => s.trim()).filter(Boolean)
+
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -32,6 +36,24 @@ export async function POST(request: Request) {
 
   if (!canvasData) {
     return NextResponse.json({ error: 'canvasData is required' }, { status: 400 })
+  }
+
+  // 管理者は制限なし
+  if (ADMIN_USER_IDS.includes(user.id)) {
+    const { data: card, error } = await supabase
+      .from('cards')
+      .insert({
+        user_id: user.id,
+        template_id: templateId ?? null,
+        title: title ?? '無題のカード',
+        canvas_data: canvasData,
+        size: size ?? 'a4_landscape',
+        animation: animation ?? 'none',
+      })
+      .select('id')
+      .single()
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(card, { status: 201 })
   }
 
   const { data: profile } = await supabase
