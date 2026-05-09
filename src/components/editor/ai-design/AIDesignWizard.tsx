@@ -143,6 +143,33 @@ export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }:
           </div>
         )}
 
+        {/* 月次上限超過UI（ログイン済みFreeプランがクレジット不足） */}
+        {error === 'limit_exceeded' && (
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center px-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-100">
+              <Sparkles className="h-7 w-7 text-violet-500" />
+            </div>
+            <div>
+              <p className="font-semibold text-zinc-800">今月の無料枠を使い切りました</p>
+              <p className="mt-1 text-sm text-zinc-500">
+                クレジットを購入するか、Proプランにアップグレードすると<br />
+                AIデザイン生成を引き続き利用できます。
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 w-full max-w-xs">
+              <a
+                href="/billing"
+                className="rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-violet-700 text-center"
+              >
+                クレジット購入 / Proにアップグレード
+              </a>
+            </div>
+            <button onClick={handleClose} className="text-xs text-zinc-400 hover:text-zinc-600">
+              閉じる
+            </button>
+          </div>
+        )}
+
         {/* ログイン必須UI（refine時・または既存のlogin_required） */}
         {error === 'login_required' && (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center px-4">
@@ -175,14 +202,14 @@ export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }:
             </button>
           </div>
         )}
-        {error !== 'login_required' && error !== 'guest_limit_exceeded' && step === 1 && <AIDesignStep1 />}
-        {error !== 'login_required' && error !== 'guest_limit_exceeded' && step === 2 && (
+        {!error && step === 1 && <AIDesignStep1 />}
+        {!error && step === 2 && (
           <AIDesignStep2
             onSelect={handleSelectVariant}
             onRegenerate={handleRegenerate}
           />
         )}
-        {error !== 'login_required' && error !== 'guest_limit_exceeded' && step === 3 && (
+        {!error && step === 3 && (
           <AIDesignStep3
             onRefine={handleRefine}
             onSkip={handleSkipRefine}
@@ -192,7 +219,7 @@ export default function AIDesignWizard({ onComplete, onClose, onLoginRequired }:
       </div>
 
       {/* Footer (Step 1 only) */}
-      {step === 1 && error !== 'login_required' && error !== 'guest_limit_exceeded' && (
+      {step === 1 && !error && (
         <div className="border-t border-zinc-100 p-4 space-y-2">
           <button
             onClick={handleGenerate}

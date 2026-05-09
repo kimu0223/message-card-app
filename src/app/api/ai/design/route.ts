@@ -10,6 +10,10 @@ import type { CardSize } from '@/types/card'
 
 const FREE_LIMIT = PLANS.free.monthlyAiDesignLimit!
 
+// 管理者ユーザーID（カンマ区切り）: レート制限・クレジット消費を完全スキップ
+const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS ?? '')
+  .split(',').map(s => s.trim()).filter(Boolean)
+
 const VALID_RECIPIENTS: AIDesignRecipient[] = ['lover', 'friend', 'family', 'colleague', 'teacher']
 const VALID_OCCASIONS: AIDesignOccasion[] = ['birthday', 'thank_you', 'congratulations', 'anniversary', 'seasonal', 'other']
 const VALID_MOODS: AIDesignMood[] = ['warm', 'elegant', 'pop', 'cool', 'simple', 'cute']
@@ -75,6 +79,26 @@ export async function POST(request: Request) {
   }
 
   // ─── ログイン済みユーザーの使用量・クレジット管理 ───
+  // 管理者は制限なし
+  if (ADMIN_USER_IDS.includes(user.id)) {
+    let body: AIDesignGenerateRequest
+    try {
+      body = (await request.json()) as AIDesignGenerateRequest
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+    const validationError = validateBody(body)
+    if (validationError) return validationError
+
+    try {
+      const result = await generateDesignVariants(body)
+      return NextResponse.json(result)
+    } catch (error) {
+      console.error('AI design generation error (admin):', error)
+      return NextResponse.json({ error: 'Generation failed' }, { status: 500 })
+    }
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('plan, credits')

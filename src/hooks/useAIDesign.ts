@@ -36,10 +36,9 @@ export function useAIDesign() {
         const data = await res.json().catch(() => ({}));
         if (data.error === 'guest_limit_exceeded') {
           setError('guest_limit_exceeded');
-          // エラーUIはWizard内で表示するためtoastは出さない
         } else {
+          // エラーUIはWizard内で表示するためtoastは出さない
           setError('limit_exceeded');
-          toast.error('今月のAIデザイン生成回数の上限に達しました');
         }
         return null;
       }
