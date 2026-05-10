@@ -203,7 +203,7 @@ function CardGrid({
       {cards.map((card, i) => (
         <div key={card.id} className="mycard">
           {/* Thumbnail */}
-          <Link href={`/editor/${card.id}`} style={{ display: 'block', aspectRatio: '5 / 7', position: 'relative', overflow: 'hidden' }}>
+          <Link href={`/editor/${card.id}`} className="mycard-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
             {card.thumbnail_url ? (
               <img
                 src={card.thumbnail_url}

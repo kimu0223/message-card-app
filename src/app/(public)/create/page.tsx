@@ -186,14 +186,14 @@ function CreatePageContent() {
             テンプレートから選ぶ
           </p>
           {/* Scene filter tabs */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginBottom: 20, paddingBottom: 4, WebkitOverflowScrolling: 'touch' as const }}>
             {CARD_SCENES.map(scene => (
               <button
                 key={scene.id}
                 onClick={() => setActiveScene(scene.id)}
                 className="lp-gallery-tab"
                 data-active={activeScene === scene.id}
-                style={{ fontSize: 13 }}
+                style={{ fontSize: 13, flexShrink: 0 }}
               >
                 <span>{scene.glyph}</span> {scene.label}
               </button>
