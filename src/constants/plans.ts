@@ -10,6 +10,7 @@ export interface PlanConfig {
   templateLimit: number | null;
   animationsEnabled: boolean;
   premiumTemplates: boolean;
+  cardExpiryDays: number | null; // null = 永続（Proのみ）
   features: string[];
 }
 
@@ -24,6 +25,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
     templateLimit: 5,
     animationsEnabled: false,
     premiumTemplates: false,
+    cardExpiryDays: 30,
     features: [
       '基本テンプレート 5種',
       '月3枚まで作成',
@@ -43,6 +45,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
     templateLimit: null,
     animationsEnabled: true,
     premiumTemplates: true,
+    cardExpiryDays: null,
     features: [
       '全テンプレート使い放題',
       '作成枚数 無制限',
