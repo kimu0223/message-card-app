@@ -1,11 +1,12 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import { Stage, Layer, Text, Rect, Ellipse, Star, Shape, Transformer } from 'react-konva'
+import { Stage, Layer, Text, Rect, Ellipse, Star, Shape, Image as KonvaImage, Transformer } from 'react-konva'
+import useImage from 'use-image'
 import type Konva from 'konva'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import { CARD_SIZES } from '@/types/card'
-import type { CanvasData, CanvasElement, TextElement, ShapeElement } from '@/types/card'
+import type { CanvasData, CanvasElement, TextElement, ShapeElement, ImageElement } from '@/types/card'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
 
 interface CardCanvasProps {
@@ -14,6 +15,37 @@ interface CardCanvasProps {
   zoom: number
   onElementSelect: (id: string | null) => void
   onElementChange: (id: string, updates: Partial<CanvasElement>) => void
+}
+
+function ImageNode({
+  el,
+  onSelect,
+  onDragEnd,
+  onTransformEnd,
+}: {
+  el: ImageElement
+  onSelect: (id: string) => void
+  onDragEnd: (id: string, e: KonvaEventObject<DragEvent>) => void
+  onTransformEnd: (id: string, e: KonvaEventObject<Event>) => void
+}) {
+  const [image] = useImage(el.src, 'anonymous')
+  return (
+    <KonvaImage
+      id={el.id}
+      image={image}
+      x={el.x - el.width / 2}
+      y={el.y - el.height / 2}
+      width={el.width}
+      height={el.height}
+      rotation={el.rotation}
+      opacity={el.opacity}
+      cornerRadius={el.borderRadius}
+      draggable
+      onClick={(e) => { e.cancelBubble = true; onSelect(el.id) }}
+      onDragEnd={(e) => onDragEnd(el.id, e)}
+      onTransformEnd={(e) => onTransformEnd(el.id, e)}
+    />
+  )
 }
 
 export default function CardCanvas({
@@ -175,6 +207,18 @@ export default function CardCanvas({
                 )
               }
               return null
+            }
+
+            if (el.type === 'image') {
+              return (
+                <ImageNode
+                  key={el.id}
+                  el={el as ImageElement}
+                  onSelect={onElementSelect}
+                  onDragEnd={handleDragEnd}
+                  onTransformEnd={handleTransformEnd}
+                />
+              )
             }
 
             if (el.type !== 'text') return null

@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Type, Palette, Sparkles, Mail } from 'lucide-react'
+import { Type, Palette, Sparkles, Mail, ImageIcon, Loader2, Upload } from 'lucide-react'
 import { nanoid } from 'nanoid'
-import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, AnimationType, CardSize, EnvelopeConfig, EnvelopeStyle } from '@/types/card'
+import { toast } from 'sonner'
+import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, ImageElement, AnimationType, CardSize, EnvelopeConfig, EnvelopeStyle } from '@/types/card'
 import { CARD_SIZES } from '@/types/card'
 
 const FONTS = [
@@ -83,6 +84,8 @@ export default function EditorPanel({
     canvasData.background.type === 'gradient' ? 'gradient' : 'color'
   )
   const [senderName, setSenderName] = useState(canvasData.envelope?.senderName ?? '')
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const selectedElement = selectedElementId
     ? canvasData.elements.find(el => el.id === selectedElementId)
@@ -110,6 +113,37 @@ export default function EditorPanel({
     onAddElement(newEl)
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const { url, error } = await res.json()
+      if (error) throw new Error(error)
+
+      const newEl: ImageElement = {
+        id: nanoid(),
+        type: 'image',
+        src: url,
+        x: 300, y: 300, width: 300, height: 200,
+        rotation: 0, opacity: 1,
+        zIndex: canvasData.elements.length + 1,
+        borderRadius: 0,
+      }
+      onAddElement(newEl)
+      toast.success('画像を追加しました')
+    } catch {
+      toast.error('アップロードに失敗しました')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const handleEnvelopeSelect = (style: EnvelopeStyle) => {
     if (!onSetEnvelope) return
     if (style === 'none') {
@@ -130,15 +164,18 @@ export default function EditorPanel({
   return (
     <div className="p-3">
       <Tabs defaultValue="text">
-        <TabsList className="w-full grid grid-cols-4">
+        <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="text" className="text-xs px-1">
-            <Type className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">テキスト</span><span className="sm:hidden">文字</span>
+            <Type className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">文字</span><span className="sm:hidden">文字</span>
+          </TabsTrigger>
+          <TabsTrigger value="image" className="text-xs px-1">
+            <ImageIcon className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">画像</span><span className="sm:hidden">画像</span>
           </TabsTrigger>
           <TabsTrigger value="background" className="text-xs px-1">
             <Palette className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">背景</span><span className="sm:hidden">背景</span>
           </TabsTrigger>
           <TabsTrigger value="animation" className="text-xs px-1">
-            <Sparkles className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">アニメ</span><span className="sm:hidden">動き</span>
+            <Sparkles className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">動き</span><span className="sm:hidden">動き</span>
           </TabsTrigger>
           <TabsTrigger value="envelope" className="text-xs px-1">
             <Mail className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">封筒</span><span className="sm:hidden">封筒</span>
@@ -254,6 +291,35 @@ export default function EditorPanel({
               テキストを選択すると<br />編集できます
             </p>
           )}
+        </TabsContent>
+
+        {/* 画像タブ */}
+        <TabsContent value="image" className="space-y-4 pt-3">
+          <p className="text-xs text-zinc-500">JPG・PNG・WebP、最大5MB</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            variant="outline"
+            size="sm"
+            className="w-full"
+          >
+            {isUploading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="mr-2 h-4 w-4" />
+            )}
+            {isUploading ? 'アップロード中...' : '画像をアップロード'}
+          </Button>
+          <p className="text-xs text-zinc-400 text-center">
+            アップロード後、カード上でドラッグして位置を調整できます
+          </p>
         </TabsContent>
 
         {/* 背景タブ */}

@@ -11,7 +11,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('cards')
-    .select('id, title, status, animation, size, share_id, is_favorite, created_at, updated_at, thumbnail_url')
+    .select('id, title, status, animation, size, share_id, is_favorite, created_at, updated_at, thumbnail_url, view_count')
     .eq('user_id', user.id)
     .neq('status', 'archived')
     .order('updated_at', { ascending: false })

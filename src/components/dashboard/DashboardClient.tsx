@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, Share2, Edit2, Trash2 } from 'lucide-react'
+import { Heart, Share2, Edit2, Trash2, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 import { ja } from 'date-fns/locale'
@@ -19,6 +19,7 @@ interface Card {
   created_at: string
   updated_at: string
   thumbnail_url: string | null
+  view_count?: number
 }
 
 interface DashboardClientProps {
@@ -239,8 +240,14 @@ function CardGrid({
             <Link href={`/editor/${card.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="mycard-name">{card.title}</div>
             </Link>
-            <div className="mycard-date">
-              {formatDistanceToNow(new Date(card.updated_at), { addSuffix: true, locale: ja })}
+            <div className="mycard-date" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>{formatDistanceToNow(new Date(card.updated_at), { addSuffix: true, locale: ja })}</span>
+              {card.status === 'published' && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--lp-ink-mute)' }}>
+                  <Eye style={{ width: 11, height: 11 }} />
+                  {card.view_count ?? 0}
+                </span>
+              )}
             </div>
 
             {/* Actions */}

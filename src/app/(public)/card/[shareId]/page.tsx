@@ -69,6 +69,9 @@ export default async function PublicCardPage({ params }: Props) {
     return <ExpiredCardPage />
   }
 
+  // 閲覧数をインクリメント（失敗しても表示に影響しない）
+  void supabase.rpc('increment_card_view', { card_id: card.id })
+
   return (
     <PublicCardView
       title={card.title}

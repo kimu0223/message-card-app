@@ -1,7 +1,7 @@
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import { CARD_SIZES } from '@/types/card'
-import type { CanvasData, TextElement, ShapeElement } from '@/types/card'
+import type { CanvasData, TextElement, ShapeElement, ImageElement } from '@/types/card'
 
 // ========================================================
 // Canvas 2D API による直接レンダリング（html2canvas 不使用）
@@ -32,9 +32,23 @@ async function renderCardToCanvas(canvasData: CanvasData, pixelRatio = 2): Promi
   // 要素を zIndex 順で描画
   const sorted = [...canvasData.elements].sort((a, b) => a.zIndex - b.zIndex)
 
+  // 画像を並列プリロード
+  const imageEls = sorted.filter(el => el.type === 'image') as ImageElement[]
+  const loadedImages = await Promise.all(imageEls.map(el => loadImage(el.src)))
+  const imageMap = new Map<string, HTMLImageElement>()
+  imageEls.forEach((el, i) => { if (loadedImages[i]) imageMap.set(el.id, loadedImages[i]!) })
+
   // シェイプ先に描画
   for (const el of sorted) {
     if (el.type === 'shape') drawShape(ctx, el as ShapeElement)
+  }
+
+  // 画像を描画
+  for (const el of sorted) {
+    if (el.type === 'image') {
+      const img = imageMap.get(el.id)
+      if (img) drawImageEl(ctx, el as ImageElement, img)
+    }
   }
 
   // フォント読み込み待機
@@ -48,6 +62,43 @@ async function renderCardToCanvas(canvasData: CanvasData, pixelRatio = 2): Promi
   for (const el of textEls) drawText(ctx, el)
 
   return canvas
+}
+
+function loadImage(src: string): Promise<HTMLImageElement | null> {
+  return new Promise(resolve => {
+    const img = new window.Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => resolve(img)
+    img.onerror = () => resolve(null)
+    img.src = src
+  })
+}
+
+function drawImageEl(ctx: CanvasRenderingContext2D, el: ImageElement, img: HTMLImageElement) {
+  ctx.save()
+  ctx.globalAlpha = el.opacity ?? 1
+
+  const x = el.x - el.width / 2
+  const y = el.y - el.height / 2
+
+  if (el.rotation) {
+    ctx.translate(el.x, el.y)
+    ctx.rotate((el.rotation * Math.PI) / 180)
+    ctx.translate(-el.x, -el.y)
+  }
+
+  if (el.borderRadius > 0) {
+    ctx.beginPath()
+    if (ctx.roundRect) {
+      ctx.roundRect(x, y, el.width, el.height, el.borderRadius)
+    } else {
+      ctx.rect(x, y, el.width, el.height)
+    }
+    ctx.clip()
+  }
+
+  ctx.drawImage(img, x, y, el.width, el.height)
+  ctx.restore()
 }
 
 /** CSS linear-gradient 文字列を Canvas グラデーションに変換して塗りつぶす */

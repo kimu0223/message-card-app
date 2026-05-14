@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Check, Zap, Coins } from 'lucide-react'
 import UpgradeButton from '@/components/billing/UpgradeButton'
+import ManageSubscriptionButton from '@/components/billing/ManageSubscriptionButton'
 import CreditPackButton from '@/components/billing/CreditPackButton'
 import { PLANS, CREDIT_PACKAGES } from '@/constants/plans'
 
@@ -91,11 +92,14 @@ export default async function BillingPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-6">
+          <div className="mt-6 space-y-2">
             {isPro ? (
-              <Button variant="outline" className="w-full" disabled>
-                ご利用中
-              </Button>
+              <>
+                <Button variant="outline" className="w-full" disabled>
+                  ご利用中
+                </Button>
+                <ManageSubscriptionButton />
+              </>
             ) : (
               <UpgradeButton priceId={proPriceId} />
             )}

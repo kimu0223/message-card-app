@@ -9,7 +9,7 @@ import { Share2, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { CARD_SIZES } from '@/types/card'
-import type { CanvasData, TextElement, ShapeElement, CanvasElement } from '@/types/card'
+import type { CanvasData, TextElement, ShapeElement, ImageElement, CanvasElement } from '@/types/card'
 import ConfettiAnimation from '@/components/card/animations/ConfettiAnimation'
 import SnowAnimation from '@/components/card/animations/SnowAnimation'
 import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
@@ -174,10 +174,13 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
     ? {}
     : bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
 
-  // y座標でソート（上に配置した要素が先に表示される）
   const sortedTextElements = canvasData.elements
     .filter(el => el.type === 'text')
     .sort((a, b) => a.y - b.y) as TextElement[]
+
+  const imageElements = canvasData.elements
+    .filter(el => el.type === 'image')
+    .sort((a, b) => a.zIndex - b.zIndex) as ImageElement[]
 
   return (
     <>
@@ -212,6 +215,28 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
                 </div>
               )}
               <CardShapesLayer elements={canvasData.elements} canvasW={sizeConfig.width} canvasH={sizeConfig.height} />
+              {/* 画像要素 */}
+              {imageElements.map(el => (
+                <img
+                  key={el.id}
+                  src={el.src}
+                  alt=""
+                  crossOrigin="anonymous"
+                  style={{
+                    position: 'absolute',
+                    left: `${(el.x - el.width / 2) / sizeConfig.width * 100}%`,
+                    top: `${(el.y - el.height / 2) / sizeConfig.height * 100}%`,
+                    width: `${el.width / sizeConfig.width * 100}%`,
+                    height: `${el.height / sizeConfig.height * 100}%`,
+                    objectFit: 'cover',
+                    borderRadius: el.borderRadius,
+                    opacity: el.opacity,
+                    transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                    zIndex: el.zIndex,
+                    pointerEvents: 'none',
+                  }}
+                />
+              ))}
               <div
                 className="flex h-full flex-col items-center justify-center p-5 sm:p-10 text-center"
                 style={{ position: 'relative', zIndex: 1 }}
