@@ -23,51 +23,45 @@ interface PublicCardViewProps {
   shareId: string
 }
 
-function CardShapesLayer({ elements, canvasW, canvasH }: {
-  elements: CanvasElement[]
-  canvasW: number
-  canvasH: number
-}) {
-  const shapes = elements
-    .filter(el => el.type === 'shape')
-    .sort((a, b) => a.zIndex - b.zIndex) as ShapeElement[]
-  if (shapes.length === 0) return null
+function renderShapeSVG(el: ShapeElement, canvasW: number, canvasH: number) {
+  const t = el.rotation ? `rotate(${el.rotation} ${el.x} ${el.y})` : undefined
+  const st = el.stroke === 'transparent' ? 'none' : el.stroke
+  let svgChild: React.ReactNode = null
+  if (el.shapeType === 'rect') {
+    svgChild = (
+      <rect x={el.x - el.width / 2} y={el.y - el.height / 2}
+        width={el.width} height={el.height} rx={3}
+        fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+    )
+  } else if (el.shapeType === 'circle') {
+    svgChild = (
+      <ellipse cx={el.x} cy={el.y}
+        rx={el.width / 2} ry={el.height / 2}
+        fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+    )
+  } else if (el.shapeType === 'heart') {
+    const w = el.width, h = el.height, cx = el.x, cy = el.y
+    const d = `M${cx},${cy + h * 0.35} C${cx - w * 0.6},${cy - h * 0.05} ${cx - w * 0.65},${cy - h * 0.45} ${cx},${cy - h * 0.28} C${cx + w * 0.65},${cy - h * 0.45} ${cx + w * 0.6},${cy - h * 0.05} ${cx},${cy + h * 0.35} Z`
+    svgChild = <path d={d} fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+  } else if (el.shapeType === 'star') {
+    const r = Math.min(el.width, el.height) * 0.5
+    const ir = r * 0.4
+    const pts = Array.from({ length: 10 }, (_, i) => {
+      const a = (i * Math.PI / 5) - Math.PI / 2
+      const rad = i % 2 === 0 ? r : ir
+      return `${el.x + Math.cos(a) * rad},${el.y + Math.sin(a) * rad}`
+    }).join(' ')
+    svgChild = <polygon points={pts} fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
+  }
+  if (!svgChild) return null
   return (
     <svg
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' }}
+      key={el.id}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible', zIndex: el.zIndex }}
       viewBox={`0 0 ${canvasW} ${canvasH}`}
       preserveAspectRatio="xMidYMid meet"
     >
-      {shapes.map(el => {
-        const t = el.rotation ? `rotate(${el.rotation} ${el.x} ${el.y})` : undefined
-        const st = el.stroke === 'transparent' ? 'none' : el.stroke
-        if (el.shapeType === 'rect') return (
-          <rect key={el.id} x={el.x - el.width / 2} y={el.y - el.height / 2}
-            width={el.width} height={el.height} rx={3}
-            fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
-        )
-        if (el.shapeType === 'circle') return (
-          <ellipse key={el.id} cx={el.x} cy={el.y}
-            rx={el.width / 2} ry={el.height / 2}
-            fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
-        )
-        if (el.shapeType === 'heart') {
-          const w = el.width, h = el.height, cx = el.x, cy = el.y
-          const d = `M${cx},${cy + h * 0.35} C${cx - w * 0.6},${cy - h * 0.05} ${cx - w * 0.65},${cy - h * 0.45} ${cx},${cy - h * 0.28} C${cx + w * 0.65},${cy - h * 0.45} ${cx + w * 0.6},${cy - h * 0.05} ${cx},${cy + h * 0.35} Z`
-          return <path key={el.id} d={d} fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
-        }
-        if (el.shapeType === 'star') {
-          const r = Math.min(el.width, el.height) * 0.5
-          const ir = r * 0.4
-          const pts = Array.from({ length: 10 }, (_, i) => {
-            const a = (i * Math.PI / 5) - Math.PI / 2
-            const rad = i % 2 === 0 ? r : ir
-            return `${el.x + Math.cos(a) * rad},${el.y + Math.sin(a) * rad}`
-          }).join(' ')
-          return <polygon key={el.id} points={pts} fill={el.fill} stroke={st} strokeWidth={el.strokeWidth} opacity={el.opacity} transform={t} />
-        }
-        return null
-      })}
+      {svgChild}
     </svg>
   )
 }
@@ -174,13 +168,11 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
     ? {}
     : bg.type === 'gradient' ? { background: bg.value } : { backgroundColor: bg.value }
 
-  const sortedTextElements = canvasData.elements
-    .filter(el => el.type === 'text')
-    .sort((a, b) => a.y - b.y) as TextElement[]
+  // zIndexでソート（エディタのレイヤー順を尊重）
+  const sortedElements = [...canvasData.elements].sort((a, b) => a.zIndex - b.zIndex)
 
-  const imageElements = canvasData.elements
-    .filter(el => el.type === 'image')
-    .sort((a, b) => a.zIndex - b.zIndex) as ImageElement[]
+  // typewriter アニメーション用: テキスト要素のみカウント
+  let textIdx = 0
 
   return (
     <>
@@ -207,60 +199,72 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
               animate={motionProps.animate}
               transition={motionProps.transition}
               className="relative overflow-hidden rounded-2xl shadow-2xl"
-              style={{ aspectRatio: '4/3', ...backgroundStyle }}
+              style={{ aspectRatio: `${sizeConfig.width} / ${sizeConfig.height}`, ...backgroundStyle }}
             >
               {templateDef && (
                 <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
                   <templateDef.Comp />
                 </div>
               )}
-              <CardShapesLayer elements={canvasData.elements} canvasW={sizeConfig.width} canvasH={sizeConfig.height} />
-              {/* 画像要素 */}
-              {imageElements.map(el => (
-                <img
-                  key={el.id}
-                  src={el.src}
-                  alt=""
-                  crossOrigin="anonymous"
-                  style={{
-                    position: 'absolute',
-                    left: `${(el.x - el.width / 2) / sizeConfig.width * 100}%`,
-                    top: `${(el.y - el.height / 2) / sizeConfig.height * 100}%`,
-                    width: `${el.width / sizeConfig.width * 100}%`,
-                    height: `${el.height / sizeConfig.height * 100}%`,
-                    objectFit: 'cover',
-                    borderRadius: el.borderRadius,
-                    opacity: el.opacity,
-                    transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
-                    zIndex: el.zIndex,
-                    pointerEvents: 'none',
-                  }}
-                />
-              ))}
-              <div
-                className="flex h-full flex-col items-center justify-center p-5 sm:p-10 text-center"
-                style={{ position: 'relative', zIndex: 1 }}
-              >
-                {sortedTextElements.map((el, idx) => (
-                  <p
-                    key={el.id}
-                    className="mb-3 whitespace-pre-wrap"
-                    style={{
-                      fontFamily: el.fontFamily,
-                      fontSize: `clamp(12px, ${el.fontSize * 0.045}vw, ${el.fontSize * 0.6}px)`,
-                      fontWeight: el.fontWeight,
-                      fontStyle: el.fontStyle,
-                      color: el.color,
-                      lineHeight: el.lineHeight,
-                      textAlign: el.align,
-                    }}
-                  >
-                    {animType === 'typewriter'
-                      ? <TypewriterText text={el.text} startDelay={idx * 800} speed={40} />
-                      : el.text}
-                  </p>
-                ))}
-              </div>
+              {sortedElements.map((el) => {
+                if (el.type === 'shape') {
+                  return renderShapeSVG(el as ShapeElement, sizeConfig.width, sizeConfig.height)
+                }
+                if (el.type === 'image') {
+                  const imgEl = el as ImageElement
+                  return (
+                    <img
+                      key={imgEl.id}
+                      src={imgEl.src}
+                      alt=""
+                      crossOrigin="anonymous"
+                      style={{
+                        position: 'absolute',
+                        left: `${(imgEl.x - imgEl.width / 2) / sizeConfig.width * 100}%`,
+                        top: `${(imgEl.y - imgEl.height / 2) / sizeConfig.height * 100}%`,
+                        width: `${imgEl.width / sizeConfig.width * 100}%`,
+                        height: `${imgEl.height / sizeConfig.height * 100}%`,
+                        objectFit: 'cover',
+                        borderRadius: `${imgEl.borderRadius}px`,
+                        opacity: imgEl.opacity ?? 1,
+                        transform: imgEl.rotation ? `rotate(${imgEl.rotation}deg)` : undefined,
+                        zIndex: imgEl.zIndex,
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  )
+                }
+                if (el.type === 'text') {
+                  const txtEl = el as TextElement
+                  const currentTextIdx = textIdx++
+                  return (
+                    <p
+                      key={txtEl.id}
+                      className="mb-3 whitespace-pre-wrap"
+                      style={{
+                        position: 'absolute',
+                        left: `${(txtEl.x - txtEl.width / 2) / sizeConfig.width * 100}%`,
+                        top: `${(txtEl.y - txtEl.height / 2) / sizeConfig.height * 100}%`,
+                        width: `${txtEl.width / sizeConfig.width * 100}%`,
+                        fontFamily: txtEl.fontFamily,
+                        fontSize: `clamp(12px, ${txtEl.fontSize * 0.045}vw, ${txtEl.fontSize * 0.6}px)`,
+                        fontWeight: txtEl.fontWeight,
+                        fontStyle: txtEl.fontStyle,
+                        color: txtEl.color,
+                        lineHeight: txtEl.lineHeight,
+                        textAlign: txtEl.align,
+                        zIndex: txtEl.zIndex,
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      {animType === 'typewriter'
+                        ? <TypewriterText text={txtEl.text} startDelay={currentTextIdx * 800} speed={40} />
+                        : txtEl.text}
+                    </p>
+                  )
+                }
+                return null
+              })}
             </motion.div>
 
             <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
