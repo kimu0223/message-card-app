@@ -29,7 +29,8 @@ export default function GuestEditorPageClient() {
     selectedElementId, setSelectedElementId,
     zoom, setZoom,
     showAIPanel, toggleAIPanel,
-    updateElement, addElement, setSize, setBackground, setAnimation, setEnvelope,
+    updateElement, addElement, removeElement, reorderElement,
+    setSize, setBackground, setAnimation, setEnvelope,
   } = useEditorStore()
 
   // localStorageから初期化
@@ -168,6 +169,8 @@ export default function GuestEditorPageClient() {
             selectedElementId={selectedElementId}
             onUpdateElement={(id, updates) => updateElement(id, updates)}
             onAddElement={addElement}
+            onRemoveElement={removeElement}
+            onReorderElement={reorderElement}
             onSetSize={setSize}
             onSetBackground={setBackground}
             onSetAnimation={setAnimation}
@@ -194,6 +197,8 @@ export default function GuestEditorPageClient() {
                 selectedElementId={selectedElementId}
                 onUpdateElement={(id, updates) => updateElement(id, updates)}
                 onAddElement={addElement}
+                onRemoveElement={removeElement}
+                onReorderElement={reorderElement}
                 onSetSize={setSize}
                 onSetBackground={setBackground}
                 onSetAnimation={setAnimation}

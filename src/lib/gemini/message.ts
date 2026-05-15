@@ -31,7 +31,13 @@ ${req.keywords?.length ? `- キーワード(含めると良い): ${req.keywords.
   });
 
   const text = response.text ?? '[]';
-  const messages: string[] = JSON.parse(text);
+  let messages: string[];
+  try {
+    const parsed = JSON.parse(text);
+    messages = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    messages = [];
+  }
 
   return {
     messages: messages.slice(0, 3),

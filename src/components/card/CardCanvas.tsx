@@ -99,12 +99,39 @@ export default function CardCanvas({
   }
 
   const handleTransformEnd = (id: string, e: KonvaEventObject<Event>) => {
-    onElementChange(id, {
-      x: Math.round(e.target.x()),
-      y: Math.round(e.target.y()),
-      rotation: Math.round(e.target.rotation()),
-    })
+    const node = e.target
+    const scaleX = node.scaleX()
+    const scaleY = node.scaleY()
+    const newWidth = Math.round(node.width() * scaleX)
+    const newHeight = Math.round(node.height() * scaleY)
+    const el = canvasData.elements.find(el => el.id === id)
+    const shapeEl = el?.type === 'shape' ? el as ShapeElement : null
+    const isCenterOrigin = shapeEl?.shapeType === 'circle' || shapeEl?.shapeType === 'star'
+
+    if (isCenterOrigin) {
+      onElementChange(id, {
+        x: Math.round(node.x()),
+        y: Math.round(node.y()),
+        width: newWidth,
+        height: newHeight,
+        rotation: Math.round(node.rotation()),
+      })
+    } else {
+      onElementChange(id, {
+        x: Math.round(node.x() + newWidth / 2),
+        y: Math.round(node.y() + newHeight / 2),
+        width: newWidth,
+        height: newHeight,
+        rotation: Math.round(node.rotation()),
+      })
+    }
+    node.scaleX(1)
+    node.scaleY(1)
   }
+
+  const selectedEl = selectedElementId
+    ? canvasData.elements.find(el => el.id === selectedElementId)
+    : null
 
   const sortedElements = [...canvasData.elements].sort((a, b) => a.zIndex - b.zIndex)
 
@@ -252,7 +279,9 @@ export default function CardCanvas({
 
           <Transformer
             ref={transformerRef}
-            enabledAnchors={['middle-left', 'middle-right', 'top-center', 'bottom-center']}
+            enabledAnchors={selectedEl?.type === 'image'
+              ? ['top-left', 'top-center', 'top-right', 'middle-right', 'middle-left', 'bottom-left', 'bottom-center', 'bottom-right']
+              : ['middle-left', 'middle-right', 'top-center', 'bottom-center']}
             boundBoxFunc={(oldBox, newBox) => {
               if (newBox.width < 20 || newBox.height < 20) return oldBox
               return newBox

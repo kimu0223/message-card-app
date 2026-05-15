@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Type, Palette, Sparkles, Mail, ImageIcon, Loader2, Upload } from 'lucide-react'
+import { Type, Palette, Sparkles, Mail, ImageIcon, Loader2, Upload, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
 import { nanoid } from 'nanoid'
 import { toast } from 'sonner'
 import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, ImageElement, AnimationType, CardSize, EnvelopeConfig, EnvelopeStyle } from '@/types/card'
@@ -64,6 +64,8 @@ interface EditorPanelProps {
   selectedElementId: string | null
   onUpdateElement: (id: string, updates: Partial<CanvasElement>) => void
   onAddElement: (element: CanvasElement) => void
+  onRemoveElement: (id: string) => void
+  onReorderElement: (id: string, direction: 'up' | 'down') => void
   onSetSize: (size: CardSize) => void
   onSetBackground: (bg: Background) => void
   onSetAnimation: (anim: AnimationConfig | null) => void
@@ -75,6 +77,8 @@ export default function EditorPanel({
   selectedElementId,
   onUpdateElement,
   onAddElement,
+  onRemoveElement,
+  onReorderElement,
   onSetSize,
   onSetBackground,
   onSetAnimation,
@@ -88,7 +92,7 @@ export default function EditorPanel({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const selectedElement = selectedElementId
-    ? canvasData.elements.find(el => el.id === selectedElementId)
+    ? canvasData.elements.find(el => el.id === selectedElementId) ?? null
     : null
   const selectedText = selectedElement?.type === 'text' ? selectedElement as TextElement : null
 
@@ -165,22 +169,86 @@ export default function EditorPanel({
     <div className="p-3">
       <Tabs defaultValue="text">
         <TabsList className="w-full grid grid-cols-5">
-          <TabsTrigger value="text" className="text-xs px-1">
-            <Type className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">文字</span><span className="sm:hidden">文字</span>
+          <TabsTrigger value="text" className="flex-col gap-0.5 min-h-[44px] px-1 text-[10px]">
+            <Type className="h-4 w-4" /><span>文字</span>
           </TabsTrigger>
-          <TabsTrigger value="image" className="text-xs px-1">
-            <ImageIcon className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">画像</span><span className="sm:hidden">画像</span>
+          <TabsTrigger value="image" className="flex-col gap-0.5 min-h-[44px] px-1 text-[10px]">
+            <ImageIcon className="h-4 w-4" /><span>画像</span>
           </TabsTrigger>
-          <TabsTrigger value="background" className="text-xs px-1">
-            <Palette className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">背景</span><span className="sm:hidden">背景</span>
+          <TabsTrigger value="background" className="flex-col gap-0.5 min-h-[44px] px-1 text-[10px]">
+            <Palette className="h-4 w-4" /><span>背景</span>
           </TabsTrigger>
-          <TabsTrigger value="animation" className="text-xs px-1">
-            <Sparkles className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">動き</span><span className="sm:hidden">動き</span>
+          <TabsTrigger value="animation" className="flex-col gap-0.5 min-h-[44px] px-1 text-[10px]">
+            <Sparkles className="h-4 w-4" /><span>動き</span>
           </TabsTrigger>
-          <TabsTrigger value="envelope" className="text-xs px-1">
-            <Mail className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">封筒</span><span className="sm:hidden">封筒</span>
+          <TabsTrigger value="envelope" className="flex-col gap-0.5 min-h-[44px] px-1 text-[10px]">
+            <Mail className="h-4 w-4" /><span>封筒</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* 選択要素操作バー */}
+        {selectedElement && (
+          <div className="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 p-2 space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-7 flex-1 gap-1 text-xs"
+                onClick={() => onRemoveElement(selectedElement.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />削除
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0"
+                title="前面へ"
+                onClick={() => onReorderElement(selectedElement.id, 'up')}
+              >
+                <ArrowUp className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0"
+                title="背面へ"
+                onClick={() => onReorderElement(selectedElement.id, 'down')}
+              >
+                <ArrowDown className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-zinc-500">不透明度</Label>
+                <span className="text-xs text-zinc-700">{Math.round((selectedElement.opacity ?? 1) * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round((selectedElement.opacity ?? 1) * 100)}
+                onChange={e => onUpdateElement(selectedElement.id, { opacity: Number(e.target.value) / 100 })}
+                className="mt-1 w-full"
+              />
+            </div>
+            {selectedElement.type === 'image' && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-zinc-500">角丸</Label>
+                  <span className="text-xs text-zinc-700">{(selectedElement as ImageElement).borderRadius ?? 0}px</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={50}
+                  value={(selectedElement as ImageElement).borderRadius ?? 0}
+                  onChange={e => onUpdateElement(selectedElement.id, { borderRadius: Number(e.target.value) })}
+                  className="mt-1 w-full"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* テキストタブ */}
         <TabsContent value="text" className="space-y-4 pt-3">

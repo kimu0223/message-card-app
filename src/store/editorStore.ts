@@ -37,6 +37,7 @@ interface EditorState {
   setBackground: (bg: Background) => void
   setAnimation: (animation: AnimationConfig | null) => void
   setEnvelope: (envelope: EnvelopeConfig | undefined) => void
+  reorderElement: (id: string, direction: 'up' | 'down') => void
   setIsSaving: (saving: boolean) => void
   setLastSavedAt: (date: Date) => void
   setZoom: (zoom: number) => void
@@ -104,6 +105,34 @@ export const useEditorStore = create<EditorState>((set) => ({
   setEnvelope: (envelope) => set((state) => ({
     canvasData: { ...state.canvasData, envelope },
   })),
+
+  reorderElement: (id, direction) => set((state) => {
+    const elements = state.canvasData.elements
+    const sorted = [...elements].sort((a, b) => a.zIndex - b.zIndex)
+    const sortedIdx = sorted.findIndex(el => el.id === id)
+    if (sortedIdx === -1) return state
+
+    let swapEl: CanvasElement | undefined
+    if (direction === 'up' && sortedIdx < sorted.length - 1) {
+      swapEl = sorted[sortedIdx + 1]
+    } else if (direction === 'down' && sortedIdx > 0) {
+      swapEl = sorted[sortedIdx - 1]
+    }
+    if (!swapEl) return state
+
+    const currZIndex = sorted[sortedIdx].zIndex
+    const swapZIndex = swapEl.zIndex
+    return {
+      canvasData: {
+        ...state.canvasData,
+        elements: elements.map(el => {
+          if (el.id === id) return { ...el, zIndex: swapZIndex }
+          if (el.id === swapEl!.id) return { ...el, zIndex: currZIndex }
+          return el
+        }),
+      },
+    }
+  }),
 
   setIsSaving: (saving) => set({ isSaving: saving }),
 

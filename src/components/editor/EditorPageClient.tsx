@@ -45,7 +45,8 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
     zoom, setZoom,
     showAIPanel, toggleAIPanel,
     isSaving, setIsSaving, setLastSavedAt,
-    updateElement, addElement, setSize, setBackground, setAnimation, setEnvelope,
+    updateElement, addElement, removeElement, reorderElement,
+    setSize, setBackground, setAnimation, setEnvelope,
   } = useEditorStore()
 
   // 初期化
@@ -150,7 +151,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
         <Input
           value={title}
           onChange={e => setTitle(e.target.value)}
-          className="h-8 w-48 border-none bg-transparent text-sm font-medium shadow-none focus-visible:ring-0"
+          className="h-8 flex-1 min-w-0 max-w-[160px] sm:max-w-[240px] border-none bg-transparent text-sm font-medium shadow-none focus-visible:ring-0"
           placeholder="カードタイトル"
         />
 
@@ -167,7 +168,7 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
 
         <div className="ml-auto flex items-center gap-2">
           {/* ズーム */}
-          <div className="hidden items-center gap-1 sm:flex">
+          <div className="hidden items-center gap-1 lg:flex">
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setZoom(Math.max(0.25, zoom - 0.1))}>
               <ZoomOut className="h-3.5 w-3.5" />
             </Button>
@@ -212,6 +213,8 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
             selectedElementId={selectedElementId}
             onUpdateElement={(id, updates) => updateElement(id, updates)}
             onAddElement={addElement}
+            onRemoveElement={removeElement}
+            onReorderElement={reorderElement}
             onSetSize={setSize}
             onSetBackground={setBackground}
             onSetAnimation={setAnimation}
@@ -240,6 +243,8 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
                 selectedElementId={selectedElementId}
                 onUpdateElement={(id, updates) => updateElement(id, updates)}
                 onAddElement={addElement}
+                onRemoveElement={removeElement}
+                onReorderElement={reorderElement}
                 onSetSize={setSize}
                 onSetBackground={setBackground}
                 onSetAnimation={setAnimation}
