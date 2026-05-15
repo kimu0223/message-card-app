@@ -104,7 +104,7 @@ export default function EditorPanel({
       type: 'text',
       x: 200, y: 200, width: 400, height: 60,
       rotation: 0, opacity: 1,
-      zIndex: canvasData.elements.length + 1,
+      zIndex: canvasData.elements.length === 0 ? 1 : Math.max(...canvasData.elements.map(e => e.zIndex)) + 1,
       text: 'テキストを入力',
       fontFamily: 'Noto Sans JP',
       fontSize: 32,
@@ -135,7 +135,7 @@ export default function EditorPanel({
         src: url,
         x: 300, y: 300, width: 300, height: 200,
         rotation: 0, opacity: 1,
-        zIndex: canvasData.elements.length + 1,
+        zIndex: canvasData.elements.length === 0 ? 1 : Math.max(...canvasData.elements.map(e => e.zIndex)) + 1,
         borderRadius: 0,
       }
       onAddElement(newEl)

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { X, Share2, FileImage, FileText, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { CARD_SIZES } from '@/types/card'
-import type { CanvasData, TextElement, ShapeElement, CanvasElement } from '@/types/card'
+import type { CanvasData, TextElement, ShapeElement, ImageElement, CanvasElement } from '@/types/card'
 import ConfettiAnimation from '@/components/card/animations/ConfettiAnimation'
 import SnowAnimation from '@/components/card/animations/SnowAnimation'
 import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
@@ -60,6 +60,39 @@ function CardShapesLayer({ elements, canvasW, canvasH }: {
         return null
       })}
     </svg>
+  )
+}
+
+function ImagePreviewLayer({ elements, canvasW, canvasH }: {
+  elements: CanvasElement[]
+  canvasW: number
+  canvasH: number
+}) {
+  const images = elements
+    .filter(el => el.type === 'image')
+    .sort((a, b) => a.zIndex - b.zIndex) as ImageElement[]
+  if (images.length === 0) return null
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      {images.map(el => (
+        <img
+          key={el.id}
+          src={el.src}
+          alt=""
+          style={{
+            position: 'absolute',
+            left: `${(el.x - el.width / 2) / canvasW * 100}%`,
+            top: `${(el.y - el.height / 2) / canvasH * 100}%`,
+            width: `${el.width / canvasW * 100}%`,
+            height: `${el.height / canvasH * 100}%`,
+            borderRadius: el.borderRadius ? `${el.borderRadius / el.width * 100}%` : 0,
+            opacity: el.opacity ?? 1,
+            objectFit: 'cover',
+            transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+          }}
+        />
+      ))}
+    </div>
   )
 }
 
@@ -200,6 +233,7 @@ export default function CardPreview({ canvasData, isOpen, onClose, onShare, file
                 </div>
               )}
               <CardShapesLayer elements={canvasData.elements} canvasW={sizeConfig.width} canvasH={sizeConfig.height} />
+              <ImagePreviewLayer elements={canvasData.elements} canvasW={sizeConfig.width} canvasH={sizeConfig.height} />
               <div className="flex h-full flex-col items-center justify-center p-6 sm:p-8 text-center" style={{ position: 'relative', zIndex: 1 }}>
                 {sortedTextElements.map(el => (
                   <p

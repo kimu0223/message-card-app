@@ -92,10 +92,22 @@ export default function CardCanvas({
   }
 
   const handleDragEnd = (id: string, e: KonvaEventObject<DragEvent>) => {
-    onElementChange(id, {
-      x: Math.round(e.target.x() + e.target.width() / 2),
-      y: Math.round(e.target.y() + e.target.height() / 2),
-    })
+    const node = e.target
+    const el = canvasData.elements.find(el => el.id === id)
+    const shapeEl = el?.type === 'shape' ? el as ShapeElement : null
+    const isCenterOrigin = shapeEl?.shapeType === 'circle' || shapeEl?.shapeType === 'star'
+
+    if (isCenterOrigin) {
+      onElementChange(id, {
+        x: Math.round(node.x()),
+        y: Math.round(node.y()),
+      })
+    } else {
+      onElementChange(id, {
+        x: Math.round(node.x() + node.width() / 2),
+        y: Math.round(node.y() + node.height() / 2),
+      })
+    }
   }
 
   const handleTransformEnd = (id: string, e: KonvaEventObject<Event>) => {

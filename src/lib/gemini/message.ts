@@ -36,7 +36,10 @@ ${req.keywords?.length ? `- キーワード(含めると良い): ${req.keywords.
     const parsed = JSON.parse(text);
     messages = Array.isArray(parsed) ? parsed : [];
   } catch {
-    messages = [];
+    throw new Error('AI returned invalid JSON for messages');
+  }
+  if (messages.length === 0) {
+    throw new Error('AI returned no messages');
   }
 
   return {
