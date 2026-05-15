@@ -290,6 +290,7 @@ export default function CardCanvas({
           })}
 
           <Transformer
+            key={selectedEl?.type ?? 'none'}
             ref={transformerRef}
             enabledAnchors={selectedEl?.type === 'image'
               ? ['top-left', 'top-center', 'top-right', 'middle-right', 'middle-left', 'bottom-left', 'bottom-center', 'bottom-right']

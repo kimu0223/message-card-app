@@ -85,7 +85,7 @@ function ImagePreviewLayer({ elements, canvasW, canvasH }: {
             top: `${(el.y - el.height / 2) / canvasH * 100}%`,
             width: `${el.width / canvasW * 100}%`,
             height: `${el.height / canvasH * 100}%`,
-            borderRadius: el.borderRadius ? `${el.borderRadius / el.width * 100}%` : 0,
+            borderRadius: el.borderRadius ? `${(el.borderRadius / canvasW) * 560}px` : 0,
             opacity: el.opacity ?? 1,
             objectFit: 'cover',
             transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,

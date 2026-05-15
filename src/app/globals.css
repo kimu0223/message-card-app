@@ -128,3 +128,8 @@
     @apply font-sans;
   }
 }
+
+@media (max-width: 380px) {
+  /* エディタタブの極小画面対応 */
+  [data-radix-tabs-list] button { padding: 6px 2px !important; }
+}

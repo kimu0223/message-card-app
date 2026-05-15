@@ -35,7 +35,6 @@ const ANIMATIONS: { value: AnimationType; label: string; emoji: string }[] = [
   { value: 'heartbeat', label: 'ハートビート', emoji: '💓' },
   { value: 'confetti', label: 'コンフェッティ', emoji: '🎊' },
   { value: 'fireworks', label: '花火', emoji: '🎆' },
-  { value: 'sparkle', label: 'スパークル', emoji: '⭐' },
   { value: 'snow', label: '雪', emoji: '❄️' },
   { value: 'sakura', label: '桜', emoji: '🌸' },
   { value: 'typewriter', label: 'タイプライター', emoji: '⌨️' },
