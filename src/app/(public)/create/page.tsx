@@ -8,6 +8,7 @@ import AIDesignWizard from '@/components/editor/ai-design/AIDesignWizard'
 import Logo from '@/components/shared/Logo'
 import { CARD_TEMPLATES, CARD_SCENES } from '@/components/lp/CardTemplates'
 import type { CanvasData } from '@/types/card'
+import { analytics } from '@/lib/analytics'
 
 const GUEST_STORAGE_KEY = 'guestEditorState'
 
@@ -77,7 +78,7 @@ function CreatePageContent() {
 
   const handleAIDesignComplete = (canvasData: CanvasData) => {
     try {
-      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData, title: 'AIデザインカード' }))
+      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData, title: 'AIデザインカード', source: 'ai' }))
     } catch { /* ignore */ }
     setShowAIWizard(false)
     router.push('/create/editor')
@@ -86,6 +87,7 @@ function CreatePageContent() {
   const handleLPTemplateSelect = (templateId: string) => {
     const template = CARD_TEMPLATES.find(t => t.id === templateId)
     if (!template) return
+    analytics.templateSelected(templateId, template.scene ?? 'unknown')
     const canvasData: CanvasData = {
       version: '1.0',
       size: 'a4_portrait',
@@ -95,14 +97,15 @@ function CreatePageContent() {
       templateId,
     }
     try {
-      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData, title: template.title }))
+      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData, title: template.title, source: 'template' }))
     } catch { /* ignore */ }
     router.push('/create/editor')
   }
 
   const handleBlankStart = () => {
+    analytics.blankStarted()
     try {
-      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData: BLANK_CANVAS_DATA, title: '無題のカード' }))
+      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData: BLANK_CANVAS_DATA, title: '無題のカード', source: 'blank' }))
     } catch { /* ignore */ }
     router.push('/create/editor')
   }
@@ -143,7 +146,7 @@ function CreatePageContent() {
         {/* AI Design button */}
         <button
           className="create-blank"
-          onClick={() => setShowAIWizard(true)}
+          onClick={() => { analytics.aiWizardOpened(); setShowAIWizard(true) }}
           style={{ marginBottom: 12, borderColor: 'rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.04)' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

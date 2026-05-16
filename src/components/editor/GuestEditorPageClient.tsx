@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,7 @@ import CardPreview from '@/components/card/CardPreview'
 import LoginPromptModal from '@/components/auth/LoginPromptModal'
 import { useEditorStore } from '@/store/editorStore'
 import type { CanvasData, CanvasElement, EnvelopeConfig } from '@/types/card'
+import { analytics } from '@/lib/analytics'
 
 const GUEST_STORAGE_KEY = 'guestEditorState'
 
@@ -21,7 +22,9 @@ export default function GuestEditorPageClient() {
   const router = useRouter()
   const [showPreview, setShowPreview] = useState(false)
   const [showLeftPanel, setShowLeftPanel] = useState(false)
-  const [loginPromptReason, setLoginPromptReason] = useState<'save' | 'share' | 'ai' | null>(null)
+  const [loginPromptReason, setLoginPromptReason] = useState<'save' | 'share' | 'ai' | 'completed' | null>(null)
+  const hasTrackedFirstEdit = useRef(false)
+  const hasPreviewedCard = useRef(false)
 
   const {
     title, setTitle,
@@ -33,15 +36,17 @@ export default function GuestEditorPageClient() {
     setSize, setBackground, setAnimation, setEnvelope,
   } = useEditorStore()
 
-  // localStorageから初期化
+  // localStorageから初期化 + editor_opened イベント
   useEffect(() => {
+    let source: 'template' | 'ai' | 'blank' | 'direct' = 'direct'
     try {
       const raw = localStorage.getItem(GUEST_STORAGE_KEY)
       if (raw) {
-        const { canvasData: savedData, title: savedTitle } = JSON.parse(raw)
+        const parsed = JSON.parse(raw)
+        const { canvasData: savedData, title: savedTitle } = parsed
+        source = parsed.source ?? 'direct'
         initFromCard({ id: '__guest__', title: savedTitle ?? '無題のカード', canvasData: savedData })
       } else {
-        // localStorageになければデフォルト状態で起動（/create未経由で直アクセスされた場合）
         initFromCard({
           id: '__guest__',
           title: '無題のカード',
@@ -57,12 +62,15 @@ export default function GuestEditorPageClient() {
     } catch {
       // パース失敗時はデフォルト
     }
+    analytics.editorOpened(source)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // canvasData/titleが変わったらlocalStorageに保存
   const saveToLocal = useCallback((data: CanvasData, t: string) => {
     try {
-      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData: data, title: t }))
+      const existing = localStorage.getItem(GUEST_STORAGE_KEY)
+      const source = existing ? (JSON.parse(existing).source ?? 'direct') : 'direct'
+      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ canvasData: data, title: t, source }))
     } catch {
       // ストレージ満杯などは無視
     }
@@ -75,11 +83,51 @@ export default function GuestEditorPageClient() {
   }, [canvasData, title, saveToLocal])
 
   const handleElementChange = (id: string, updates: Partial<CanvasElement>) => {
+    // 実際の編集操作が発生した時点で初回編集イベントを計測
+    if (!hasTrackedFirstEdit.current) {
+      hasTrackedFirstEdit.current = true
+      analytics.firstEdit()
+    }
     updateElement(id, updates)
   }
 
   const handleAIButtonClick = () => {
+    analytics.signupModalShown('ai', 'ai_button')
     setLoginPromptReason('ai')
+  }
+
+  const handlePreviewOpen = () => {
+    analytics.previewOpened()
+    setShowPreview(true)
+  }
+
+  const handlePreviewClose = () => {
+    analytics.previewClosed(false)
+    setShowPreview(false)
+    // プレビューを見た後、シェアせずに閉じたらカード完成促進モーダルを表示
+    if (hasPreviewedCard.current) return
+    hasPreviewedCard.current = true
+    setTimeout(() => {
+      analytics.signupModalShown('completed', 'after_preview')
+      setLoginPromptReason('completed')
+    }, 800)
+  }
+
+  const handlePreviewShare = () => {
+    analytics.previewClosed(true)
+    analytics.signupModalShown('share', 'preview_share_button')
+    setShowPreview(false)
+    setLoginPromptReason('share')
+  }
+
+  const handleShareClick = () => {
+    analytics.signupModalShown('share', 'toolbar_share_button')
+    setLoginPromptReason('share')
+  }
+
+  const handleSaveClick = () => {
+    analytics.signupModalShown('save', 'guest_banner')
+    setLoginPromptReason('save')
   }
 
   if (!canvasData) {
@@ -98,7 +146,7 @@ export default function GuestEditorPageClient() {
         <span>ゲストモードです。データはこのブラウザのみに保存されます。</span>
         <button
           className="ml-1 font-semibold underline hover:no-underline"
-          onClick={() => setLoginPromptReason('save')}
+          onClick={handleSaveClick}
         >
           ログインして保存
         </button>
@@ -147,13 +195,13 @@ export default function GuestEditorPageClient() {
           </Button>
 
           {/* プレビュー */}
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPreview(true)}>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handlePreviewOpen}>
             <Eye className="h-4 w-4" />
             <span className="hidden sm:inline">プレビュー</span>
           </Button>
 
           {/* シェア（ログイン促進） */}
-          <Button size="sm" className="gap-1.5" onClick={() => setLoginPromptReason('share')}>
+          <Button size="sm" className="gap-1.5" onClick={handleShareClick}>
             <Share2 className="h-4 w-4" />
             <span className="hidden sm:inline">シェア</span>
           </Button>
@@ -236,7 +284,7 @@ export default function GuestEditorPageClient() {
               </p>
               <Button
                 className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
-                onClick={() => setLoginPromptReason('ai')}
+                onClick={handleAIButtonClick}
               >
                 ログインして使用
               </Button>
@@ -265,7 +313,7 @@ export default function GuestEditorPageClient() {
                 </p>
                 <Button
                   className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
-                  onClick={() => setLoginPromptReason('ai')}
+                  onClick={handleAIButtonClick}
                 >
                   ログインして使用
                 </Button>
@@ -280,8 +328,8 @@ export default function GuestEditorPageClient() {
         <CardPreview
           canvasData={canvasData}
           isOpen={showPreview}
-          onClose={() => setShowPreview(false)}
-          onShare={() => { setShowPreview(false); setLoginPromptReason('share') }}
+          onClose={handlePreviewClose}
+          onShare={handlePreviewShare}
           filename={title}
         />
       )}

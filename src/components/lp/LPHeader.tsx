@@ -57,15 +57,23 @@ export default function LPHeader() {
           </Link>
         </div>
 
-        {/* Mobile menu button */}
-        <button
-          className="flex items-center md:hidden"
-          onClick={() => setMobileOpen(v => !v)}
-          aria-label="メニュー"
-          style={{ color: 'var(--lp-ink)' }}
-        >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        {/* Mobile: CTA + hamburger */}
+        <div className="flex items-center gap-2 md:hidden">
+          <Link
+            href="/create"
+            className="inline-flex items-center rounded-full px-4 py-2 text-xs font-medium text-[var(--lp-cream-soft)]"
+            style={{ background: 'var(--lp-ink)' }}
+          >
+            無料で試す →
+          </Link>
+          <button
+            onClick={() => setMobileOpen(v => !v)}
+            aria-label="メニュー"
+            style={{ color: 'var(--lp-ink)' }}
+          >
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile drawer */}

@@ -5,11 +5,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button'
 import { Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { analytics } from '@/lib/analytics'
 
 interface LoginPromptModalProps {
   isOpen: boolean
   onClose: () => void
-  reason?: 'save' | 'share' | 'ai'
+  reason?: 'save' | 'share' | 'ai' | 'completed'
 }
 
 const REASON_MESSAGES: Record<string, { title: string; desc: string }> = {
@@ -25,6 +26,10 @@ const REASON_MESSAGES: Record<string, { title: string; desc: string }> = {
     title: 'AI機能にはログインが必要です',
     desc: 'Googleアカウントでログインすると、AIが最適なメッセージを提案してくれます。',
   },
+  completed: {
+    title: 'カードが完成しました！',
+    desc: '無料登録すると、このカードをURLで相手に送れます。登録後もカードはそのまま使えます。',
+  },
 }
 
 export default function LoginPromptModal({ isOpen, onClose, reason = 'save' }: LoginPromptModalProps) {
@@ -33,6 +38,7 @@ export default function LoginPromptModal({ isOpen, onClose, reason = 'save' }: L
 
   const handleGoogleLogin = async () => {
     setIsLoading(true)
+    analytics.signupCtaClicked(reason)
     // ログイン後にゲストデータを復元するフラグを保存
     localStorage.setItem('postLoginIntent', 'restore_guest_card')
     const supabase = createClient()
@@ -45,8 +51,13 @@ export default function LoginPromptModal({ isOpen, onClose, reason = 'save' }: L
     // リダイレクトするためここには到達しない
   }
 
+  const handleClose = () => {
+    analytics.signupDismissed(reason)
+    onClose()
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <div className="mb-3 flex justify-center">
@@ -79,7 +90,7 @@ export default function LoginPromptModal({ isOpen, onClose, reason = 'save' }: L
             )}
           </Button>
 
-          <Button variant="ghost" onClick={onClose} className="w-full text-sm text-zinc-500">
+          <Button variant="ghost" onClick={handleClose} className="w-full text-sm text-zinc-500">
             後で登録する（編集を続ける）
           </Button>
         </div>

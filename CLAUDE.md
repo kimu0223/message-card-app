@@ -62,3 +62,28 @@ npx tsc --noEmit  # 型チェック
 ## DBスキーマ変更
 Supabase Dashboard の SQL Editor でマイグレーションを実行。
 将来的には `supabase/migrations/` でバージョン管理予定。
+
+## マーケティングチーム
+
+`marketing/` ディレクトリにエージェントチームと戦略ドキュメントを管理。
+
+| ファイル | 内容 |
+|---|---|
+| `marketing/MARKETING_TEAM.md` | チーム構成・KPI・週次オペレーション |
+| `marketing/FUNNEL_DESIGN.md` | データ駆動ファネル設計（P0〜P2施策一覧） |
+| `marketing/X_PLAYBOOK.md` | X（Twitter）投稿戦略プレイブック |
+| `marketing/agents/x-strategy-agent.md` | Xストラテジスト エージェント定義 |
+| `marketing/agents/funnel-analyst-agent.md` | ファネルアナリスト エージェント定義 |
+| `marketing/agents/cro-agent.md` | CRO（コンバージョン最適化）エージェント定義 |
+| `marketing/agents/content-agent.md` | コンテンツエージェント定義 |
+| `marketing/agents/retention-agent.md` | リテンション・アクティベーション エージェント定義 |
+
+### マーケティング最優先施策（P0）
+1. `src/lib/guest-limit.ts` の `GUEST_SESSION_LIMIT` 緩和（体験前に壁を作らない）
+2. LP に Sticky CTAバー追加（`src/components/lp/LPHeader.tsx`）
+3. カード完成後の登録促進モーダル（価値体験 → 登録の順序に変える）
+
+### GA4 プロパティ
+- アカウント: kimu8120 (369949529)
+- プロパティ: メッセージカードアプリ (535252003)
+- 主要流入: X (Organic Social) 72%

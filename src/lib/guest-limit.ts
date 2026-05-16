@@ -9,7 +9,7 @@
 
 import { createServiceClient } from '@/lib/supabase/server'
 
-export const GUEST_SESSION_LIMIT = 1       // 30日間で1回
+export const GUEST_SESSION_LIMIT = 3       // 30日間で3回（体験機会を広げる）
 export const GUEST_SESSION_WINDOW_DAYS = 30
 export const GUEST_IP_DAILY_LIMIT = 10    // 1日10回（副次制限）
 
