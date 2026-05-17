@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import { CARD_TEMPLATES, CARD_SCENES } from '@/components/lp/CardTemplates'
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
 
@@ -8,10 +10,26 @@ import { ChevronLeft, ChevronRight, Download } from 'lucide-react'
  * SNS素材用スクリーンショットページ
  * 各テンプレートを大きいサイズで表示してスクリーンショット撮影に使う
  * URL: /card-gallery
+ * URL: /card-gallery?i=3  (index直接指定)
  */
 export default function CardGalleryPage() {
-  const [index, setIndex] = useState(0)
+  return (
+    <Suspense>
+      <CardGalleryContent />
+    </Suspense>
+  )
+}
+
+function CardGalleryContent() {
+  const searchParams = useSearchParams()
+  const initialIndex = Number(searchParams.get('i') ?? 0)
+  const [index, setIndex] = useState(initialIndex)
   const [mode, setMode] = useState<'single' | 'grid'>('single')
+
+  useEffect(() => {
+    const i = Number(searchParams.get('i') ?? 0)
+    setIndex(i)
+  }, [searchParams])
 
   const template = CARD_TEMPLATES[index]
   const Comp = template.Comp
@@ -60,14 +78,17 @@ export default function CardGalleryPage() {
         /* ─── シングルビュー ─── */
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40, gap: 24 }}>
           {/* カード */}
-          <div style={{
-            width: 360,
-            height: 520,
-            borderRadius: 16,
-            overflow: 'hidden',
-            boxShadow: '0 32px 64px rgba(0,0,0,0.6)',
-            position: 'relative',
-          }}>
+          <div
+            data-testid="card-display"
+            style={{
+              width: 360,
+              height: 520,
+              borderRadius: 16,
+              overflow: 'hidden',
+              boxShadow: '0 32px 64px rgba(0,0,0,0.6)',
+              position: 'relative',
+            }}
+          >
             <Comp />
           </div>
 
