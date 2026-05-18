@@ -67,6 +67,22 @@ Supabase Dashboard の SQL Editor でマイグレーションを実行。
 
 `marketing/` ディレクトリにエージェントチームと戦略ドキュメントを管理。
 
+## SNS素材自動生成
+
+以下のキーワードが出たら、対応するスクリプトを即実行する。
+
+| ユーザーの意図 | 実行するコマンド |
+|---|---|
+| 「スクリーンショット撮って」「カード画像作って」「素材撮影」 | `node scripts/capture-cards.mjs --url http://localhost:3000` |
+| 「動画作って」「SNS動画生成」「TikTok/X用動画」 | `node scripts/make-video.mjs` |
+| 「SNS素材作って」「まとめて作って」「一括生成」 | capture → make-video の順に両方実行 |
+
+### スクリプト仕様
+- `scripts/capture-cards.mjs` — Playwrightで `/card-gallery?i=N` を巡回し `screenshots/cards/` にPNG保存
+- `scripts/make-video.mjs` — FFmpegで TikTok縦(1080×1920) と X横(1920×1080) のMP4を `~/Desktop` に保存
+- どちらも引数なしで即実行できる。ローカルサーバーが起動中なら `--url http://localhost:3000` を推奨。
+- 初回のみ: `npm install --save-dev @playwright/test` / `brew install ffmpeg-full` が必要。
+
 | ファイル | 内容 |
 |---|---|
 | `marketing/MARKETING_TEAM.md` | チーム構成・KPI・週次オペレーション |
