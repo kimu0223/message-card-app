@@ -15,6 +15,8 @@ import SnowAnimation from '@/components/card/animations/SnowAnimation'
 import SakuraAnimation from '@/components/card/animations/SakuraAnimation'
 import FireworksAnimation from '@/components/card/animations/FireworksAnimation'
 import EnvelopeReveal from '@/components/share/EnvelopeReveal'
+import ViralCTA from '@/components/share/ViralCTA'
+import { useCardTilt } from '@/hooks/useCardTilt'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
 
 interface PublicCardViewProps {
@@ -158,6 +160,8 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
     }
   }
 
+  const { ref: tiltRef, tiltStyle } = useCardTilt<HTMLDivElement>({ maxTilt: 8, scale: 1.01 })
+
   const motionProps = getMotionProps()
   const bg = canvasData.background
   const sizeConfig = CARD_SIZES[canvasData.size]
@@ -194,11 +198,19 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
           <FireworksAnimation active={fireworksActive} />
 
           <div className="w-full max-w-sm sm:max-w-2xl">
+            <div
+              ref={tiltRef}
+              style={{
+                ...tiltStyle,
+                willChange: 'transform',
+                borderRadius: 16,
+              }}
+            >
             <motion.div
               initial={motionProps.initial}
               animate={motionProps.animate}
               transition={motionProps.transition}
-              className="relative overflow-hidden rounded-2xl shadow-2xl"
+              className="relative overflow-hidden rounded-2xl"
               style={{ aspectRatio: `${sizeConfig.width} / ${sizeConfig.height}`, ...backgroundStyle }}
             >
               {templateDef && (
@@ -266,6 +278,7 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
                 return null
               })}
             </motion.div>
+            </div>
 
             <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-zinc-400 text-center sm:text-left">
@@ -289,6 +302,8 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
               </div>
             </div>
           </div>
+
+          <ViralCTA shareUrl={typeof window !== 'undefined' ? window.location.href : `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/card/${shareId}`} />
         </div>
       )}
     </>

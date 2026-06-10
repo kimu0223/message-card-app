@@ -1,5 +1,6 @@
 import LPHeader from '@/components/lp/LPHeader'
 import HeroCinematic, { StatStrip } from '@/components/lp/HeroCinematic'
+import InstantDemoSection from '@/components/lp/InstantDemoSection'
 import GallerySection from '@/components/lp/GallerySection'
 import HowItWorksSection from '@/components/lp/HowItWorksSection'
 import FeaturesSection from '@/components/lp/FeaturesSection'
@@ -15,6 +16,7 @@ export default function Home() {
       <main className="flex-1">
         <HeroCinematic />
         <StatStrip />
+        <InstantDemoSection />
         <GallerySection />
         <HowItWorksSection />
         <FeaturesSection />

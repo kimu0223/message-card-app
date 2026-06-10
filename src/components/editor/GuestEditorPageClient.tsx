@@ -92,8 +92,7 @@ export default function GuestEditorPageClient() {
   }
 
   const handleAIButtonClick = () => {
-    analytics.signupModalShown('ai', 'ai_button')
-    setLoginPromptReason('ai')
+    toggleAIPanel()
   }
 
   const handlePreviewOpen = () => {
@@ -121,8 +120,13 @@ export default function GuestEditorPageClient() {
   }
 
   const handleShareClick = () => {
-    analytics.signupModalShown('share', 'toolbar_share_button')
-    setLoginPromptReason('share')
+    if (hasTrackedFirstEdit.current) {
+      analytics.signupModalShown('share', 'toolbar_share_button')
+      setLoginPromptReason('share')
+    } else {
+      analytics.signupModalShown('share', 'toolbar_share_early')
+      setLoginPromptReason('completed')
+    }
   }
 
   const handleSaveClick = () => {
