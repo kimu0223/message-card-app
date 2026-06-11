@@ -1,5 +1,5 @@
 import LPHeader from '@/components/lp/LPHeader'
-import HeroCinematic, { StatStrip } from '@/components/lp/HeroCinematic'
+import HeroCinematic3D, { StatStrip } from '@/components/lp/HeroCinematic3D'
 import InstantDemoSection from '@/components/lp/InstantDemoSection'
 import GallerySection from '@/components/lp/GallerySection'
 import HowItWorksSection from '@/components/lp/HowItWorksSection'
@@ -14,7 +14,7 @@ export default function Home() {
     <div className="lp-page flex min-h-screen flex-col" style={{ fontFamily: 'var(--font-lp-sans)' }}>
       <LPHeader />
       <main className="flex-1">
-        <HeroCinematic />
+        <HeroCinematic3D />
         <StatStrip />
         <InstantDemoSection />
         <GallerySection />

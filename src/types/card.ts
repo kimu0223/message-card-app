@@ -84,6 +84,8 @@ export interface AnimationConfig {
   loop: boolean;
 }
 
+export type DisplayMode = '2d' | '3d';
+
 export interface CanvasData {
   version: string;
   size: CardSize;
@@ -92,6 +94,7 @@ export interface CanvasData {
   animation: AnimationConfig | null;
   templateId?: string; // LP template reference
   envelope?: EnvelopeConfig; // デジタルシェア用封筒
+  displayMode?: DisplayMode; // Pro: 3Dカード表示モード
 }
 
 export interface CardSizeConfig {

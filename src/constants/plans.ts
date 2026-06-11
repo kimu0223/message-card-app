@@ -52,6 +52,7 @@ export const PLANS: Record<Plan, PlanConfig> = {
       'AIメッセージ 無制限',
       'AIデザイン 無制限',
       '全アニメーション効果',
+      '3Dカード演出',
       '優先サポート',
     ],
   },

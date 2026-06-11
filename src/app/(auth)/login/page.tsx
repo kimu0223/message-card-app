@@ -3,24 +3,29 @@
 // ビルド時の静的プリレンダリングで Supabase クライアント初期化エラーが起きるため動的レンダリングに固定
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import Logo from '@/components/shared/Logo'
 
-export default function LoginPage() {
+function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true)
+      const next = searchParams.get('next') || '/dashboard'
+      const callbackUrl = new URL('/auth/callback', window.location.origin)
+      callbackUrl.searchParams.set('next', next)
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl.toString(),
         },
       })
       if (error) throw error
@@ -33,53 +38,65 @@ export default function LoginPage() {
   }
 
   return (
+    <div className="login-form-inner">
+      <div style={{ marginBottom: 48 }}>
+        <Logo />
+      </div>
+
+      <p className="login-eyebrow">&mdash; Welcome back &mdash;</p>
+
+      <h1 className="login-title">またここで、あの一通を。</h1>
+
+      <p className="login-lede">
+        ログインすると、作成したカードの保存・管理や
+        <br />
+        プレミアムテンプレートをご利用いただけます。
+      </p>
+
+      <button
+        className="btn-google"
+        onClick={handleGoogleLogin}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <Loader2 style={{ width: 20, height: 20, animation: 'spin 1s linear infinite' }} />
+        ) : (
+          <svg width="20" height="20" aria-hidden="true" viewBox="0 0 488 512">
+            <path
+              fill="currentColor"
+              d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+            />
+          </svg>
+        )}
+        Google でログイン
+      </button>
+
+      <div className="login-foot">
+        <p>
+          アカウントなしでも{' '}
+          <Link href="/create">登録なしで試す</Link>
+        </p>
+        <p style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+          <a href="/terms">利用規約</a>
+          <a href="/privacy">プライバシーポリシー</a>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
     <div className="login-screen" style={{ fontFamily: 'var(--font-lp-sans)' }}>
       {/* Left: Form */}
       <div className="login-form">
-        <div className="login-form-inner">
-          <div style={{ marginBottom: 48 }}>
-            <Logo />
+        <Suspense fallback={
+          <div className="login-form-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader2 style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: '#A68B6B' }} />
           </div>
-
-          <p className="login-eyebrow">&mdash; Welcome back &mdash;</p>
-
-          <h1 className="login-title">またここで、あの一通を。</h1>
-
-          <p className="login-lede">
-            ログインすると、作成したカードの保存・管理や
-            <br />
-            プレミアムテンプレートをご利用いただけます。
-          </p>
-
-          <button
-            className="btn-google"
-            onClick={handleGoogleLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loader2 style={{ width: 20, height: 20, animation: 'spin 1s linear infinite' }} />
-            ) : (
-              <svg width="20" height="20" aria-hidden="true" viewBox="0 0 488 512">
-                <path
-                  fill="currentColor"
-                  d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-                />
-              </svg>
-            )}
-            Google でログイン
-          </button>
-
-          <div className="login-foot">
-            <p>
-              アカウントなしでも{' '}
-              <Link href="/create">登録なしで試す</Link>
-            </p>
-            <p style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-              <a href="/terms">利用規約</a>
-              <a href="/privacy">プライバシーポリシー</a>
-            </p>
-          </div>
-        </div>
+        }>
+          <LoginForm />
+        </Suspense>
       </div>
 
       {/* Right: Art Panel */}

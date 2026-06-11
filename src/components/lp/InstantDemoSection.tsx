@@ -1,50 +1,118 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles, LogIn } from 'lucide-react'
 import Link from 'next/link'
+import { Bloom, Sprig, Eucalyptus } from './CardTemplates'
 
-const DEMO_TEMPLATES = [
+// --- Scene-specific decoration configs ---
+interface SceneDecor {
+  bg: string
+  accent: string
+  textColor: string
+  defaultMsg: string
+  heading: string
+  headingFont: string
+  label: string
+  id: string
+  decorations: React.ReactNode
+}
+
+const DEMO_TEMPLATES: SceneDecor[] = [
   {
     id: 'demo-birthday',
     label: '誕生日',
-    bg: 'linear-gradient(135deg, #FBF1E8 0%, #F8E1D0 100%)',
+    bg: 'radial-gradient(ellipse at 50% 80%, #F8C9A8 0%, #FBE0CC 40%, transparent 70%), linear-gradient(135deg, #FBF1E8 0%, #F8E1D0 100%)',
     accent: '#A85F44',
     textColor: '#5A2B1A',
     defaultMsg: 'お誕生日おめでとう！\nいつも笑顔をありがとう。',
     heading: 'Happy Birthday',
     headingFont: 'var(--font-lp-display)',
+    decorations: (
+      <>
+        <div style={{ position: 'absolute', top: -18, right: -10, transform: 'rotate(20deg)' }}>
+          <Bloom size={72} color="#E89A82" center="#A85F44" />
+        </div>
+        <div style={{ position: 'absolute', top: 16, right: 36, transform: 'rotate(-8deg)' }}>
+          <Bloom size={42} color="#F2B69B" center="#A85F44" />
+        </div>
+        <div style={{ position: 'absolute', top: 48, right: 4, transform: 'rotate(15deg)' }}>
+          <Bloom size={30} color="#E0AC8B" center="#7A3F2A" />
+        </div>
+        <div style={{ position: 'absolute', top: 28, right: 60, transform: 'rotate(-30deg)' }}>
+          <Sprig scale={0.6} color="#8FA68A" />
+        </div>
+        {([[16, 120, '#F2B69B'], [32, 148, '#E89A82'], [8, 168, '#F4D6B0']] as const).map(([x, y, c], i) => (
+          <div key={i} style={{ position: 'absolute', left: x, top: y, width: 5, height: 8, background: c, borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%', transform: `rotate(${i * 30}deg)`, opacity: 0.7 }} />
+        ))}
+      </>
+    ),
   },
   {
     id: 'demo-thanks',
     label: 'お礼',
-    bg: 'linear-gradient(135deg, #E8F0E8 0%, #D4E4D4 100%)',
+    bg: 'radial-gradient(ellipse at 30% 20%, rgba(143,166,138,0.3) 0%, transparent 60%), linear-gradient(135deg, #E8F0E8 0%, #D4E4D4 100%)',
     accent: '#4A6741',
     textColor: '#2A3D26',
     defaultMsg: 'いつもありがとうございます。\n感謝の気持ちを込めて。',
     heading: 'Thank You',
     headingFont: 'var(--font-lp-display)',
+    decorations: (
+      <>
+        <div style={{ position: 'absolute', top: -10, right: -20, transform: 'rotate(-30deg)', opacity: 0.8 }}>
+          <Eucalyptus color="#6E8669" />
+        </div>
+        <div style={{ position: 'absolute', top: 40, left: -16, transform: 'rotate(20deg)', opacity: 0.6 }}>
+          <Sprig scale={0.55} color="#8FA68A" rotate={-20} />
+        </div>
+        <div style={{ position: 'absolute', bottom: 60, right: 10, width: 6, height: 6, borderRadius: '50%', background: '#FFFCF5' }} />
+      </>
+    ),
   },
   {
     id: 'demo-farewell',
     label: '送別',
-    bg: 'linear-gradient(135deg, #E8E0F0 0%, #D0C4E0 100%)',
-    accent: '#6B5B8A',
-    textColor: '#3A2D50',
+    bg: 'radial-gradient(circle at 50% 40%, #FBE6D4 0%, transparent 50%), linear-gradient(180deg, #F8DDC0 0%, #E8917A 60%, #C97B5C 100%)',
+    accent: '#FFFAEB',
+    textColor: '#FFFAEB',
     defaultMsg: 'お疲れさまでした。\n新しい場所でのご活躍を\n心から応援しています。',
     heading: 'Best Wishes',
     headingFont: 'var(--font-lp-display)',
+    decorations: (
+      <>
+        <div style={{ position: 'absolute', top: '35%', left: '50%', transform: 'translate(-50%,-50%)', width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle, #FFFAEB 0%, #F4C496 80%)', opacity: 0.5 }} />
+        <svg viewBox="0 0 220 100" preserveAspectRatio="none" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', height: '40%' }}>
+          <path d="M0 50 L50 30 L110 45 L170 28 L220 42 L220 100 L0 100 Z" fill="#7A4530" opacity="0.5" />
+          <path d="M0 70 L40 55 L100 65 L160 52 L220 62 L220 100 L0 100 Z" fill="#5A3322" opacity="0.6" />
+        </svg>
+      </>
+    ),
   },
   {
     id: 'demo-wedding',
     label: '結婚祝い',
-    bg: 'linear-gradient(135deg, #FDF6F0 0%, #F0E6D8 100%)',
+    bg: 'radial-gradient(ellipse at 50% 30%, rgba(184,146,99,0.1) 0%, transparent 60%), linear-gradient(135deg, #FDF6F0 0%, #F0E6D8 100%)',
     accent: '#B08D6E',
     textColor: '#4A3728',
     defaultMsg: 'ご結婚おめでとうございます。\n末永くお幸せに。',
     heading: 'Congratulations',
     headingFont: 'var(--font-lp-display)',
+    decorations: (
+      <>
+        <div style={{ position: 'absolute', inset: 12, border: '0.5px solid #B89263', borderRadius: 4, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 16, border: '0.5px solid #B89263', borderRadius: 2, opacity: 0.4, pointerEvents: 'none' }} />
+        <svg viewBox="0 0 200 280" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+          <path d="M 25 240 L 25 110 Q 25 25 100 25 Q 175 25 175 110 L 175 240" fill="none" stroke="#8FA68A" strokeWidth="0.5" opacity="0.4" />
+          {[40, 80, 120, 160].map((cx, i) => (
+            <g key={i}>
+              <circle cx={cx} cy={25 + Math.abs(cx - 100) * 0.6} r="4" fill="#E89A82" opacity="0.6" />
+              <circle cx={cx} cy={25 + Math.abs(cx - 100) * 0.6} r="1.5" fill="#A85F44" opacity="0.6" />
+            </g>
+          ))}
+        </svg>
+      </>
+    ),
   },
 ]
 
@@ -54,6 +122,7 @@ export default function InstantDemoSection() {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const sectionRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const tpl = DEMO_TEMPLATES[selectedIdx]
 
@@ -66,14 +135,33 @@ export default function InstantDemoSection() {
     return () => observer.disconnect()
   }, [])
 
+  const fireConfetti = useCallback(async () => {
+    try {
+      const confetti = (await import('canvas-confetti')).default
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: [tpl.accent, '#E89A82', '#8FA68A', '#F4D6B0', '#B89263'],
+      })
+    } catch {
+      // canvas-confetti が無い場合は無視
+    }
+  }, [tpl.accent])
+
   const handleTemplateSelect = (idx: number) => {
     setSelectedIdx(idx)
     setMessage(DEMO_TEMPLATES[idx].defaultMsg)
     setStep(2)
+    setShowConfetti(false)
   }
 
   const handleMessageConfirm = () => {
-    if (message.trim()) setStep(3)
+    if (message.trim()) {
+      setStep(3)
+      setShowConfetti(true)
+      setTimeout(() => fireConfetti(), 400)
+    }
   }
 
   return (
@@ -133,7 +221,7 @@ export default function InstantDemoSection() {
           {[1, 2, 3].map(s => (
             <button
               key={s}
-              onClick={() => { if (s <= step) setStep(s as 1 | 2 | 3) }}
+              onClick={() => { if (s <= step) { setStep(s as 1 | 2 | 3); setShowConfetti(false) } }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -191,6 +279,8 @@ export default function InstantDemoSection() {
                       cursor: 'pointer',
                       textAlign: 'center',
                       transition: 'all 0.2s',
+                      position: 'relative',
+                      overflow: 'hidden',
                     }}
                   >
                     <div style={{
@@ -199,10 +289,12 @@ export default function InstantDemoSection() {
                       fontSize: 18,
                       color: t.accent,
                       marginBottom: 4,
+                      position: 'relative',
+                      zIndex: 1,
                     }}>
                       {t.heading}
                     </div>
-                    <div style={{ fontSize: 13, color: t.textColor, fontWeight: 500 }}>
+                    <div style={{ fontSize: 13, color: t.textColor, fontWeight: 500, position: 'relative', zIndex: 1 }}>
                       {t.label}
                     </div>
                   </button>
@@ -292,58 +384,73 @@ export default function InstantDemoSection() {
                   background: tpl.bg,
                   borderRadius: 16,
                   padding: '32px 28px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)',
                   position: 'relative',
                   overflow: 'hidden',
-                  minHeight: 280,
+                  minHeight: 300,
                   display: 'flex',
                   flexDirection: 'column',
                 }}>
-                  {/* Decorative dots */}
-                  <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 4 }}>
-                    {[0.3, 0.5, 0.7].map((o, i) => (
-                      <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: tpl.accent, opacity: o }} />
-                    ))}
-                  </div>
+                  {/* Scene-specific SVG decorations */}
+                  {tpl.decorations}
 
+                  {/* Tag label */}
                   <div style={{
-                    fontFamily: tpl.headingFont,
-                    fontStyle: 'italic',
-                    fontSize: 'clamp(28px, 6vw, 36px)',
+                    fontFamily: 'var(--font-lp-mono)',
+                    fontSize: 9,
                     color: tpl.accent,
-                    lineHeight: 1.1,
-                    marginBottom: 20,
+                    letterSpacing: '0.22em',
+                    textTransform: 'uppercase' as const,
+                    position: 'relative',
+                    zIndex: 1,
+                    opacity: 0.8,
                   }}>
-                    {tpl.heading}
+                    &#9829; for you
                   </div>
 
-                  <div style={{ flex: 1 }} />
+                  <div style={{ flex: 1, minHeight: 20 }} />
 
-                  <div style={{
-                    fontFamily: 'var(--font-lp-serif)',
-                    fontSize: 15,
-                    lineHeight: 1.8,
-                    color: tpl.textColor,
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                  }}>
-                    {message}
-                  </div>
-
-                  <div style={{
-                    marginTop: 20,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}>
-                    <div style={{ width: 24, height: 1, background: tpl.accent, opacity: 0.4 }} />
+                  <div style={{ position: 'relative', zIndex: 1 }}>
                     <div style={{
-                      fontFamily: 'var(--font-lp-hand)',
-                      fontSize: 14,
+                      fontFamily: tpl.headingFont,
+                      fontStyle: 'italic',
+                      fontSize: 'clamp(36px, 8vw, 48px)',
                       color: tpl.accent,
-                      opacity: 0.8,
+                      lineHeight: 0.95,
+                      marginBottom: 16,
+                      letterSpacing: '-0.02em',
                     }}>
-                      from you
+                      {tpl.heading}
+                    </div>
+
+                    <div style={{
+                      fontFamily: 'var(--font-lp-serif)',
+                      fontSize: 16,
+                      lineHeight: 1.8,
+                      color: tpl.textColor,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      fontWeight: 500,
+                    }}>
+                      {message}
+                    </div>
+
+                    <div style={{
+                      marginTop: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                    }}>
+                      <div style={{ width: 28, height: 1, background: tpl.accent, opacity: 0.4 }} />
+                      <div style={{
+                        fontFamily: 'var(--font-lp-hand)',
+                        fontSize: 18,
+                        color: tpl.accent,
+                        opacity: 0.8,
+                        transform: 'rotate(-3deg)',
+                      }}>
+                        with love
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -354,11 +461,11 @@ export default function InstantDemoSection() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
+                transition={{ delay: 0.5, duration: 0.3 }}
                 style={{ textAlign: 'center', marginTop: 28 }}
               >
                 <p style={{ fontSize: 14, color: '#7A6B5A', marginBottom: 16 }}>
-                  もっとカスタマイズして、相手に届けましょう
+                  実際のカードは、もっと華やかなテンプレートで作れます
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
                   <Link
@@ -389,8 +496,36 @@ export default function InstantDemoSection() {
                     本格的にカードを作る
                     <ArrowRight style={{ width: 16, height: 16 }} />
                   </Link>
+                  <Link
+                    href="/login"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '8px 20px',
+                      borderRadius: 8,
+                      background: 'transparent',
+                      border: '1px solid #D8CFC4',
+                      color: '#7A6B5A',
+                      fontSize: 13,
+                      fontWeight: 500,
+                      textDecoration: 'none',
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = '#A68B6B'
+                      e.currentTarget.style.color = '#2A2118'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = '#D8CFC4'
+                      e.currentTarget.style.color = '#7A6B5A'
+                    }}
+                  >
+                    <LogIn style={{ width: 14, height: 14 }} />
+                    ログインしてもっと本格的に作る
+                  </Link>
                   <button
-                    onClick={() => { setStep(1); setSelectedIdx(0); setMessage(DEMO_TEMPLATES[0].defaultMsg) }}
+                    onClick={() => { setStep(1); setSelectedIdx(0); setMessage(DEMO_TEMPLATES[0].defaultMsg); setShowConfetti(false) }}
                     style={{
                       background: 'none',
                       border: 'none',

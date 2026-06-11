@@ -4,7 +4,7 @@ import React from 'react'
 
 // ---- Shared SVG primitives ----
 
-const Sprig = ({ rotate = 0, scale = 1, color = '#6E8669' }: { rotate?: number; scale?: number; color?: string }) => (
+export const Sprig = ({ rotate = 0, scale = 1, color = '#6E8669' }: { rotate?: number; scale?: number; color?: string }) => (
   <svg viewBox="0 0 60 120" style={{ overflow: 'visible' }} width={50 * scale} height={100 * scale}>
     <g transform={`rotate(${rotate} 30 60)`}>
       <path d="M30 110 Q 30 60 30 10" fill="none" stroke={color} strokeWidth="0.9" strokeLinecap="round" />
@@ -23,7 +23,7 @@ const Sprig = ({ rotate = 0, scale = 1, color = '#6E8669' }: { rotate?: number; 
   </svg>
 )
 
-const Eucalyptus = ({ rotate = 0, color = '#8FA68A' }: { rotate?: number; color?: string }) => (
+export const Eucalyptus = ({ rotate = 0, color = '#8FA68A' }: { rotate?: number; color?: string }) => (
   <svg viewBox="0 0 80 140" style={{ overflow: 'visible' }} width="80" height="140">
     <g transform={`rotate(${rotate} 40 70)`}>
       <path d="M40 130 Q 38 70 40 12" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.7" />
@@ -38,7 +38,7 @@ const Eucalyptus = ({ rotate = 0, color = '#8FA68A' }: { rotate?: number; color?
   </svg>
 )
 
-const Bloom = ({ size = 42, color = '#E89A82', center = '#A85F44' }: { size?: number; color?: string; center?: string }) => (
+export const Bloom = ({ size = 42, color = '#E89A82', center = '#A85F44' }: { size?: number; color?: string; center?: string }) => (
   <svg viewBox="0 0 60 60" width={size} height={size}>
     {Array.from({ length: 8 }).map((_, i) => {
       const angle = (i * 45) * (Math.PI / 180)
@@ -57,7 +57,7 @@ const Bloom = ({ size = 42, color = '#E89A82', center = '#A85F44' }: { size?: nu
   </svg>
 )
 
-const ConfettiBit = ({ x, y, rot, c, kind = 'rect' }: { x: number; y: number; rot: number; c: string; kind?: string }) => {
+export const ConfettiBit = ({ x, y, rot, c, kind = 'rect' }: { x: number; y: number; rot: number; c: string; kind?: string }) => {
   if (kind === 'circle') return <circle cx={x} cy={y} r="2.5" fill={c} />
   if (kind === 'line') return <line x1={x - 4} y1={y} x2={x + 4} y2={y} stroke={c} strokeWidth="1.5" strokeLinecap="round" transform={`rotate(${rot} ${x} ${y})`} />
   if (kind === 'tri') return <polygon points={`${x},${y - 4} ${x - 3.5},${y + 3} ${x + 3.5},${y + 3}`} fill={c} transform={`rotate(${rot} ${x} ${y})`} />

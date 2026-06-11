@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
 import Link from 'next/link'
 import { motion, type TargetAndTransition } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,8 @@ import EnvelopeReveal from '@/components/share/EnvelopeReveal'
 import ViralCTA from '@/components/share/ViralCTA'
 import { useCardTilt } from '@/hooks/useCardTilt'
 import { CARD_TEMPLATES } from '@/components/lp/CardTemplates'
+
+const PublicCardView3D = lazy(() => import('@/components/share/PublicCardView3D'))
 
 interface PublicCardViewProps {
   title: string
@@ -92,12 +94,15 @@ function TypewriterText({ text, startDelay = 0, speed = 45 }: { text: string; st
 export default function PublicCardView({ title, canvasData, shareId }: PublicCardViewProps) {
   const envelopeStyle = canvasData.envelope?.style
   const hasEnvelope = !!envelopeStyle && envelopeStyle !== 'none'
+  const is3D = canvasData.displayMode === '3d'
 
   const [envelopeOpened, setEnvelopeOpened] = useState(!hasEnvelope)
   const [confettiActive, setConfettiActive] = useState(false)
   const [snowActive, setSnowActive] = useState(false)
   const [sakuraActive, setSakuraActive] = useState(false)
   const [fireworksActive, setFireworksActive] = useState(false)
+  const [show3D, setShow3D] = useState(is3D)
+  const handle3DFallback = useCallback(() => setShow3D(false), [])
 
   const animType = canvasData.animation?.type
 
@@ -189,9 +194,19 @@ export default function PublicCardView({ title, canvasData, shareId }: PublicCar
         />
       )}
 
+      {/* 3D カード表示 (Pro) */}
+      {envelopeOpened && show3D && (
+        <Suspense fallback={null}>
+          <PublicCardView3D canvasData={canvasData} onFallback={handle3DFallback} />
+        </Suspense>
+      )}
+
       {/* カード本体 */}
       {envelopeOpened && (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-900 p-3 sm:p-6">
+        <div className={cn(
+          "flex min-h-screen flex-col items-center justify-center p-3 sm:p-6",
+          show3D ? "bg-transparent relative z-10" : "bg-zinc-900"
+        )}>
           <ConfettiAnimation active={confettiActive} />
           <SnowAnimation active={snowActive} />
           <SakuraAnimation active={sakuraActive} />

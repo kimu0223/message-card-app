@@ -40,13 +40,105 @@ function CardContent() {
 
 export default function HeroCinematic() {
   const sectionRef = useRef<HTMLElement>(null)
-  const [progress, setProgress] = useState(0)
+  const progressRef = useRef(0)
+  const rafRef = useRef<number>(0)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const shadowRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const flapRef = useRef<HTMLDivElement>(null)
+  const flapInsideRef = useRef<HTMLDivElement>(null)
+  const waxRef = useRef<HTMLDivElement>(null)
+  const scrollCueRef = useRef<HTMLDivElement>(null)
+  const revealRef = useRef<HTMLDivElement>(null)
+  const finalCardWrapRef = useRef<HTMLDivElement>(null)
+  const titleENRef = useRef<HTMLSpanElement>(null)
+  const titleJP1Ref = useRef<HTMLSpanElement>(null)
+  const titleJP2Ref = useRef<HTMLSpanElement>(null)
+  const ledeRef = useRef<HTMLParagraphElement>(null)
+  const ctaRowRef = useRef<HTMLDivElement>(null)
+  const metaRowRef = useRef<HTMLDivElement>(null)
+  const progressBarRef = useRef<HTMLDivElement>(null)
+
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60)
     return () => clearTimeout(t)
   }, [])
+
+  const applyProgress = useCallback(() => {
+    const p = progressRef.current
+    const seg = (a: number, b: number) => Math.max(0, Math.min(1, (p - a) / (b - a)))
+
+    const flap = seg(0.08, 0.30)
+    const wax = seg(0.08, 0.26)
+    const card = seg(0.22, 0.55)
+    const envFade = seg(0.45, 0.65)
+    const cardLand = seg(0.50, 0.68)
+    const titleEN = seg(0.62, 0.74)
+    const titleJP1 = seg(0.70, 0.82)
+    const titleJP2 = seg(0.78, 0.90)
+    const lede = seg(0.84, 0.94)
+    const cta = seg(0.90, 1.00)
+
+    // Envelope stage
+    if (stageRef.current) {
+      const s = stageRef.current.style
+      s.opacity = String(mounted ? 1 - envFade : 0)
+      s.transform = `scale(${(mounted ? 1 : 0.88) * (1 - cardLand * 0.10)}) translateY(${cardLand * -4}vh)`
+      s.transition = mounted ? 'none' : 'opacity .9s ease, transform 1.1s cubic-bezier(.2,.8,.2,1)'
+      s.pointerEvents = p > 0.6 ? 'none' : 'auto'
+    }
+    if (shadowRef.current) shadowRef.current.style.opacity = String(0.7 - envFade * 0.7)
+    if (cardRef.current) {
+      const cs = cardRef.current.style
+      cs.transform = `translateY(${-card * 78}%) rotate(${-card * 1.5}deg) scale(${1 + card * 0.04})`
+      cs.opacity = String(0.18 + card * 0.82)
+      cs.boxShadow = card > 0.1
+        ? `0 ${20 + card * 30}px ${40 + card * 30}px -${15 - card * 5}px rgba(43,37,32,${0.25 + card * 0.2})`
+        : '0 0 0 transparent'
+    }
+    if (flapRef.current) flapRef.current.style.transform = `rotateX(${flap * 178}deg) translateZ(0.1px)`
+    if (flapInsideRef.current) flapInsideRef.current.style.opacity = flap > 0.3 ? '1' : '0'
+    if (waxRef.current) {
+      const ws = waxRef.current.style
+      ws.transform = `translate(-50%, calc(-50% + ${wax * -32}vh)) rotate(${-8 + wax * 320}deg) scale(${1 - wax * 0.5})`
+      ws.opacity = String(1 - wax * wax)
+    }
+    if (scrollCueRef.current) scrollCueRef.current.style.opacity = String(1 - Math.min(1, p * 6))
+
+    // Reveal layer
+    if (revealRef.current) {
+      revealRef.current.style.opacity = String(cardLand)
+      revealRef.current.style.pointerEvents = p > 0.5 ? 'auto' : 'none'
+    }
+    if (finalCardWrapRef.current) {
+      finalCardWrapRef.current.style.opacity = String(cardLand)
+      finalCardWrapRef.current.style.transform = `translateY(${(1 - cardLand) * 40}px) scale(${0.94 + cardLand * 0.06})`
+    }
+    if (titleENRef.current) {
+      titleENRef.current.style.opacity = String(titleEN)
+      titleENRef.current.style.transform = `translateY(${(1 - titleEN) * 26}px)`
+    }
+    if (titleJP1Ref.current) {
+      titleJP1Ref.current.style.opacity = String(titleJP1)
+      titleJP1Ref.current.style.transform = `translateY(${(1 - titleJP1) * 30}px)`
+    }
+    if (titleJP2Ref.current) {
+      titleJP2Ref.current.style.opacity = String(titleJP2)
+      titleJP2Ref.current.style.transform = `translateY(${(1 - titleJP2) * 30}px)`
+    }
+    if (ledeRef.current) {
+      ledeRef.current.style.opacity = String(lede)
+      ledeRef.current.style.transform = `translateY(${(1 - lede) * 18}px)`
+    }
+    if (ctaRowRef.current) {
+      ctaRowRef.current.style.opacity = String(cta)
+      ctaRowRef.current.style.transform = `translateY(${(1 - cta) * 16}px)`
+    }
+    if (metaRowRef.current) metaRowRef.current.style.opacity = String(cta)
+    if (progressBarRef.current) progressBarRef.current.style.height = `${p * 100}%`
+  }, [mounted])
 
   useEffect(() => {
     const onScroll = () => {
@@ -55,8 +147,10 @@ export default function HeroCinematic() {
       const rect = el.getBoundingClientRect()
       const total = el.offsetHeight - window.innerHeight
       const scrolled = -rect.top
-      const p = Math.max(0, Math.min(1, scrolled / Math.max(total, 1)))
-      setProgress(p)
+      progressRef.current = Math.max(0, Math.min(1, scrolled / Math.max(total, 1)))
+
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = requestAnimationFrame(applyProgress)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -64,24 +158,9 @@ export default function HeroCinematic() {
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
+      cancelAnimationFrame(rafRef.current)
     }
-  }, [])
-
-  const seg = useCallback((a: number, b: number) =>
-    Math.max(0, Math.min(1, (progress - a) / (b - a))),
-  [progress])
-
-  const flap = seg(0.08, 0.30)
-  const wax = seg(0.08, 0.26)
-  const card = seg(0.22, 0.55)
-  const envFade = seg(0.45, 0.65)
-  const cardLand = seg(0.50, 0.68)
-
-  const titleEN  = seg(0.62, 0.74)
-  const titleJP1 = seg(0.70, 0.82)
-  const titleJP2 = seg(0.78, 0.90)
-  const lede     = seg(0.84, 0.94)
-  const cta      = seg(0.90, 1.00)
+  }, [applyProgress])
 
   return (
     <section
@@ -103,19 +182,8 @@ export default function HeroCinematic() {
         </div>
 
         {/* Envelope stage */}
-        <div
-          className="env-stage"
-          style={{
-            opacity: mounted ? 1 - envFade : 0,
-            transform: `
-              scale(${(mounted ? 1 : 0.88) * (1 - cardLand * 0.10)})
-              translateY(${cardLand * -4}vh)
-            `,
-            transition: mounted ? 'none' : 'opacity .9s ease, transform 1.1s cubic-bezier(.2,.8,.2,1)',
-            pointerEvents: progress > 0.6 ? 'none' : 'auto',
-          }}
-        >
-          <div className="env-shadow-hero" style={{ opacity: 0.7 - envFade * 0.7 }} />
+        <div ref={stageRef} className="env-stage">
+          <div ref={shadowRef} className="env-shadow-hero" />
 
           <div className="env-pocket">
             <div className="env-grain" />
@@ -140,56 +208,29 @@ export default function HeroCinematic() {
           </div>
 
           {/* Card emerging */}
-          <div
-            className="env-card-hero env-card--inside"
-            style={{
-              transform: `translateY(${-card * 78}%) rotate(${-card * 1.5}deg) scale(${1 + card * 0.04})`,
-              opacity: 0.18 + card * 0.82,
-              boxShadow: card > 0.1
-                ? `0 ${20 + card * 30}px ${40 + card * 30}px -${15 - card * 5}px rgba(43,37,32,${0.25 + card * 0.2})`
-                : '0 0 0 transparent',
-            }}
-          >
+          <div ref={cardRef} className="env-card-hero env-card--inside">
             <CardContent />
           </div>
 
           {/* Flap */}
-          <div className="env-flap-hero" style={{ transform: `rotateX(${flap * 178}deg) translateZ(0.1px)` }}>
-            <div className="env-flap-inside" style={{ opacity: flap > 0.3 ? 1 : 0 }} />
+          <div ref={flapRef} className="env-flap-hero">
+            <div ref={flapInsideRef} className="env-flap-inside" />
           </div>
 
           {/* Wax seal */}
-          <div
-            className="env-wax-hero"
-            style={{
-              transform: `translate(-50%, calc(-50% + ${wax * -32}vh)) rotate(${-8 + wax * 320}deg) scale(${1 - wax * 0.5})`,
-              opacity: 1 - wax * wax,
-            }}
-          >
+          <div ref={waxRef} className="env-wax-hero">
             <div className="env-wax-disc">M</div>
           </div>
 
-          <div className="hero-scroll-cue" style={{ opacity: 1 - Math.min(1, progress * 6) }}>
+          <div ref={scrollCueRef} className="hero-scroll-cue">
             <span className="hero-scroll-label">Scroll to open</span>
             <span className="hero-scroll-arrow">&darr;</span>
           </div>
         </div>
 
         {/* Reveal layer */}
-        <div
-          className="hero-reveal"
-          style={{
-            opacity: cardLand,
-            pointerEvents: progress > 0.5 ? 'auto' : 'none',
-          }}
-        >
-          <div
-            className="hero-final-card"
-            style={{
-              opacity: cardLand,
-              transform: `translateY(${(1 - cardLand) * 40}px) scale(${0.94 + cardLand * 0.06})`,
-            }}
-          >
+        <div ref={revealRef} className="hero-reveal">
+          <div ref={finalCardWrapRef} className="hero-final-card">
             <div className="env-card-hero env-card--final">
               <CardContent />
             </div>
@@ -197,28 +238,23 @@ export default function HeroCinematic() {
 
           <div className="hero-copy">
             <h1 className="hero-h1">
-              <span className="hero-h1-en"
-                    style={{ opacity: titleEN, transform: `translateY(${(1 - titleEN) * 26}px)` }}>
+              <span ref={titleENRef} className="hero-h1-en">
                 Open the moment.
               </span>
-              <span className="hero-h1-jp1"
-                    style={{ opacity: titleJP1, transform: `translateY(${(1 - titleJP1) * 30}px)` }}>
+              <span ref={titleJP1Ref} className="hero-h1-jp1">
                 心がふるえる、
               </span>
-              <span className="hero-h1-jp2"
-                    style={{ opacity: titleJP2, transform: `translateY(${(1 - titleJP2) * 30}px)` }}>
+              <span ref={titleJP2Ref} className="hero-h1-jp2">
                 一通の手紙を。
               </span>
             </h1>
 
-            <p className="hero-p"
-               style={{ opacity: lede, transform: `translateY(${(1 - lede) * 18}px)` }}>
+            <p ref={ledeRef} className="hero-p">
               テンプレートを選んで、言葉を添えるだけ。<br className="break-md" />
               3分で届く、アニメーション付きメッセージカード。
             </p>
 
-            <div className="hero-cta-row"
-                 style={{ opacity: cta, transform: `translateY(${(1 - cta) * 16}px)` }}>
+            <div ref={ctaRowRef} className="hero-cta-row">
               <Link href="/create" className="lp-btn lp-btn-primary">
                 無料でカードを作る &rarr;
               </Link>
@@ -227,7 +263,7 @@ export default function HeroCinematic() {
               </a>
             </div>
 
-            <div className="hero-meta-row" style={{ opacity: cta }}>
+            <div ref={metaRowRef} className="hero-meta-row">
               <span>クレジットカード不要</span>
               <span aria-hidden>&middot;</span>
               <span>3分で完成</span>
@@ -238,7 +274,7 @@ export default function HeroCinematic() {
         </div>
 
         <div className="hero-progress">
-          <div className="hero-progress-bar" style={{ height: `${progress * 100}%` }} />
+          <div ref={progressBarRef} className="hero-progress-bar" />
         </div>
       </div>
     </section>

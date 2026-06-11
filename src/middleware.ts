@@ -28,7 +28,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // getSession() はCookieからセッションを読み取るだけでネットワーク呼び出しなし
+  // getUser() はSupabaseへHTTP呼び出しが発生し、Vercelの10秒制限でタイムアウトする
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
   const pathname = request.nextUrl.pathname;
 
   const isProtected = PROTECTED_ROUTES.some(r => pathname.startsWith(r));
