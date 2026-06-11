@@ -45,6 +45,7 @@ export default function ViralCTA({ shareUrl }: ViralCTAProps) {
           <div style={{
             maxWidth: 440,
             margin: '0 auto',
+            position: 'relative',
             background: 'rgba(255,255,255,0.97)',
             backdropFilter: 'blur(12px)',
             borderRadius: 16,

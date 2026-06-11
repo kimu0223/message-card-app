@@ -89,7 +89,7 @@ export default function InstantDemoSection() {
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
-          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: 0.6 }}
           style={{ textAlign: 'center', marginBottom: 40 }}
         >
@@ -126,7 +126,7 @@ export default function InstantDemoSection() {
         {/* Step indicators */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={isVisible ? { opacity: 1 } : {}}
+          animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
           transition={{ delay: 0.2 }}
           style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 32 }}
         >
@@ -282,15 +282,11 @@ export default function InstantDemoSection() {
               transition={{ duration: 0.4 }}
             >
               {/* Card preview */}
+              <div style={{ perspective: 800, maxWidth: 380, margin: '0 auto' }}>
               <motion.div
                 initial={{ rotateY: -8, rotateX: 2 }}
                 animate={{ rotateY: 0, rotateX: 0 }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
-                style={{
-                  perspective: 800,
-                  maxWidth: 380,
-                  margin: '0 auto',
-                }}
               >
                 <div style={{
                   background: tpl.bg,
@@ -352,6 +348,7 @@ export default function InstantDemoSection() {
                   </div>
                 </div>
               </motion.div>
+              </div>
 
               {/* CTA */}
               <motion.div
