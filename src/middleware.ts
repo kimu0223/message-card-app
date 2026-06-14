@@ -30,6 +30,10 @@ export async function middleware(request: NextRequest) {
 
   // getSession() はCookieからセッションを読み取るだけでネットワーク呼び出しなし
   // getUser() はSupabaseへHTTP呼び出しが発生し、Vercelの10秒制限でタイムアウトする
+  //
+  // 注意: getSession() のセッションはJWT未検証のため認可の「正本」ではない。
+  // ここでのチェックはあくまでUX用のリダイレクト。実データの保護は
+  // (app)/layout.tsx と各 API Route の getUser()（サーバー再検証）が担う。
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user ?? null;
   const pathname = request.nextUrl.pathname;

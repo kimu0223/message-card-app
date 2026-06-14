@@ -11,8 +11,13 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // next パラメータのパスが / で始まることを確認（オープンリダイレクト防止）
-      const redirectPath = next.startsWith('/') ? next : '/dashboard'
+      // オープンリダイレクト防止: 同一オリジン内の相対パスのみ許可。
+      // `//evil.com` や `/\evil.com`（プロトコル相対/バックスラッシュ）を弾く。
+      const isSafe =
+        next.startsWith('/') &&
+        !next.startsWith('//') &&
+        !next.startsWith('/\\')
+      const redirectPath = isSafe ? next : '/dashboard'
       return NextResponse.redirect(`${origin}${redirectPath}`)
     }
   }
