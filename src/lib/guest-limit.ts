@@ -97,9 +97,93 @@ export async function recordGuestUsage(
   opts: Pick<GuestLimitOptions, 'feature'> = {},
 ): Promise<void> {
   const serviceClient = await createServiceClient()
-  await serviceClient.from('guest_ai_usage').insert({
+  const { error } = await serviceClient.from('guest_ai_usage').insert({
     session_id: sessionId,
     ip_address: ip,
     feature: opts.feature ?? 'design_generation',
   })
+  if (error) console.error('recordGuestUsage insert failed:', error)
+}
+
+/**
+ * ゲストの利用枠を「予約」する（TOCTOU競合対策）。
+ *
+ * checkGuestLimit→（生成）→recordGuestUsage の2段構えだと、並行リクエストが
+ * 全員「上限未満」を読んでから一斉に生成でき、上限を超過してしまう（コスト直結）。
+ * これを防ぐため「先にINSERT（予約）→自分の行を含めてCOUNT」する。
+ * 並行リクエストは互いの予約を数えるため、上限を超えた分だけが弾かれる。
+ *
+ * AI生成は allowed=true（予約成功）後にのみ実行すること。生成に失敗したら
+ * releaseGuestReservation(reservationId) で予約を取り消し、枠を返す。
+ */
+export async function reserveGuestUsage(
+  sessionId: string,
+  ip: string,
+  opts: GuestLimitOptions = {},
+): Promise<{ allowed: boolean; reason?: 'session' | 'ip' | 'error'; reservationId?: string }> {
+  const feature = opts.feature ?? 'design_generation'
+  const sessionLimit = opts.sessionLimit ?? GUEST_SESSION_LIMIT
+  const ipDailyLimit = opts.ipDailyLimit ?? GUEST_IP_DAILY_LIMIT
+
+  const serviceClient = await createServiceClient()
+
+  // 1. 予約INSERT（自分の枠を先に確保）
+  const { data: inserted, error: insertError } = await serviceClient
+    .from('guest_ai_usage')
+    .insert({ session_id: sessionId, ip_address: ip, feature })
+    .select('id')
+    .single()
+
+  if (insertError || !inserted) {
+    // 記録できないなら安全側に倒して拒否（無料生成し放題を防ぐ）
+    console.error('reserveGuestUsage insert failed:', insertError)
+    return { allowed: false, reason: 'error' }
+  }
+
+  const reservationId = (inserted as { id: string }).id
+
+  // 2. 自分の予約を含めてCOUNT（> 判定: 上限を超えた予約だけ弾く）
+  const windowStart = new Date()
+  windowStart.setDate(windowStart.getDate() - GUEST_SESSION_WINDOW_DAYS)
+
+  const { count: sessionCount } = await serviceClient
+    .from('guest_ai_usage')
+    .select('*', { count: 'exact', head: true })
+    .eq('session_id', sessionId)
+    .eq('feature', feature)
+    .gte('created_at', windowStart.toISOString())
+
+  if ((sessionCount ?? 0) > sessionLimit) {
+    await releaseGuestReservation(reservationId)
+    return { allowed: false, reason: 'session' }
+  }
+
+  const dayStart = new Date()
+  dayStart.setHours(0, 0, 0, 0)
+
+  const { count: ipCount } = await serviceClient
+    .from('guest_ai_usage')
+    .select('*', { count: 'exact', head: true })
+    .eq('ip_address', ip)
+    .eq('feature', feature)
+    .gte('created_at', dayStart.toISOString())
+
+  if ((ipCount ?? 0) > ipDailyLimit) {
+    await releaseGuestReservation(reservationId)
+    return { allowed: false, reason: 'ip' }
+  }
+
+  return { allowed: true, reservationId }
+}
+
+/**
+ * reserveGuestUsage で確保した予約を取り消す（AI生成失敗時に枠を返す）。
+ */
+export async function releaseGuestReservation(reservationId: string): Promise<void> {
+  const serviceClient = await createServiceClient()
+  const { error } = await serviceClient
+    .from('guest_ai_usage')
+    .delete()
+    .eq('id', reservationId)
+  if (error) console.error('releaseGuestReservation delete failed:', error)
 }

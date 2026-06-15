@@ -4,8 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { generateDesignVariants } from '@/lib/gemini/design'
 import { PLANS, CREDIT_COSTS } from '@/constants/plans'
 import { deductCredits } from '@/lib/credits'
-import { checkGuestLimit, recordGuestUsage, getClientIP } from '@/lib/guest-limit'
+import { reserveGuestUsage, releaseGuestReservation, getClientIP } from '@/lib/guest-limit'
 import { validateDesignBody } from './_validate'
+import { resolveGuestSession, setGuestCookie } from './_guest-session'
 import type { AIDesignGenerateRequest } from '@/types/ai'
 
 const FREE_LIMIT = PLANS.free.monthlyAiDesignLimit!
@@ -14,23 +15,28 @@ const FREE_LIMIT = PLANS.free.monthlyAiDesignLimit!
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS ?? '')
   .split(',').map(s => s.trim()).filter(Boolean)
 
-const GUEST_COOKIE_NAME = '__Host-gst'
-const GUEST_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30日
-
 export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   // ─── ゲストユーザーのレート制限 ───
   if (!user) {
+    // ボディ検証を先に行い、不正リクエストで無駄な予約を発生させない
+    let body: AIDesignGenerateRequest
+    try {
+      body = (await request.json()) as AIDesignGenerateRequest
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+    const validationError = validateDesignBody(body)
+    if (validationError) return validationError
+
     const cookieStore = await cookies()
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    const rawCookie = cookieStore.get(GUEST_COOKIE_NAME)?.value
-    const existingSession = rawCookie && UUID_REGEX.test(rawCookie) ? rawCookie : undefined
-    const guestSessionId = existingSession ?? crypto.randomUUID()
+    const { sessionId, isNew } = resolveGuestSession(cookieStore)
     const ip = getClientIP(request)
 
-    const { allowed, reason } = await checkGuestLimit(guestSessionId, ip)
+    // 利用枠を原子的に予約（並行リクエストでの上限超過を防ぐ）
+    const { allowed, reason, reservationId } = await reserveGuestUsage(sessionId, ip)
     if (!allowed) {
       return NextResponse.json(
         { error: 'guest_limit_exceeded', reason },
@@ -38,37 +44,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // リクエストボディを検証
-    let body: AIDesignGenerateRequest
-    try {
-      body = (await request.json()) as AIDesignGenerateRequest
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
-    }
-
-    const validationError = validateDesignBody(body)
-    if (validationError) return validationError
-
     try {
       const result = await generateDesignVariants(body)
-
-      // 使用量を記録
-      await recordGuestUsage(guestSessionId, ip)
-
-      // レスポンスにセッションCookieをセット
       const response = NextResponse.json(result)
-      if (!existingSession) {
-        response.cookies.set(GUEST_COOKIE_NAME, guestSessionId, {
-          httpOnly: true,
-          secure: true,        // __Host- プレフィックスに必須
-          sameSite: 'strict',
-          maxAge: GUEST_COOKIE_MAX_AGE,
-          path: '/',           // __Host- プレフィックスに必須
-        })
-      }
+      if (isNew) setGuestCookie(response, sessionId)
       return response
     } catch (error) {
       console.error('AI design generation error (guest):', error)
+      if (reservationId) await releaseGuestReservation(reservationId)
       return NextResponse.json({ error: 'Generation failed' }, { status: 500 })
     }
   }

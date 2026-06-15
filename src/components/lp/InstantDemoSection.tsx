@@ -237,7 +237,8 @@ export default function InstantDemoSection() {
       })
 
       if (res.status === 429) {
-        setError('trial_limit_exceeded')
+        const data = await res.json().catch(() => ({}))
+        setError(data?.error === 'trial_limit_exceeded' ? 'trial_limit_exceeded' : 'generation_failed')
         return
       }
       if (!res.ok) {
