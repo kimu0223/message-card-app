@@ -2,12 +2,18 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Sparkles, LogIn } from 'lucide-react'
+import { ArrowRight, Sparkles, LogIn, Loader2, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { Bloom, Sprig, Eucalyptus } from './CardTemplates'
+import CanvasStageView from '@/components/card/CanvasStageView'
+import { MOOD_OPTIONS, DEFAULT_MOOD_ID, buildTrialRequest } from '@/lib/demo/sceneMapping'
+import type { AIDesignMood } from '@/types/ai'
+import type { CanvasData } from '@/types/card'
 
-// --- Scene-specific decoration configs ---
+// --- Scene-specific decoration configs（シーン選択UI＋AI失敗時フォールバックの見た目） ---
 interface SceneDecor {
+  /** sceneMapping.ts の DEMO_SCENES.id と対応（API呼び出しに使用） */
+  sceneId: string
   bg: string
   accent: string
   textColor: string
@@ -22,6 +28,7 @@ interface SceneDecor {
 const DEMO_TEMPLATES: SceneDecor[] = [
   {
     id: 'demo-birthday',
+    sceneId: 'birthday',
     label: '誕生日',
     bg: 'radial-gradient(ellipse at 50% 80%, #F8C9A8 0%, #FBE0CC 40%, transparent 70%), linear-gradient(135deg, #FBF1E8 0%, #F8E1D0 100%)',
     accent: '#A85F44',
@@ -51,6 +58,7 @@ const DEMO_TEMPLATES: SceneDecor[] = [
   },
   {
     id: 'demo-thanks',
+    sceneId: 'thanks',
     label: 'お礼',
     bg: 'radial-gradient(ellipse at 30% 20%, rgba(143,166,138,0.3) 0%, transparent 60%), linear-gradient(135deg, #E8F0E8 0%, #D4E4D4 100%)',
     accent: '#4A6741',
@@ -72,6 +80,7 @@ const DEMO_TEMPLATES: SceneDecor[] = [
   },
   {
     id: 'demo-farewell',
+    sceneId: 'farewell',
     label: '送別',
     bg: 'radial-gradient(circle at 50% 40%, #FBE6D4 0%, transparent 50%), linear-gradient(180deg, #F8DDC0 0%, #E8917A 60%, #C97B5C 100%)',
     accent: '#FFFAEB',
@@ -91,6 +100,7 @@ const DEMO_TEMPLATES: SceneDecor[] = [
   },
   {
     id: 'demo-wedding',
+    sceneId: 'celebration',
     label: '結婚祝い',
     bg: 'radial-gradient(ellipse at 50% 30%, rgba(184,146,99,0.1) 0%, transparent 60%), linear-gradient(135deg, #FDF6F0 0%, #F0E6D8 100%)',
     accent: '#B08D6E',
@@ -116,13 +126,63 @@ const DEMO_TEMPLATES: SceneDecor[] = [
   },
 ]
 
+type DemoError = 'trial_limit_exceeded' | 'generation_failed' | null
+
+/** AI失敗時に表示する従来のハードコードプリセットプレビュー（安全網）。 */
+function PresetPreview({ tpl, message }: { tpl: SceneDecor; message: string }) {
+  return (
+    <div style={{ perspective: 800, maxWidth: 380, margin: '0 auto' }}>
+      <div style={{
+        background: tpl.bg,
+        borderRadius: 16,
+        padding: '32px 28px',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)',
+        position: 'relative',
+        overflow: 'hidden',
+        minHeight: 300,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {tpl.decorations}
+        <div style={{
+          fontFamily: 'var(--font-lp-mono)', fontSize: 9, color: tpl.accent,
+          letterSpacing: '0.22em', textTransform: 'uppercase', position: 'relative', zIndex: 1, opacity: 0.8,
+        }}>
+          &#9829; for you
+        </div>
+        <div style={{ flex: 1, minHeight: 20 }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{
+            fontFamily: tpl.headingFont, fontStyle: 'italic', fontSize: 'clamp(36px, 8vw, 48px)',
+            color: tpl.accent, lineHeight: 0.95, marginBottom: 16, letterSpacing: '-0.02em',
+          }}>
+            {tpl.heading}
+          </div>
+          <div style={{
+            fontFamily: 'var(--font-lp-serif)', fontSize: 16, lineHeight: 1.8, color: tpl.textColor,
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontWeight: 500,
+          }}>
+            {message}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function InstantDemoSection() {
   const [selectedIdx, setSelectedIdx] = useState(0)
   const [message, setMessage] = useState(DEMO_TEMPLATES[0].defaultMsg)
+  const [mood, setMood] = useState<AIDesignMood>(DEFAULT_MOOD_ID)
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const sectionRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(false)
+
+  // AI生成の状態
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [variants, setVariants] = useState<CanvasData[] | null>(null)
+  const [selectedVariant, setSelectedVariant] = useState(0)
+  const [error, setError] = useState<DemoError>(null)
 
   const tpl = DEMO_TEMPLATES[selectedIdx]
 
@@ -149,19 +209,64 @@ export default function InstantDemoSection() {
     }
   }, [tpl.accent])
 
+  const resetResult = () => {
+    setVariants(null)
+    setSelectedVariant(0)
+    setError(null)
+  }
+
   const handleTemplateSelect = (idx: number) => {
     setSelectedIdx(idx)
     setMessage(DEMO_TEMPLATES[idx].defaultMsg)
     setStep(2)
-    setShowConfetti(false)
+    resetResult()
   }
 
-  const handleMessageConfirm = () => {
-    if (message.trim()) {
-      setStep(3)
-      setShowConfetti(true)
+  const handleGenerate = useCallback(async () => {
+    if (!message.trim() || isGenerating) return
+    setStep(3)
+    setIsGenerating(true)
+    setError(null)
+    setVariants(null)
+
+    try {
+      const res = await fetch('/api/ai/design/trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildTrialRequest(tpl.sceneId, mood, message)),
+      })
+
+      if (res.status === 429) {
+        setError('trial_limit_exceeded')
+        return
+      }
+      if (!res.ok) {
+        setError('generation_failed')
+        return
+      }
+
+      const data = await res.json()
+      const vs: CanvasData[] = Array.isArray(data?.variants) ? data.variants : []
+      if (vs.length === 0) {
+        setError('generation_failed')
+        return
+      }
+      setVariants(vs)
+      setSelectedVariant(0)
       setTimeout(() => fireConfetti(), 400)
+    } catch {
+      setError('generation_failed')
+    } finally {
+      setIsGenerating(false)
     }
+  }, [message, mood, tpl.sceneId, isGenerating, fireConfetti])
+
+  const handleRetry = () => {
+    setStep(1)
+    setSelectedIdx(0)
+    setMessage(DEMO_TEMPLATES[0].defaultMsg)
+    setMood(DEFAULT_MOOD_ID)
+    resetResult()
   }
 
   return (
@@ -182,32 +287,20 @@ export default function InstantDemoSection() {
           style={{ textAlign: 'center', marginBottom: 40 }}
         >
           <p style={{
-            fontSize: 12,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: '#A68B6B',
-            marginBottom: 12,
-            fontFamily: 'var(--font-lp-mono)',
+            fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase',
+            color: '#A68B6B', marginBottom: 12, fontFamily: 'var(--font-lp-mono)',
           }}>
-            Try it now
+            Try the real AI
           </p>
           <h2 style={{
             fontFamily: 'var(--font-lp-serif)',
             fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-            fontWeight: 600,
-            color: '#2A2118',
-            margin: 0,
-            lineHeight: 1.3,
+            fontWeight: 600, color: '#2A2118', margin: 0, lineHeight: 1.3,
           }}>
-            30秒でカードを体験
+            本物のAIでカードを生成
           </h2>
-          <p style={{
-            fontSize: 14,
-            color: '#7A6B5A',
-            marginTop: 8,
-            lineHeight: 1.6,
-          }}>
-            登録不要。今すぐ試せます。
+          <p style={{ fontSize: 14, color: '#7A6B5A', marginTop: 8, lineHeight: 1.6 }}>
+            登録不要。シーンとムードを選ぶだけで、AIが本番品質のデザインを作ります。
           </p>
         </motion.div>
 
@@ -221,40 +314,29 @@ export default function InstantDemoSection() {
           {[1, 2, 3].map(s => (
             <button
               key={s}
-              onClick={() => { if (s <= step) { setStep(s as 1 | 2 | 3); setShowConfetti(false) } }}
+              onClick={() => { if (s <= step) { setStep(s as 1 | 2 | 3); if (s < 3) resetResult() } }}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '6px 14px',
-                borderRadius: 20,
-                border: 'none',
-                fontSize: 12,
+                display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+                borderRadius: 20, border: 'none', fontSize: 12,
                 fontWeight: step === s ? 600 : 400,
                 color: step >= s ? '#2A2118' : '#B0A090',
                 background: step === s ? '#FFF' : 'transparent',
                 boxShadow: step === s ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-                cursor: s <= step ? 'pointer' : 'default',
-                transition: 'all 0.2s',
+                cursor: s <= step ? 'pointer' : 'default', transition: 'all 0.2s',
               }}
             >
               <span style={{
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
+                width: 20, height: 20, borderRadius: '50%',
                 background: step >= s ? '#A68B6B' : '#D8CFC4',
-                color: '#FFF',
-                fontSize: 11,
-                display: 'grid',
-                placeItems: 'center',
+                color: '#FFF', fontSize: 11, display: 'grid', placeItems: 'center',
               }}>{s}</span>
-              {s === 1 ? 'シーン' : s === 2 ? 'メッセージ' : '完成'}
+              {s === 1 ? 'シーン' : s === 2 ? 'メッセージ' : '生成'}
             </button>
           ))}
         </motion.div>
 
         <AnimatePresence mode="wait">
-          {/* Step 1: Template selection */}
+          {/* Step 1: Scene selection */}
           {step === 1 && (
             <motion.div
               key="step1"
@@ -274,23 +356,13 @@ export default function InstantDemoSection() {
                     style={{
                       background: t.bg,
                       border: selectedIdx === i ? `2px solid ${t.accent}` : '2px solid transparent',
-                      borderRadius: 12,
-                      padding: '20px 16px',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      transition: 'all 0.2s',
-                      position: 'relative',
-                      overflow: 'hidden',
+                      borderRadius: 12, padding: '20px 16px', cursor: 'pointer',
+                      textAlign: 'center', transition: 'all 0.2s', position: 'relative', overflow: 'hidden',
                     }}
                   >
                     <div style={{
-                      fontFamily: t.headingFont,
-                      fontStyle: 'italic',
-                      fontSize: 18,
-                      color: t.accent,
-                      marginBottom: 4,
-                      position: 'relative',
-                      zIndex: 1,
+                      fontFamily: t.headingFont, fontStyle: 'italic', fontSize: 18,
+                      color: t.accent, marginBottom: 4, position: 'relative', zIndex: 1,
                     }}>
                       {t.heading}
                     </div>
@@ -303,7 +375,7 @@ export default function InstantDemoSection() {
             </motion.div>
           )}
 
-          {/* Step 2: Message input */}
+          {/* Step 2: Message + mood */}
           {step === 2 && (
             <motion.div
               key="step2"
@@ -312,237 +384,207 @@ export default function InstantDemoSection() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <p style={{ textAlign: 'center', fontSize: 15, color: '#5A4A3A', marginBottom: 16, fontWeight: 500 }}>
-                メッセージを入力してください
-              </p>
               <div style={{
-                background: '#FFF',
-                borderRadius: 12,
-                padding: 20,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                background: '#FFF', borderRadius: 12, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
               }}>
+                <p style={{ fontSize: 13, color: '#5A4A3A', marginBottom: 8, fontWeight: 500 }}>
+                  メッセージ
+                </p>
                 <textarea
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   placeholder="お誕生日おめでとう！"
                   rows={4}
+                  maxLength={500}
                   style={{
-                    width: '100%',
-                    border: '1px solid #E0D8D0',
-                    borderRadius: 8,
-                    padding: '12px 14px',
-                    fontSize: 15,
-                    lineHeight: 1.6,
-                    color: '#2A2118',
-                    resize: 'none',
-                    fontFamily: 'inherit',
-                    outline: 'none',
+                    width: '100%', border: '1px solid #E0D8D0', borderRadius: 8, padding: '12px 14px',
+                    fontSize: 15, lineHeight: 1.6, color: '#2A2118', resize: 'none', fontFamily: 'inherit', outline: 'none',
                   }}
                   onFocus={e => { e.target.style.borderColor = tpl.accent }}
                   onBlur={e => { e.target.style.borderColor = '#E0D8D0' }}
                 />
+
+                <p style={{ fontSize: 13, color: '#5A4A3A', margin: '16px 0 8px', fontWeight: 500 }}>
+                  ムード（雰囲気）
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {MOOD_OPTIONS.map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setMood(m.id)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+                        borderRadius: 20, fontSize: 13, fontWeight: mood === m.id ? 600 : 400,
+                        border: mood === m.id ? `1.5px solid ${tpl.accent}` : '1.5px solid #E0D8D0',
+                        background: mood === m.id ? '#FBF6F0' : '#FFF',
+                        color: mood === m.id ? '#2A2118' : '#7A6B5A',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                    >
+                      <span>{m.emoji}</span>{m.label}
+                    </button>
+                  ))}
+                </div>
+
                 <button
-                  onClick={handleMessageConfirm}
+                  onClick={handleGenerate}
                   disabled={!message.trim()}
                   style={{
-                    marginTop: 12,
-                    width: '100%',
-                    padding: '10px 0',
-                    borderRadius: 8,
-                    border: 'none',
-                    background: message.trim() ? tpl.accent : '#D8CFC4',
-                    color: '#FFF',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: message.trim() ? 'pointer' : 'default',
-                    transition: 'background 0.2s',
+                    marginTop: 20, width: '100%', padding: '12px 0', borderRadius: 8, border: 'none',
+                    background: message.trim() ? tpl.accent : '#D8CFC4', color: '#FFF',
+                    fontSize: 14, fontWeight: 600, cursor: message.trim() ? 'pointer' : 'default',
+                    transition: 'background 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}
                 >
-                  プレビューを見る
+                  <Sparkles style={{ width: 16, height: 16 }} />
+                  AIでデザインを生成
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 3: Preview */}
+          {/* Step 3: Result */}
           {step === 3 && (
             <motion.div
               key="step3"
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              exit={{ opacity: 0, scale: 0.97 }}
               transition={{ duration: 0.4 }}
             >
-              {/* Card preview */}
-              <div style={{ perspective: 800, maxWidth: 380, margin: '0 auto' }}>
-              <motion.div
-                initial={{ rotateY: -8, rotateX: 2 }}
-                animate={{ rotateY: 0, rotateX: 0 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-              >
+              {/* Loading */}
+              {isGenerating && (
+                <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                  <Loader2 className="animate-spin" style={{ width: 36, height: 36, color: tpl.accent, margin: '0 auto' }} />
+                  <p style={{ marginTop: 16, fontSize: 15, color: '#5A4A3A', fontWeight: 500 }}>
+                    AIがデザインを生成中…
+                  </p>
+                  <p style={{ marginTop: 6, fontSize: 13, color: '#A68B6B' }}>
+                    黄金比・配色・装飾を計算しています
+                  </p>
+                </div>
+              )}
+
+              {/* Limit reached → registration CTA */}
+              {!isGenerating && error === 'trial_limit_exceeded' && (
                 <div style={{
-                  background: tpl.bg,
-                  borderRadius: 16,
-                  padding: '32px 28px',
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  minHeight: 300,
-                  display: 'flex',
-                  flexDirection: 'column',
+                  background: '#FFF', borderRadius: 16, padding: '32px 24px', textAlign: 'center',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.08)', maxWidth: 420, margin: '0 auto',
                 }}>
-                  {/* Scene-specific SVG decorations */}
-                  {tpl.decorations}
-
-                  {/* Tag label */}
                   <div style={{
-                    fontFamily: 'var(--font-lp-mono)',
-                    fontSize: 9,
-                    color: tpl.accent,
-                    letterSpacing: '0.22em',
-                    textTransform: 'uppercase' as const,
-                    position: 'relative',
-                    zIndex: 1,
-                    opacity: 0.8,
+                    width: 56, height: 56, borderRadius: '50%', background: '#FBF1E8',
+                    display: 'grid', placeItems: 'center', margin: '0 auto 16px',
                   }}>
-                    &#9829; for you
+                    <Lock style={{ width: 24, height: 24, color: '#A85F44' }} />
                   </div>
-
-                  <div style={{ flex: 1, minHeight: 20 }} />
-
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{
-                      fontFamily: tpl.headingFont,
-                      fontStyle: 'italic',
-                      fontSize: 'clamp(36px, 8vw, 48px)',
-                      color: tpl.accent,
-                      lineHeight: 0.95,
-                      marginBottom: 16,
-                      letterSpacing: '-0.02em',
-                    }}>
-                      {tpl.heading}
-                    </div>
-
-                    <div style={{
-                      fontFamily: 'var(--font-lp-serif)',
-                      fontSize: 16,
-                      lineHeight: 1.8,
-                      color: tpl.textColor,
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      fontWeight: 500,
-                    }}>
-                      {message}
-                    </div>
-
-                    <div style={{
-                      marginTop: 20,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                    }}>
-                      <div style={{ width: 28, height: 1, background: tpl.accent, opacity: 0.4 }} />
-                      <div style={{
-                        fontFamily: 'var(--font-lp-hand)',
-                        fontSize: 18,
-                        color: tpl.accent,
-                        opacity: 0.8,
-                        transform: 'rotate(-3deg)',
-                      }}>
-                        with love
-                      </div>
-                    </div>
+                  <h3 style={{ fontFamily: 'var(--font-lp-serif)', fontSize: 20, color: '#2A2118', margin: '0 0 8px' }}>
+                    お試し回数の上限に達しました
+                  </h3>
+                  <p style={{ fontSize: 14, color: '#7A6B5A', lineHeight: 1.6, marginBottom: 24 }}>
+                    無料登録すると、AIデザイン生成を続けて使えます。<br />
+                    保存・共有・もっと多くのテンプレートも解放されます。
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+                    <Link href="/login" style={ctaPrimaryStyle}>
+                      <Sparkles style={{ width: 16, height: 16 }} />
+                      無料登録して続ける
+                      <ArrowRight style={{ width: 16, height: 16 }} />
+                    </Link>
                   </div>
                 </div>
-              </motion.div>
-              </div>
+              )}
 
-              {/* CTA */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.3 }}
-                style={{ textAlign: 'center', marginTop: 28 }}
-              >
-                <p style={{ fontSize: 14, color: '#7A6B5A', marginBottom: 16 }}>
-                  実際のカードは、もっと華やかなテンプレートで作れます
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-                  <Link
-                    href="/create"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '12px 28px',
-                      borderRadius: 10,
-                      background: '#2A2118',
-                      color: '#FFF',
-                      fontSize: 14,
-                      fontWeight: 600,
-                      textDecoration: 'none',
-                      transition: 'transform 0.15s, box-shadow 0.15s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.transform = 'translateY(-1px)'
-                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = 'none'
-                    }}
-                  >
-                    <Sparkles style={{ width: 16, height: 16 }} />
-                    本格的にカードを作る
-                    <ArrowRight style={{ width: 16, height: 16 }} />
-                  </Link>
-                  <Link
-                    href="/login"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      padding: '8px 20px',
-                      borderRadius: 8,
-                      background: 'transparent',
-                      border: '1px solid #D8CFC4',
-                      color: '#7A6B5A',
-                      fontSize: 13,
-                      fontWeight: 500,
-                      textDecoration: 'none',
-                      transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = '#A68B6B'
-                      e.currentTarget.style.color = '#2A2118'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = '#D8CFC4'
-                      e.currentTarget.style.color = '#7A6B5A'
-                    }}
-                  >
-                    <LogIn style={{ width: 14, height: 14 }} />
-                    ログインしてもっと本格的に作る
-                  </Link>
-                  <button
-                    onClick={() => { setStep(1); setSelectedIdx(0); setMessage(DEMO_TEMPLATES[0].defaultMsg); setShowConfetti(false) }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#A68B6B',
-                      fontSize: 13,
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    もう一度試す
-                  </button>
+              {/* Generation failed → fallback preset preview */}
+              {!isGenerating && error === 'generation_failed' && (
+                <div>
+                  <PresetPreview tpl={tpl} message={message} />
+                  <p style={{ textAlign: 'center', fontSize: 13, color: '#A68B6B', marginTop: 16 }}>
+                    AI生成が混み合っています。プレビューを表示しました。
+                  </p>
+                  <div style={{ textAlign: 'center', marginTop: 12 }}>
+                    <button onClick={() => { setStep(2); resetResult() }} style={linkButtonStyle}>
+                      もう一度生成する
+                    </button>
+                  </div>
                 </div>
-              </motion.div>
+              )}
+
+              {/* Success → AI-generated variants */}
+              {!isGenerating && !error && variants && variants.length > 0 && (
+                <div>
+                  <div style={{ maxWidth: 360, margin: '0 auto' }}>
+                    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.18)' }}>
+                      <CanvasStageView key={selectedVariant} canvasData={variants[selectedVariant]} />
+                    </div>
+                  </div>
+
+                  {/* Variant switcher */}
+                  {variants.length > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 16 }}>
+                      {variants.map((v, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedVariant(i)}
+                          aria-label={`デザイン候補 ${i + 1}`}
+                          style={{
+                            width: 52, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', padding: 0,
+                            border: selectedVariant === i ? `2px solid ${tpl.accent}` : '2px solid #E0D8D0',
+                            background: '#FFF', lineHeight: 0,
+                          }}
+                        >
+                          <CanvasStageView canvasData={v} animate={false} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <p style={{ textAlign: 'center', fontSize: 13, color: '#A68B6B', marginTop: 14 }}>
+                    ✨ これは本番と同じAIエンジンで生成したデザインです
+                  </p>
+
+                  {/* CTA */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.3 }}
+                    style={{ textAlign: 'center', marginTop: 24 }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+                      <Link href="/create" style={ctaPrimaryStyle}>
+                        <Sparkles style={{ width: 16, height: 16 }} />
+                        このデザインで本格的に作る
+                        <ArrowRight style={{ width: 16, height: 16 }} />
+                      </Link>
+                      <Link href="/login" style={ctaSecondaryStyle}>
+                        <LogIn style={{ width: 14, height: 14 }} />
+                        ログインして保存・共有する
+                      </Link>
+                      <button onClick={handleRetry} style={linkButtonStyle}>
+                        別のシーンで試す
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     </section>
   )
+}
+
+const ctaPrimaryStyle: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 10,
+  background: '#2A2118', color: '#FFF', fontSize: 14, fontWeight: 600, textDecoration: 'none',
+}
+
+const ctaSecondaryStyle: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 8,
+  background: 'transparent', border: '1px solid #D8CFC4', color: '#7A6B5A',
+  fontSize: 13, fontWeight: 500, textDecoration: 'none',
+}
+
+const linkButtonStyle: React.CSSProperties = {
+  background: 'none', border: 'none', color: '#A68B6B', fontSize: 13, cursor: 'pointer', textDecoration: 'underline',
 }

@@ -5,19 +5,14 @@ import { generateDesignVariants } from '@/lib/gemini/design'
 import { PLANS, CREDIT_COSTS } from '@/constants/plans'
 import { deductCredits } from '@/lib/credits'
 import { checkGuestLimit, recordGuestUsage, getClientIP } from '@/lib/guest-limit'
-import type { AIDesignGenerateRequest, AIDesignRecipient, AIDesignOccasion, AIDesignMood } from '@/types/ai'
-import type { CardSize } from '@/types/card'
+import { validateDesignBody } from './_validate'
+import type { AIDesignGenerateRequest } from '@/types/ai'
 
 const FREE_LIMIT = PLANS.free.monthlyAiDesignLimit!
 
 // 管理者ユーザーID（カンマ区切り）: レート制限・クレジット消費を完全スキップ
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS ?? '')
   .split(',').map(s => s.trim()).filter(Boolean)
-
-const VALID_RECIPIENTS: AIDesignRecipient[] = ['lover', 'friend', 'family', 'colleague', 'teacher']
-const VALID_OCCASIONS: AIDesignOccasion[] = ['birthday', 'thank_you', 'congratulations', 'anniversary', 'seasonal', 'other']
-const VALID_MOODS: AIDesignMood[] = ['warm', 'elegant', 'pop', 'cool', 'simple', 'cute']
-const VALID_SIZES: CardSize[] = ['a4_landscape', 'a4_portrait', 'square', 'instagram', 'line_stamp', 'shikishi']
 
 const GUEST_COOKIE_NAME = '__Host-gst'
 const GUEST_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30日
@@ -51,7 +46,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
 
-    const validationError = validateBody(body)
+    const validationError = validateDesignBody(body)
     if (validationError) return validationError
 
     try {
@@ -87,7 +82,7 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
-    const validationError = validateBody(body)
+    const validationError = validateDesignBody(body)
     if (validationError) return validationError
 
     try {
@@ -139,7 +134,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const validationError = validateBody(body)
+  const validationError = validateDesignBody(body)
   if (validationError) return validationError
 
   try {
@@ -167,26 +162,4 @@ export async function POST(request: Request) {
     console.error('AI design generation error:', error)
     return NextResponse.json({ error: 'Generation failed' }, { status: 500 })
   }
-}
-
-// リクエストボディのバリデーション（ゲスト・ログイン共通）
-function validateBody(body: AIDesignGenerateRequest): NextResponse | null {
-  const { recipient, occasion, mood, size, messageText } = body
-
-  if (!VALID_RECIPIENTS.includes(recipient)) {
-    return NextResponse.json({ error: 'Invalid recipient' }, { status: 400 })
-  }
-  if (!VALID_OCCASIONS.includes(occasion)) {
-    return NextResponse.json({ error: 'Invalid occasion' }, { status: 400 })
-  }
-  if (!VALID_MOODS.includes(mood)) {
-    return NextResponse.json({ error: 'Invalid mood' }, { status: 400 })
-  }
-  if (size && !VALID_SIZES.includes(size)) {
-    return NextResponse.json({ error: 'Invalid size' }, { status: 400 })
-  }
-  if (messageText && messageText.length > 500) {
-    return NextResponse.json({ error: 'Message text too long' }, { status: 400 })
-  }
-  return null
 }
