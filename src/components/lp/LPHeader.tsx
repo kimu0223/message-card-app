@@ -2,33 +2,68 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import Logo from '@/components/shared/Logo'
 
 export default function LPHeader() {
+  // scrolled past the dark hero top → solid cream bar with ink text.
+  // at the very top (<=40px) → transparent bar with light text over the dark hero.
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
+
+  // The transparent light-text treatment only makes sense over the homepage's
+  // dark depth hero. Every other (lp) route is light at the top, so there the
+  // header is always the solid cream bar (light text would be invisible).
+  const isHome = pathname === '/'
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
+    const onScroll = () => setScrolled(window.scrollY > 40)
+    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Solid unless we're sitting over the homepage hero with nothing scrolled/open.
+  const solid = !isHome || scrolled || mobileOpen
+
+  // text/icon color flips between cream (over dark hero) and ink (scrolled).
+  const fg = solid ? 'var(--lp-ink)' : 'var(--lp-cream-soft)'
+  const fgSoft = solid ? 'var(--lp-ink-soft)' : 'rgba(250, 247, 239, 0.78)'
+
   return (
     <header
-      className="sticky top-0 z-50 border-b transition-all duration-200"
+      className="sticky top-0 z-50 transition-all duration-300"
       style={{
-        backdropFilter: 'blur(14px) saturate(120%)',
-        background: scrolled ? 'rgba(244, 236, 220, 0.85)' : 'rgba(244, 236, 220, 0.72)',
-        borderColor: 'rgba(43,37,32,0.06)',
+        backdropFilter: solid ? 'blur(14px) saturate(120%)' : 'none',
+        background: solid ? 'rgba(250, 247, 239, 0.85)' : 'transparent',
+        borderBottom: solid
+          ? '1px solid var(--lp-paper-line)'
+          : '1px solid transparent',
+        color: fg,
       }}
     >
+      {/* Recolor the Logo wordmark when displayed over the dark hero (top of page).
+          Scoped to this header via the wrapper classes. */}
+      <style>{`
+        .lph-logo-hero .lp-logo,
+        .lph-logo-hero .lp-logo-accent { color: var(--lp-cream-soft); }
+        .lph-logo-hero .lp-logo-icon { background: var(--lp-cream-soft); color: var(--lp-ink); }
+      `}</style>
       <div className="mx-auto flex max-w-[1240px] items-center justify-between px-8 py-[18px]">
-        <Logo />
+        {/* Logo wrapper: flip the wordmark text color between ink and cream.
+            The 贈 hanko keeps its own navy box (its inner light border keeps it
+            readable on the dark hero), so we only recolor the inheriting text. */}
+        <div className={solid ? 'lph-logo-solid' : 'lph-logo-hero'}>
+          <Logo />
+        </div>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-7 text-sm md:flex" style={{ color: 'var(--lp-ink-soft)' }}>
+        <nav
+          className="hidden items-center gap-7 text-sm md:flex"
+          style={{ color: fgSoft, fontFamily: 'var(--font-lp-sans)' }}
+        >
           <a href="#how" className="transition-colors hover:text-[var(--lp-terracotta)]">使い方</a>
           <a href="#features" className="transition-colors hover:text-[var(--lp-terracotta)]">機能</a>
           <a href="#gallery" className="transition-colors hover:text-[var(--lp-terracotta)]">テンプレート</a>
@@ -41,16 +76,21 @@ export default function LPHeader() {
           <Link
             href="/login"
             className="inline-flex items-center rounded-full border px-[18px] py-[10px] text-sm font-medium transition-colors"
-            style={{ borderColor: 'rgba(43,37,32,0.18)', color: 'var(--lp-ink)' }}
+            style={{
+              borderColor: solid ? 'var(--lp-paper-line)' : 'rgba(250, 247, 239, 0.4)',
+              color: fg,
+            }}
           >
             ログイン
           </Link>
           <Link
             href="/create"
-            className="inline-flex items-center rounded-full px-[18px] py-[10px] text-sm font-medium text-[var(--lp-cream-soft)] transition-transform hover:-translate-y-0.5"
+            className="inline-flex items-center rounded-full px-[18px] py-[10px] text-sm font-medium transition-transform hover:-translate-y-0.5"
             style={{
-              background: 'var(--lp-ink)',
-              boxShadow: '0 6px 0 -3px var(--lp-ink), 0 12px 24px -10px rgba(43,37,32,0.5)',
+              // over dark hero: cream bg + ink text ; scrolled: ink bg + cream text
+              background: solid ? 'var(--lp-ink)' : 'var(--lp-cream-soft)',
+              color: solid ? 'var(--lp-cream-soft)' : 'var(--lp-ink)',
+              boxShadow: '0 12px 24px -10px rgba(26,39,68,0.45)',
             }}
           >
             無料で試す →
@@ -61,36 +101,46 @@ export default function LPHeader() {
         <div className="flex items-center gap-2 md:hidden">
           <Link
             href="/create"
-            className="inline-flex items-center rounded-full px-4 py-2 text-xs font-medium text-[var(--lp-cream-soft)]"
-            style={{ background: 'var(--lp-ink)' }}
+            className="inline-flex items-center rounded-full px-4 py-2 text-xs font-medium"
+            style={{
+              background: solid ? 'var(--lp-ink)' : 'var(--lp-cream-soft)',
+              color: solid ? 'var(--lp-cream-soft)' : 'var(--lp-ink)',
+            }}
           >
             無料で試す →
           </Link>
           <button
             onClick={() => setMobileOpen(v => !v)}
             aria-label="メニュー"
-            style={{ color: 'var(--lp-ink)' }}
+            aria-expanded={mobileOpen}
+            style={{ color: fg }}
           >
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer — cream panel, ink text */}
       {mobileOpen && (
-        <div className="border-t px-8 py-5 md:hidden" style={{ borderColor: 'rgba(43,37,32,0.06)', background: 'var(--lp-cream-soft)' }}>
-          <nav className="flex flex-col gap-4 text-sm font-medium" style={{ color: 'var(--lp-ink-soft)' }}>
+        <div
+          className="border-t px-8 py-5 md:hidden"
+          style={{ borderColor: 'var(--lp-paper-line)', background: 'var(--lp-cream-soft)' }}
+        >
+          <nav
+            className="flex flex-col gap-4 text-sm font-medium"
+            style={{ color: 'var(--lp-ink-soft)', fontFamily: 'var(--font-lp-sans)' }}
+          >
             <a href="#how" onClick={() => setMobileOpen(false)}>使い方</a>
             <a href="#features" onClick={() => setMobileOpen(false)}>機能</a>
             <a href="#gallery" onClick={() => setMobileOpen(false)}>テンプレート</a>
             <a href="#pricing" onClick={() => setMobileOpen(false)}>料金</a>
             <a href="#faq" onClick={() => setMobileOpen(false)}>FAQ</a>
-            <hr style={{ borderColor: 'rgba(43,37,32,0.08)' }} />
-            <Link href="/login" onClick={() => setMobileOpen(false)}>ログイン</Link>
+            <hr style={{ borderColor: 'var(--lp-paper-line)' }} />
+            <Link href="/login" style={{ color: 'var(--lp-ink)' }} onClick={() => setMobileOpen(false)}>ログイン</Link>
             <Link
               href="/create"
-              className="inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium text-[var(--lp-cream-soft)]"
-              style={{ background: 'var(--lp-ink)' }}
+              className="inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium"
+              style={{ background: 'var(--lp-ink)', color: 'var(--lp-cream-soft)' }}
               onClick={() => setMobileOpen(false)}
             >
               無料で試す →

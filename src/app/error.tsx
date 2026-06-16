@@ -17,10 +17,10 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F4ECDC] p-8 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F4F0E6] p-8 text-center">
       <p className="text-5xl">😓</p>
-      <h1 className="text-2xl font-bold text-[#2B2520]">エラーが発生しました</h1>
-      <p className="text-sm text-[#7B6F65]">
+      <h1 className="text-2xl font-bold text-[#1A2744]" style={{ fontFamily: 'var(--font-lp-serif)' }}>エラーが発生しました</h1>
+      <p className="text-sm" style={{ color: 'rgba(26,39,68,0.62)' }}>
         予期しない問題が起きました。もう一度お試しください。
       </p>
       <Button onClick={reset} className="mt-2">

@@ -131,15 +131,15 @@ export default function LoginPage() {
 
           {/* Card 3 — dark elegant */}
           <div className="stack-card">
-            <div style={{ background: 'linear-gradient(160deg, #2B2520 0%, #3D332C 100%)', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ background: 'linear-gradient(160deg, #0D1430 0%, #26345A 100%)', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
               <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 280 360" fill="none" preserveAspectRatio="xMidYMid slice">
-                <rect x="40" y="50" width="8" height="16" rx="2" fill="#E8B87E" transform="rotate(25 44 58)" />
-                <rect x="200" y="40" width="6" height="14" rx="2" fill="#C97B5C" transform="rotate(-15 203 47)" />
-                <rect x="100" y="30" width="7" height="12" rx="2" fill="#88A88A" transform="rotate(40 103 36)" />
-                <rect x="230" y="120" width="8" height="14" rx="2" fill="#E8B87E" transform="rotate(60 234 127)" />
-                <rect x="160" y="280" width="8" height="16" rx="2" fill="#C97B5C" transform="rotate(20 164 288)" />
+                <rect x="40" y="50" width="8" height="16" rx="2" fill="#B89968" transform="rotate(25 44 58)" />
+                <rect x="200" y="40" width="6" height="14" rx="2" fill="#B03A2E" transform="rotate(-15 203 47)" />
+                <rect x="100" y="30" width="7" height="12" rx="2" fill="#8AA676" transform="rotate(40 103 36)" />
+                <rect x="230" y="120" width="8" height="14" rx="2" fill="#B89968" transform="rotate(60 234 127)" />
+                <rect x="160" y="280" width="8" height="16" rx="2" fill="#B03A2E" transform="rotate(20 164 288)" />
               </svg>
-              <span style={{ fontFamily: 'var(--font-lp-display)', fontSize: '1.6rem', fontStyle: 'italic', color: '#F5E6D0', position: 'relative', zIndex: 1, letterSpacing: '-0.02em' }}>Thank you.</span>
+              <span style={{ fontFamily: 'var(--font-lp-display)', fontSize: '1.6rem', fontStyle: 'italic', color: '#F4F0E6', position: 'relative', zIndex: 1, letterSpacing: '-0.02em' }}>Thank you.</span>
             </div>
           </div>
         </div>

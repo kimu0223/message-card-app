@@ -128,6 +128,17 @@ const DEMO_TEMPLATES: SceneDecor[] = [
 
 type DemoError = 'trial_limit_exceeded' | 'generation_failed' | null
 
+// 和モダン chrome palette (tokens). Scene tiles keep their own colorful palettes.
+const C = {
+  ink: 'var(--lp-ink)',
+  inkSoft: 'var(--lp-ink-soft)',
+  inkMute: 'var(--lp-ink-mute)',
+  accent: 'var(--lp-terracotta)', // 朱 vermilion
+  paper: 'var(--lp-cream-soft)',
+  line: 'var(--lp-paper-line)',
+  glass: 'rgba(255,255,255,0.6)',
+} as const
+
 /** AI失敗時に表示する従来のハードコードプリセットプレビュー（安全網）。 */
 function PresetPreview({ tpl, message }: { tpl: SceneDecor; message: string }) {
   return (
@@ -272,12 +283,14 @@ export default function InstantDemoSection() {
 
   return (
     <section
+      id="demo"
       ref={sectionRef}
       style={{
-        padding: '80px 16px',
-        background: 'linear-gradient(180deg, #FDFCFA 0%, #F5F0EB 100%)',
+        padding: 'clamp(70px,10vw,130px) 16px',
+        background: 'transparent',
         position: 'relative',
         overflow: 'hidden',
+        zIndex: 2,
       }}
     >
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
@@ -288,20 +301,20 @@ export default function InstantDemoSection() {
           style={{ textAlign: 'center', marginBottom: 40 }}
         >
           <p style={{
-            fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: '#A68B6B', marginBottom: 12, fontFamily: 'var(--font-lp-mono)',
+            fontSize: 11, letterSpacing: '0.4em', textTransform: 'uppercase', fontWeight: 600,
+            color: C.accent, marginBottom: 14, fontFamily: 'var(--font-lp-sans)',
           }}>
             Try the real AI
           </p>
           <h2 style={{
             fontFamily: 'var(--font-lp-serif)',
-            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-            fontWeight: 600, color: '#2A2118', margin: 0, lineHeight: 1.3,
+            fontSize: 'clamp(28px, 4vw, 46px)',
+            fontWeight: 600, color: C.ink, margin: 0, lineHeight: 1.25, letterSpacing: '0.02em',
           }}>
-            本物のAIでカードを生成
+            本物のAIで、いますぐ一枚を。
           </h2>
-          <p style={{ fontSize: 14, color: '#7A6B5A', marginTop: 8, lineHeight: 1.6 }}>
-            登録不要。シーンとムードを選ぶだけで、AIが本番品質のデザインを作ります。
+          <p style={{ fontSize: 'clamp(14px,1.4vw,16px)', color: C.inkSoft, marginTop: 14, lineHeight: 1.85, maxWidth: 480, marginInline: 'auto' }}>
+            登録不要。シーンとムードを選ぶだけで、本番と同じAIエンジンが上質なデザインを生成します。
           </p>
         </motion.div>
 
@@ -318,18 +331,18 @@ export default function InstantDemoSection() {
               onClick={() => { if (s <= step) { setStep(s as 1 | 2 | 3); if (s < 3) resetResult() } }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
-                borderRadius: 20, border: 'none', fontSize: 12,
+                borderRadius: 999, border: 'none', fontSize: 12, fontFamily: 'var(--font-lp-sans)',
                 fontWeight: step === s ? 600 : 400,
-                color: step >= s ? '#2A2118' : '#B0A090',
-                background: step === s ? '#FFF' : 'transparent',
-                boxShadow: step === s ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                color: step >= s ? C.ink : C.inkMute,
+                background: step === s ? 'rgba(255,255,255,0.7)' : 'transparent',
+                boxShadow: step === s ? '0 2px 10px -4px rgba(20,28,52,0.25)' : 'none',
                 cursor: s <= step ? 'pointer' : 'default', transition: 'all 0.2s',
               }}
             >
               <span style={{
                 width: 20, height: 20, borderRadius: '50%',
-                background: step >= s ? '#A68B6B' : '#D8CFC4',
-                color: '#FFF', fontSize: 11, display: 'grid', placeItems: 'center',
+                background: step >= s ? C.accent : 'rgba(26,39,68,0.18)',
+                color: C.paper, fontSize: 11, display: 'grid', placeItems: 'center',
               }}>{s}</span>
               {s === 1 ? 'シーン' : s === 2 ? 'メッセージ' : '生成'}
             </button>
@@ -346,7 +359,7 @@ export default function InstantDemoSection() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <p style={{ textAlign: 'center', fontSize: 15, color: '#5A4A3A', marginBottom: 16, fontWeight: 500 }}>
+              <p style={{ textAlign: 'center', fontSize: 15, color: C.inkSoft, marginBottom: 16, fontWeight: 500, fontFamily: 'var(--font-lp-sans)' }}>
                 どんなシーンで贈りますか？
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
@@ -386,9 +399,11 @@ export default function InstantDemoSection() {
               transition={{ duration: 0.3 }}
             >
               <div style={{
-                background: '#FFF', borderRadius: 12, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                background: C.glass, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.7)', borderRadius: 18, padding: 24,
+                boxShadow: '0 22px 50px -28px rgba(20,28,52,0.4)',
               }}>
-                <p style={{ fontSize: 13, color: '#5A4A3A', marginBottom: 8, fontWeight: 500 }}>
+                <p style={{ fontSize: 13, color: C.inkSoft, marginBottom: 8, fontWeight: 600, fontFamily: 'var(--font-lp-sans)' }}>
                   メッセージ
                 </p>
                 <textarea
@@ -398,14 +413,15 @@ export default function InstantDemoSection() {
                   rows={4}
                   maxLength={500}
                   style={{
-                    width: '100%', border: '1px solid #E0D8D0', borderRadius: 8, padding: '12px 14px',
-                    fontSize: 15, lineHeight: 1.6, color: '#2A2118', resize: 'none', fontFamily: 'inherit', outline: 'none',
+                    width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '12px 14px',
+                    fontSize: 15, lineHeight: 1.7, color: C.ink, resize: 'none', fontFamily: 'var(--font-lp-serif)',
+                    outline: 'none', background: 'rgba(255,255,255,0.6)',
                   }}
-                  onFocus={e => { e.target.style.borderColor = tpl.accent }}
-                  onBlur={e => { e.target.style.borderColor = '#E0D8D0' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--lp-terracotta)' }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(26,39,68,0.10)' }}
                 />
 
-                <p style={{ fontSize: 13, color: '#5A4A3A', margin: '16px 0 8px', fontWeight: 500 }}>
+                <p style={{ fontSize: 13, color: C.inkSoft, margin: '16px 0 8px', fontWeight: 600, fontFamily: 'var(--font-lp-sans)' }}>
                   ムード（雰囲気）
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -415,10 +431,10 @@ export default function InstantDemoSection() {
                       onClick={() => setMood(m.id)}
                       style={{
                         display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-                        borderRadius: 20, fontSize: 13, fontWeight: mood === m.id ? 600 : 400,
-                        border: mood === m.id ? `1.5px solid ${tpl.accent}` : '1.5px solid #E0D8D0',
-                        background: mood === m.id ? '#FBF6F0' : '#FFF',
-                        color: mood === m.id ? '#2A2118' : '#7A6B5A',
+                        borderRadius: 999, fontSize: 13, fontWeight: mood === m.id ? 600 : 400, fontFamily: 'var(--font-lp-sans)',
+                        border: mood === m.id ? '1.5px solid var(--lp-terracotta)' : `1.5px solid ${C.line}`,
+                        background: mood === m.id ? 'rgba(176,58,46,0.08)' : 'rgba(255,255,255,0.55)',
+                        color: mood === m.id ? C.ink : C.inkSoft,
                         cursor: 'pointer', transition: 'all 0.15s',
                       }}
                     >
@@ -431,10 +447,11 @@ export default function InstantDemoSection() {
                   onClick={handleGenerate}
                   disabled={!message.trim()}
                   style={{
-                    marginTop: 20, width: '100%', padding: '12px 0', borderRadius: 8, border: 'none',
-                    background: message.trim() ? tpl.accent : '#D8CFC4', color: '#FFF',
-                    fontSize: 14, fontWeight: 600, cursor: message.trim() ? 'pointer' : 'default',
-                    transition: 'background 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    marginTop: 22, width: '100%', padding: '14px 0', borderRadius: 999, border: 'none',
+                    background: message.trim() ? C.ink : 'rgba(26,39,68,0.25)', color: 'var(--lp-cream-soft)',
+                    fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-lp-sans)', cursor: message.trim() ? 'pointer' : 'default',
+                    transition: 'background 0.2s, transform 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    boxShadow: message.trim() ? '0 12px 34px -10px rgba(20,28,52,0.5)' : 'none',
                   }}
                 >
                   <Sparkles style={{ width: 16, height: 16 }} />
@@ -456,11 +473,11 @@ export default function InstantDemoSection() {
               {/* Loading */}
               {isGenerating && (
                 <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                  <Loader2 className="animate-spin" style={{ width: 36, height: 36, color: tpl.accent, margin: '0 auto' }} />
-                  <p style={{ marginTop: 16, fontSize: 15, color: '#5A4A3A', fontWeight: 500 }}>
+                  <Loader2 className="animate-spin" style={{ width: 36, height: 36, color: C.accent, margin: '0 auto' }} />
+                  <p style={{ marginTop: 16, fontSize: 15, color: C.inkSoft, fontWeight: 500, fontFamily: 'var(--font-lp-sans)' }}>
                     AIがデザインを生成中…
                   </p>
-                  <p style={{ marginTop: 6, fontSize: 13, color: '#A68B6B' }}>
+                  <p style={{ marginTop: 6, fontSize: 13, color: C.inkMute, fontFamily: 'var(--font-lp-sans)' }}>
                     黄金比・配色・装飾を計算しています
                   </p>
                 </div>
@@ -469,19 +486,20 @@ export default function InstantDemoSection() {
               {/* Limit reached → registration CTA */}
               {!isGenerating && error === 'trial_limit_exceeded' && (
                 <div style={{
-                  background: '#FFF', borderRadius: 16, padding: '32px 24px', textAlign: 'center',
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.08)', maxWidth: 420, margin: '0 auto',
+                  background: C.glass, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.7)', borderRadius: 18, padding: '32px 24px', textAlign: 'center',
+                  boxShadow: '0 22px 50px -28px rgba(20,28,52,0.4)', maxWidth: 420, margin: '0 auto',
                 }}>
                   <div style={{
-                    width: 56, height: 56, borderRadius: '50%', background: '#FBF1E8',
+                    width: 56, height: 56, borderRadius: '50%', background: 'rgba(176,58,46,0.10)',
                     display: 'grid', placeItems: 'center', margin: '0 auto 16px',
                   }}>
-                    <Lock style={{ width: 24, height: 24, color: '#A85F44' }} />
+                    <Lock style={{ width: 24, height: 24, color: C.accent }} />
                   </div>
-                  <h3 style={{ fontFamily: 'var(--font-lp-serif)', fontSize: 20, color: '#2A2118', margin: '0 0 8px' }}>
+                  <h3 style={{ fontFamily: 'var(--font-lp-serif)', fontSize: 20, fontWeight: 600, color: C.ink, margin: '0 0 8px' }}>
                     お試し回数の上限に達しました
                   </h3>
-                  <p style={{ fontSize: 14, color: '#7A6B5A', lineHeight: 1.6, marginBottom: 24 }}>
+                  <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.7, marginBottom: 24, fontFamily: 'var(--font-lp-sans)' }}>
                     無料登録すると、AIデザイン生成を続けて使えます。<br />
                     保存・共有・もっと多くのテンプレートも解放されます。
                   </p>
@@ -499,7 +517,7 @@ export default function InstantDemoSection() {
               {!isGenerating && error === 'generation_failed' && (
                 <div>
                   <PresetPreview tpl={tpl} message={message} />
-                  <p style={{ textAlign: 'center', fontSize: 13, color: '#A68B6B', marginTop: 16 }}>
+                  <p style={{ textAlign: 'center', fontSize: 13, color: C.inkMute, marginTop: 16, fontFamily: 'var(--font-lp-sans)' }}>
                     AI生成が混み合っています。プレビューを表示しました。
                   </p>
                   <div style={{ textAlign: 'center', marginTop: 12 }}>
@@ -529,8 +547,8 @@ export default function InstantDemoSection() {
                           aria-label={`デザイン候補 ${i + 1}`}
                           style={{
                             width: 52, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', padding: 0,
-                            border: selectedVariant === i ? `2px solid ${tpl.accent}` : '2px solid #E0D8D0',
-                            background: '#FFF', lineHeight: 0,
+                            border: selectedVariant === i ? '2px solid var(--lp-terracotta)' : `2px solid ${C.line}`,
+                            background: 'rgba(255,255,255,0.6)', lineHeight: 0,
                           }}
                         >
                           <CanvasStageView canvasData={v} animate={false} />
@@ -539,7 +557,7 @@ export default function InstantDemoSection() {
                     </div>
                   )}
 
-                  <p style={{ textAlign: 'center', fontSize: 13, color: '#A68B6B', marginTop: 14 }}>
+                  <p style={{ textAlign: 'center', fontSize: 13, color: C.inkMute, marginTop: 14, fontFamily: 'var(--font-lp-sans)' }}>
                     ✨ これは本番と同じAIエンジンで生成したデザインです
                   </p>
 
@@ -576,16 +594,19 @@ export default function InstantDemoSection() {
 }
 
 const ctaPrimaryStyle: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 10,
-  background: '#2A2118', color: '#FFF', fontSize: 14, fontWeight: 600, textDecoration: 'none',
+  display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 999,
+  background: 'var(--lp-ink)', color: 'var(--lp-cream-soft)', fontSize: 14, fontWeight: 600,
+  fontFamily: 'var(--font-lp-sans)', textDecoration: 'none',
+  boxShadow: '0 12px 34px -10px rgba(20,28,52,0.5)',
 }
 
 const ctaSecondaryStyle: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 8,
-  background: 'transparent', border: '1px solid #D8CFC4', color: '#7A6B5A',
-  fontSize: 13, fontWeight: 500, textDecoration: 'none',
+  display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 20px', borderRadius: 999,
+  background: 'transparent', border: '1px solid var(--lp-paper-line)', color: 'var(--lp-ink-soft)',
+  fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-lp-sans)', textDecoration: 'none',
 }
 
 const linkButtonStyle: React.CSSProperties = {
-  background: 'none', border: 'none', color: '#A68B6B', fontSize: 13, cursor: 'pointer', textDecoration: 'underline',
+  background: 'none', border: 'none', color: 'var(--lp-ink-mute)', fontSize: 13, cursor: 'pointer',
+  textDecoration: 'underline', fontFamily: 'var(--font-lp-sans)',
 }

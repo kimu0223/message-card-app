@@ -6,11 +6,19 @@ import { brandName } from '@/lib/brand'
 
 export default function LPFooter() {
   return (
-    <footer className="lp-footer">
+    <footer
+      className="lp-footer"
+      style={{
+        borderTop: '1px solid var(--lp-paper-line)',
+        color: 'var(--lp-ink-mute)',
+        fontFamily: 'var(--font-lp-sans)',
+        fontSize: 13,
+      }}
+    >
       <div className="lp-container">
         <div className="lp-footer-inner">
           <Logo />
-          <div className="lp-footer-links">
+          <div className="lp-footer-links" style={{ color: 'var(--lp-ink-soft)' }}>
             <Link href="/login">ログイン</Link>
             <a href="#pricing">料金</a>
             <a href="#faq">FAQ</a>
@@ -18,7 +26,7 @@ export default function LPFooter() {
             <Link href="/terms">利用規約</Link>
             <Link href="/privacy">プライバシー</Link>
           </div>
-          <div>&copy; 2026 {brandName}. All rights reserved.</div>
+          <div style={{ color: 'var(--lp-ink-mute)' }}>&copy; 2026 {brandName}. All rights reserved.</div>
         </div>
       </div>
     </footer>

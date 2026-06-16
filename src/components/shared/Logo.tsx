@@ -7,11 +7,11 @@ interface LogoProps {
 }
 
 export default function Logo({ href = '/', size = 'md' }: LogoProps) {
-  const iconSize = size === 'sm' ? 30 : 32
-  const brandFontSize = size === 'sm' ? 18 : 20
-  const subFontSize = size === 'sm' ? 10 : 11
-  const iconFontSize = size === 'sm' ? 16 : 18
-  const iconRadius = size === 'sm' ? 7 : 8
+  const iconSize = size === 'sm' ? 32 : 36
+  const brandFontSize = size === 'sm' ? 17 : 19
+  const subFontSize = size === 'sm' ? 7.5 : 8
+  const iconFontSize = Math.round(iconSize * 0.54)
+  const iconRadius = 3
 
   const content = (
     <>
@@ -24,7 +24,7 @@ export default function Logo({ href = '/', size = 'md' }: LogoProps) {
           fontSize: iconFontSize,
         }}
       >
-        O
+        贈
       </div>
       <span
         style={{
@@ -34,15 +34,15 @@ export default function Logo({ href = '/', size = 'md' }: LogoProps) {
           lineHeight: 1.05,
         }}
       >
-        <span style={{ fontWeight: 500, fontSize: brandFontSize, fontFamily: 'var(--font-lp-serif)' }}>
+        <span style={{ fontWeight: 600, fontSize: brandFontSize, fontFamily: 'var(--font-lp-serif)', letterSpacing: '0.1em' }}>
           {brandName}
         </span>
         <span
           className="lp-logo-accent"
           style={{
             fontSize: subFontSize,
-            letterSpacing: '0.12em',
-            textTransform: 'none',
+            letterSpacing: '0.42em',
+            textTransform: 'uppercase',
           }}
         >
           {brandNameEn}

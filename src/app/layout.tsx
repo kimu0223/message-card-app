@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import {
-  Zen_Old_Mincho,
-  Zen_Kaku_Gothic_New,
-  DM_Serif_Display,
+  Shippori_Mincho,
+  DM_Sans,
+  Cormorant_Garamond,
   Caveat,
   JetBrains_Mono,
 } from "next/font/google";
@@ -22,23 +22,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const zenOldMincho = Zen_Old_Mincho({
+const shipporiMincho = Shippori_Mincho({
   variable: "--font-lp-serif",
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   preload: false,
 });
 
-const zenKakuGothic = Zen_Kaku_Gothic_New({
+const dmSans = DM_Sans({
   variable: "--font-lp-sans",
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
-  preload: false,
 });
 
-const dmSerifDisplay = DM_Serif_Display({
+const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-lp-display",
-  weight: ["400"],
+  weight: ["400", "500", "600"],
   style: ["normal", "italic"],
   subsets: ["latin"],
 });
@@ -69,7 +68,7 @@ export default function RootLayout({
   return (
     <html
       lang="ja"
-      className={`${geistSans.variable} ${geistMono.variable} ${zenOldMincho.variable} ${zenKakuGothic.variable} ${dmSerifDisplay.variable} ${caveat.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${shipporiMincho.variable} ${dmSans.variable} ${cormorantGaramond.variable} ${caveat.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
       <GoogleAnalytics gaId="G-J7NR1Q4P10" />

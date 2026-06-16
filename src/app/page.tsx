@@ -1,5 +1,8 @@
 import LPHeader from '@/components/lp/LPHeader'
-import HeroCinematic3D, { StatStrip } from '@/components/lp/HeroCinematic3D'
+import ScrollDriver from '@/components/lp/ScrollDriver'
+import BrandBackground from '@/components/lp/BrandBackground'
+import HeroDepthInkwash, { ArrivalLine } from '@/components/lp/HeroDepthInkwash'
+import MizuhikiRibbon from '@/components/lp/MizuhikiRibbon'
 import InstantDemoSection from '@/components/lp/InstantDemoSection'
 import GallerySection from '@/components/lp/GallerySection'
 import HowItWorksSection from '@/components/lp/HowItWorksSection'
@@ -12,17 +15,25 @@ import LPFooter from '@/components/lp/LPFooter'
 export default function Home() {
   return (
     <div className="lp-page flex min-h-screen flex-col" style={{ fontFamily: 'var(--font-lp-sans)' }}>
+      <ScrollDriver />
+      <BrandBackground />
       <LPHeader />
-      <main className="flex-1">
-        <HeroCinematic3D />
-        <StatStrip />
-        <InstantDemoSection />
-        <GallerySection />
-        <HowItWorksSection />
-        <FeaturesSection />
-        <PricingSection />
-        <FAQSection />
-        <CTASection />
+      <main className="flex-1" style={{ position: 'relative', zIndex: 1 }}>
+        {/* HERO: dark depth-travel space that fades into the light washi world */}
+        <HeroDepthInkwash />
+
+        {/* LOWER: light ink-wash region, threaded by the mizuhiki ribbon */}
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <MizuhikiRibbon />
+          <ArrivalLine />
+          <InstantDemoSection />
+          <GallerySection />
+          <HowItWorksSection />
+          <FeaturesSection />
+          <PricingSection />
+          <FAQSection />
+          <CTASection />
+        </div>
       </main>
       <LPFooter />
     </div>
