@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" />
+<style>
+  :root{
+    --ink:#1A2744; --night:#0B1230; --night2:#1B2747;
+    --cream:#F4F0E6; --creamSoft:#FAF7EF; --vermilion:#B03A2E; --gold:#B89968;
+    --serif:"Shippori Mincho",serif; --sans:"DM Sans",sans-serif; --ital:"Cormorant Garamond",serif;
+    --line-green:#06C755;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#000}
+  .stage{
+    width:1080px;height:1920px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(120% 70% at 50% 42%, rgba(199,143,116,0.10), transparent 60%),
+      linear-gradient(180deg,#101A36 0%, #243156 50%, #0A1028 100%);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--sans);
+  }
+  .stage::after{ /* vignette */
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,0.45) 100%);
+  }
+
+  /* ---------- phone mockup ---------- */
+  .phone{
+    position:relative;width:600px;height:1240px;border-radius:64px;
+    background:#0c0f16;padding:16px;
+    box-shadow:0 60px 120px -40px rgba(0,0,0,0.75), 0 0 0 2px rgba(255,255,255,0.06), inset 0 0 0 2px rgba(255,255,255,0.04);
+    z-index:1;
+  }
+  .phone .screen{position:relative;width:100%;height:100%;border-radius:50px;overflow:hidden;background:#fff}
+  .notch{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:150px;height:30px;background:#0c0f16;border-radius:20px;z-index:5}
+
+  /* ---------- reveal scene (opened card in phone) ---------- */
+  .card-screen{
+    width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:
+      radial-gradient(80% 50% at 50% 18%, rgba(216,134,114,0.18), transparent 60%),
+      linear-gradient(180deg,#FBEFEF 0%, #F3E7E2 100%);
+    padding:54px 44px;gap:26px;
+  }
+  .env-flap{position:absolute;top:0;left:0;right:0;height:120px;background:linear-gradient(180deg,#E7D9C2,#D9C7A6);
+    clip-path:polygon(0 0,100% 0,50% 100%);opacity:.9;z-index:2;box-shadow:0 8px 16px rgba(0,0,0,.12)}
+  .open-card{
+    width:430px;border-radius:18px;overflow:hidden;background:#fff;
+    box-shadow:0 30px 60px -22px rgba(40,30,30,.5);position:relative;z-index:3;
+  }
+  .open-card img{display:block;width:100%}
+  .open-tap{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);z-index:4;
+    font-family:var(--sans);font-size:24px;color:#8a5a52;letter-spacing:.08em;display:flex;align-items:center;gap:10px}
+  .open-tap b{width:14px;height:14px;border-radius:50%;background:var(--vermilion);box-shadow:0 0 0 6px rgba(176,58,46,.18)}
+
+  /* ---------- LINE chat ---------- */
+  .line{width:100%;height:100%;display:flex;flex-direction:column;background:#8aa6c2}
+  .line-head{height:128px;flex:0 0 auto;background:#f7f8fa;display:flex;align-items:center;gap:18px;padding:0 28px;border-bottom:1px solid #e3e6ea}
+  .line-head .back{font-size:46px;color:#3b4757;line-height:1}
+  .line-head .ava{width:74px;height:74px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f3b6bd,#d96b72);display:grid;place-items:center;color:#fff;font-family:var(--serif);font-size:34px}
+  .line-head .nm{font-family:var(--sans);font-weight:700;font-size:34px;color:#1c2430}
+  .line-head .icons{margin-left:auto;display:flex;gap:22px;color:#5a6675;font-size:34px}
+  .line-body{flex:1;padding:34px 28px;display:flex;flex-direction:column;gap:26px;background:
+      linear-gradient(180deg,#9fb6d0,#8aa6c2)}
+  .row{display:flex;align-items:flex-end;gap:12px}
+  .row.me{justify-content:flex-end}
+  .bubble{max-width:74%;padding:22px 26px;border-radius:26px;font-family:var(--sans);font-size:32px;line-height:1.5}
+  .bubble.them{background:#fff;color:#1c2430;border-top-left-radius:8px}
+  .bubble.me{background:var(--line-green);color:#fff;border-top-right-radius:8px}
+  .meta{font-size:22px;color:#eef2f7;align-self:flex-end;margin:0 6px}
+  .read{font-size:20px;color:#dfe7f0}
+  /* link preview bubble */
+  .link-card{max-width:78%;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 10px 24px -10px rgba(0,0,0,.3)}
+  .link-card .thumb{width:100%;height:300px;object-fit:cover;display:block;background:#FBEFEF}
+  .link-card .lc-body{padding:20px 24px}
+  .link-card .lc-title{font-family:var(--serif);font-weight:600;font-size:30px;color:#1A2744;margin-bottom:6px}
+  .link-card .lc-url{font-family:var(--sans);font-size:24px;color:#8a93a3}
+  .ava-sm{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f3b6bd,#d96b72);flex:0 0 auto}
+  .reply-emph{font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ============ SCENE: REVEAL (opened card in phone) ============ -->
+<section class="stage" id="scene-reveal">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="card-screen">
+        <div class="env-flap"></div>
+        <div class="open-card"><img src="../screenshots/cards/09_parents_carnation.png" alt="card" /></div>
+        <div class="open-tap"><b></b> tap to open</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCENE: LINE CHAT (sending the card) ============ -->
+<section class="stage" id="scene-chat">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="line">
+        <div class="line-head">
+          <span class="back">‹</span>
+          <span class="ava">母</span>
+          <span class="nm">お母さん</span>
+          <span class="icons">📞 ☰</span>
+        </div>
+        <div class="line-body">
+          <div class="row me">
+            <div class="bubble me">お母さん、いつもありがとう🌸</div>
+          </div>
+          <div class="row me">
+            <span class="read">既読</span>
+            <div class="link-card">
+              <img class="thumb" src="../screenshots/cards/09_parents_carnation.png" alt="thumb" />
+              <div class="lc-body">
+                <div class="lc-title">贈りことば｜あなたへのカード</div>
+                <div class="lc-url">message-card-app.vercel.app</div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <span class="ava-sm"></span>
+            <div class="bubble them">えっ、なに…？開けてみるね</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCENE: REPLY (emotional reaction) ============ -->
+<section class="stage" id="scene-reply">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="line">
+        <div class="line-head">
+          <span class="back">‹</span>
+          <span class="ava">母</span>
+          <span class="nm">お母さん</span>
+          <span class="icons">📞 ☰</span>
+        </div>
+        <div class="line-body" style="justify-content:flex-end">
+          <div class="row">
+            <span class="ava-sm"></span>
+            <div class="bubble them">こんなの初めてもらった…</div>
+          </div>
+          <div class="row">
+            <span class="ava-sm"></span>
+            <div class="bubble them reply-emph">ありがとう…<br/>不覚にも泣いちゃった😢</div>
+          </div>
+          <div class="row me">
+            <span class="read">既読</span>
+            <div class="bubble me">また送るね😊</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
