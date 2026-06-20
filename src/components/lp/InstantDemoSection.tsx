@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Sparkles, LogIn, Loader2, Lock } from 'lucide-react'
+import { ArrowRight, Sparkles, LogIn, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { Bloom, Sprig, Eucalyptus } from './CardTemplates'
 import CanvasStageView from '@/components/card/CanvasStageView'
+import DemoCardStage from './demo/DemoCardStage'
+import DemoComposing from './demo/DemoComposing'
 import { MOOD_OPTIONS, DEFAULT_MOOD_ID, buildTrialRequest } from '@/lib/demo/sceneMapping'
 import type { AIDesignMood } from '@/types/ai'
 import type { CanvasData } from '@/types/card'
@@ -139,6 +141,55 @@ const C = {
   glass: 'rgba(255,255,255,0.6)',
 } as const
 
+const VARIANT_LABELS = ['案A', '案B', '案C', '案D'] as const
+
+/** ステージに常時表示するシーンのサンプルカード（カード比率）。AI結果と同じ舞台に乗せる。 */
+function SampleCard({ tpl, message }: { tpl: SceneDecor; message: string }) {
+  return (
+    <div style={{
+      position: 'relative',
+      aspectRatio: '1 / 1.414',
+      borderRadius: 16,
+      overflow: 'hidden',
+      background: tpl.bg,
+      boxShadow: '0 18px 50px -22px rgba(20,28,52,0.45), 0 4px 12px -6px rgba(20,28,52,0.25)',
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '34px 28px',
+    }}>
+      <div style={{ position: 'absolute', inset: 10, border: `1px solid ${tpl.accent}`, opacity: 0.3, borderRadius: 9, pointerEvents: 'none' }} />
+      {tpl.decorations}
+      <div style={{
+        fontFamily: 'var(--font-lp-mono)', fontSize: 9, color: tpl.accent,
+        letterSpacing: '0.24em', textTransform: 'uppercase', position: 'relative', zIndex: 1, opacity: 0.85,
+      }}>
+        &#9829; for you
+      </div>
+      <div style={{ flex: 1, minHeight: 16 }} />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{
+          fontFamily: tpl.headingFont, fontStyle: 'italic', fontSize: 'clamp(30px, 7vw, 42px)',
+          color: tpl.accent, lineHeight: 0.98, marginBottom: 14, letterSpacing: '-0.02em',
+        }}>
+          {tpl.heading}
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-lp-serif)', fontSize: 15, lineHeight: 1.85, color: tpl.textColor,
+          whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontWeight: 500,
+        }}>
+          {message}
+        </div>
+      </div>
+      {/* bottom ornament */}
+      <div style={{ position: 'absolute', left: '50%', bottom: 16, transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ width: 14, height: 1, background: tpl.accent, opacity: 0.5 }} />
+        <span style={{ width: 5, height: 5, borderRadius: 5, background: tpl.accent }} />
+        <span style={{ width: 14, height: 1, background: tpl.accent, opacity: 0.5 }} />
+      </div>
+    </div>
+  )
+}
+
 /** AI失敗時に表示する従来のハードコードプリセットプレビュー（安全網）。 */
 function PresetPreview({ tpl, message }: { tpl: SceneDecor; message: string }) {
   return (
@@ -196,6 +247,7 @@ export default function InstantDemoSection() {
   const [error, setError] = useState<DemoError>(null)
 
   const tpl = DEMO_TEMPLATES[selectedIdx]
+  const hasResult = !isGenerating && !error && !!variants && variants.length > 0
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -281,313 +333,377 @@ export default function InstantDemoSection() {
     resetResult()
   }
 
+  // --- ステージに乗せる中身を決定（清書中 / 上限 / 失敗 / 結果 / サンプル） ---
+  let stageArea: React.ReactNode
+  if (isGenerating) {
+    stageArea = <DemoComposing />
+  } else if (error === 'trial_limit_exceeded') {
+    stageArea = (
+      <div style={{
+        background: C.glass, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+        border: '1px solid rgba(255,255,255,0.7)', borderRadius: 18, padding: '32px 24px', textAlign: 'center',
+        boxShadow: '0 22px 50px -28px rgba(20,28,52,0.4)', maxWidth: 420, margin: '0 auto',
+      }}>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(176,58,46,0.10)', display: 'grid', placeItems: 'center', margin: '0 auto 16px' }}>
+          <Lock style={{ width: 24, height: 24, color: C.accent }} />
+        </div>
+        <h3 style={{ fontFamily: 'var(--font-lp-serif)', fontSize: 20, fontWeight: 600, color: C.ink, margin: '0 0 8px' }}>
+          お試し回数の上限に達しました
+        </h3>
+        <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.7, marginBottom: 24, fontFamily: 'var(--font-lp-sans)' }}>
+          無料登録すると、AIデザイン生成を続けて使えます。<br />
+          保存・共有・もっと多くのテンプレートも解放されます。
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+          <Link href="/login" style={ctaPrimaryStyle}>
+            <Sparkles style={{ width: 16, height: 16 }} />
+            無料登録して続ける
+            <ArrowRight style={{ width: 16, height: 16 }} />
+          </Link>
+        </div>
+      </div>
+    )
+  } else if (error === 'generation_failed') {
+    stageArea = (
+      <div>
+        <PresetPreview tpl={tpl} message={message} />
+        <p style={{ textAlign: 'center', fontSize: 13, color: C.inkMute, marginTop: 16, fontFamily: 'var(--font-lp-sans)' }}>
+          AI生成が混み合っています。プレビューを表示しました。
+        </p>
+        <div style={{ textAlign: 'center', marginTop: 12 }}>
+          <button onClick={() => { setStep(2); resetResult() }} style={linkButtonStyle}>
+            もう一度生成する
+          </button>
+        </div>
+      </div>
+    )
+  } else if (hasResult && variants) {
+    stageArea = (
+      <DemoCardStage maxWidth={340}>
+        <motion.div
+          key={selectedVariant}
+          initial={{ opacity: 0, scale: 0.92, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 18px 50px -18px rgba(20,28,52,0.5)' }}
+        >
+          <CanvasStageView canvasData={variants[selectedVariant]} />
+        </motion.div>
+      </DemoCardStage>
+    )
+  } else {
+    // step 1 & 2 — 選択中シーンのサンプルカードを常時表示
+    stageArea = (
+      <DemoCardStage maxWidth={332}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedIdx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.35 }}
+          >
+            <SampleCard tpl={tpl} message={message} />
+          </motion.div>
+        </AnimatePresence>
+      </DemoCardStage>
+    )
+  }
+
+  const showControls = !isGenerating && error !== 'trial_limit_exceeded'
+
   return (
     <section
       id="demo"
       ref={sectionRef}
       style={{
-        padding: 'clamp(70px,10vw,130px) 16px',
+        padding: 'clamp(60px,8vw,110px) 16px',
         background: 'transparent',
         position: 'relative',
         overflow: 'hidden',
         zIndex: 2,
+        scrollMarginTop: 80,
       }}
     >
-      <div style={{ maxWidth: 640, margin: '0 auto' }}>
+      <div style={{ maxWidth: 660, margin: '0 auto' }}>
+        {/* Header — continuity with the hero cards */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: 0.6 }}
-          style={{ textAlign: 'center', marginBottom: 40 }}
+          style={{ textAlign: 'center', marginBottom: 26 }}
         >
           <p style={{
             fontSize: 11, letterSpacing: '0.4em', textTransform: 'uppercase', fontWeight: 600,
             color: C.accent, marginBottom: 14, fontFamily: 'var(--font-lp-sans)',
           }}>
-            Try the real AI
+            Your turn · あなたの番
           </p>
           <h2 style={{
             fontFamily: 'var(--font-lp-serif)',
-            fontSize: 'clamp(28px, 4vw, 46px)',
-            fontWeight: 600, color: C.ink, margin: 0, lineHeight: 1.25, letterSpacing: '0.02em',
+            fontSize: 'clamp(27px, 4vw, 44px)',
+            fontWeight: 600, color: C.ink, margin: 0, lineHeight: 1.3, letterSpacing: '0.02em',
           }}>
-            本物のAIで、いますぐ一枚を。
+            さっきのカードを、<br />あなたの言葉で。
           </h2>
           <p style={{ fontSize: 'clamp(14px,1.4vw,16px)', color: C.inkSoft, marginTop: 14, lineHeight: 1.85, maxWidth: 480, marginInline: 'auto' }}>
-            登録不要。シーンとムードを選ぶだけで、本番と同じAIエンジンが上質なデザインを生成します。
+            登録不要。シーンとムードを選ぶだけで、<strong style={{ color: C.ink, fontWeight: 600 }}>本番と同じAIエンジン</strong>がこの場でデザインを生成します。
           </p>
         </motion.div>
 
-        {/* Step indicators */}
+        {/* ATELIER — washi stage frame: the card always rests here */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 32 }}
+          initial={{ opacity: 0, y: 28 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          style={{
+            position: 'relative',
+            borderRadius: 26,
+            padding: 'clamp(20px,4vw,34px) clamp(16px,4vw,30px) clamp(22px,4vw,30px)',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(250,247,239,0.58) 100%)',
+            border: '1px solid rgba(255,255,255,0.7)',
+            boxShadow: '0 30px 70px -34px rgba(20,28,52,0.42), inset 0 1px 0 rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            overflow: 'hidden',
+          }}
         >
-          {[1, 2, 3].map(s => (
-            <button
-              key={s}
-              onClick={() => { if (s <= step) { setStep(s as 1 | 2 | 3); if (s < 3) resetResult() } }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
-                borderRadius: 999, border: 'none', fontSize: 12, fontFamily: 'var(--font-lp-sans)',
-                fontWeight: step === s ? 600 : 400,
-                color: step >= s ? C.ink : C.inkMute,
-                background: step === s ? 'rgba(255,255,255,0.7)' : 'transparent',
-                boxShadow: step === s ? '0 2px 10px -4px rgba(20,28,52,0.25)' : 'none',
-                cursor: s <= step ? 'pointer' : 'default', transition: 'all 0.2s',
-              }}
-            >
-              <span style={{
-                width: 20, height: 20, borderRadius: '50%',
-                background: step >= s ? C.accent : 'rgba(26,39,68,0.18)',
-                color: C.paper, fontSize: 11, display: 'grid', placeItems: 'center',
-              }}>{s}</span>
-              {s === 1 ? 'シーン' : s === 2 ? 'メッセージ' : '生成'}
-            </button>
-          ))}
-        </motion.div>
+          {/* faint top vignette — residue of the hero's dark sky */}
+          <div aria-hidden style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: 90, pointerEvents: 'none',
+            background: 'linear-gradient(180deg, rgba(13,20,48,0.06), transparent)',
+          }} />
 
-        <AnimatePresence mode="wait">
-          {/* Step 1: Scene selection */}
-          {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <p style={{ textAlign: 'center', fontSize: 15, color: C.inkSoft, marginBottom: 16, fontWeight: 500, fontFamily: 'var(--font-lp-sans)' }}>
-                どんなシーンで贈りますか？
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-                {DEMO_TEMPLATES.map((t, i) => (
+          {/* THE STAGE */}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            {stageArea}
+          </div>
+
+          {/* CONTROLS below the stage */}
+          {showControls && (
+            <div style={{ position: 'relative', zIndex: 1, marginTop: 6 }}>
+              {/* Step indicators */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, margin: '6px 0 22px' }}>
+                {[1, 2, 3].map(s => (
                   <button
-                    key={t.id}
-                    onClick={() => handleTemplateSelect(i)}
+                    key={s}
+                    onClick={() => { if (s <= step) { setStep(s as 1 | 2 | 3); if (s < 3) resetResult() } }}
+                    className="lp-demo-soft"
                     style={{
-                      background: t.bg,
-                      border: selectedIdx === i ? `2px solid ${t.accent}` : '2px solid transparent',
-                      borderRadius: 12, padding: '20px 16px', cursor: 'pointer',
-                      textAlign: 'center', transition: 'all 0.2s', position: 'relative', overflow: 'hidden',
+                      display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+                      borderRadius: 999, border: 'none', fontSize: 12, fontFamily: 'var(--font-lp-sans)',
+                      fontWeight: step === s ? 600 : 400,
+                      color: step >= s ? C.ink : C.inkMute,
+                      background: step === s ? 'rgba(255,255,255,0.85)' : 'transparent',
+                      boxShadow: step === s ? '0 2px 10px -4px rgba(20,28,52,0.25)' : 'none',
+                      cursor: s <= step ? 'pointer' : 'default',
                     }}
                   >
-                    <div style={{
-                      fontFamily: t.headingFont, fontStyle: 'italic', fontSize: 18,
-                      color: t.accent, marginBottom: 4, position: 'relative', zIndex: 1,
-                    }}>
-                      {t.heading}
-                    </div>
-                    <div style={{ fontSize: 13, color: t.textColor, fontWeight: 500, position: 'relative', zIndex: 1 }}>
-                      {t.label}
-                    </div>
+                    <span style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      background: step >= s ? C.accent : 'rgba(26,39,68,0.18)',
+                      color: C.paper, fontSize: 11, display: 'grid', placeItems: 'center',
+                    }}>{s}</span>
+                    {s === 1 ? 'シーン' : s === 2 ? 'メッセージ' : '生成'}
                   </button>
                 ))}
               </div>
-            </motion.div>
-          )}
 
-          {/* Step 2: Message + mood */}
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div style={{
-                background: C.glass, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.7)', borderRadius: 18, padding: 24,
-                boxShadow: '0 22px 50px -28px rgba(20,28,52,0.4)',
-              }}>
-                <p style={{ fontSize: 13, color: C.inkSoft, marginBottom: 8, fontWeight: 600, fontFamily: 'var(--font-lp-sans)' }}>
-                  メッセージ
-                </p>
-                <textarea
-                  value={message}
-                  onChange={e => setMessage(e.target.value)}
-                  placeholder="お誕生日おめでとう！"
-                  rows={4}
-                  maxLength={500}
-                  style={{
-                    width: '100%', border: `1px solid ${C.line}`, borderRadius: 10, padding: '12px 14px',
-                    fontSize: 15, lineHeight: 1.7, color: C.ink, resize: 'none', fontFamily: 'var(--font-lp-serif)',
-                    outline: 'none', background: 'rgba(255,255,255,0.6)',
-                  }}
-                  onFocus={e => { e.target.style.borderColor = 'var(--lp-terracotta)' }}
-                  onBlur={e => { e.target.style.borderColor = 'rgba(26,39,68,0.10)' }}
-                />
-
-                <p style={{ fontSize: 13, color: C.inkSoft, margin: '16px 0 8px', fontWeight: 600, fontFamily: 'var(--font-lp-sans)' }}>
-                  ムード（雰囲気）
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {MOOD_OPTIONS.map(m => (
-                    <button
-                      key={m.id}
-                      onClick={() => setMood(m.id)}
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-                        borderRadius: 999, fontSize: 13, fontWeight: mood === m.id ? 600 : 400, fontFamily: 'var(--font-lp-sans)',
-                        border: mood === m.id ? '1.5px solid var(--lp-terracotta)' : `1.5px solid ${C.line}`,
-                        background: mood === m.id ? 'rgba(176,58,46,0.08)' : 'rgba(255,255,255,0.55)',
-                        color: mood === m.id ? C.ink : C.inkSoft,
-                        cursor: 'pointer', transition: 'all 0.15s',
-                      }}
-                    >
-                      <span>{m.emoji}</span>{m.label}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleGenerate}
-                  disabled={!message.trim()}
-                  style={{
-                    marginTop: 22, width: '100%', padding: '14px 0', borderRadius: 999, border: 'none',
-                    background: message.trim() ? C.ink : 'rgba(26,39,68,0.25)', color: 'var(--lp-cream-soft)',
-                    fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-lp-sans)', cursor: message.trim() ? 'pointer' : 'default',
-                    transition: 'background 0.2s, transform 0.2s', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    boxShadow: message.trim() ? '0 12px 34px -10px rgba(20,28,52,0.5)' : 'none',
-                  }}
-                >
-                  <Sparkles style={{ width: 16, height: 16 }} />
-                  AIでデザインを生成
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 3: Result */}
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.97 }}
-              transition={{ duration: 0.4 }}
-            >
-              {/* Loading */}
-              {isGenerating && (
-                <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                  <Loader2 className="animate-spin" style={{ width: 36, height: 36, color: C.accent, margin: '0 auto' }} />
-                  <p style={{ marginTop: 16, fontSize: 15, color: C.inkSoft, fontWeight: 500, fontFamily: 'var(--font-lp-sans)' }}>
-                    AIがデザインを生成中…
-                  </p>
-                  <p style={{ marginTop: 6, fontSize: 13, color: C.inkMute, fontFamily: 'var(--font-lp-sans)' }}>
-                    黄金比・配色・装飾を計算しています
-                  </p>
-                </div>
-              )}
-
-              {/* Limit reached → registration CTA */}
-              {!isGenerating && error === 'trial_limit_exceeded' && (
-                <div style={{
-                  background: C.glass, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255,255,255,0.7)', borderRadius: 18, padding: '32px 24px', textAlign: 'center',
-                  boxShadow: '0 22px 50px -28px rgba(20,28,52,0.4)', maxWidth: 420, margin: '0 auto',
-                }}>
-                  <div style={{
-                    width: 56, height: 56, borderRadius: '50%', background: 'rgba(176,58,46,0.10)',
-                    display: 'grid', placeItems: 'center', margin: '0 auto 16px',
-                  }}>
-                    <Lock style={{ width: 24, height: 24, color: C.accent }} />
-                  </div>
-                  <h3 style={{ fontFamily: 'var(--font-lp-serif)', fontSize: 20, fontWeight: 600, color: C.ink, margin: '0 0 8px' }}>
-                    お試し回数の上限に達しました
-                  </h3>
-                  <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.7, marginBottom: 24, fontFamily: 'var(--font-lp-sans)' }}>
-                    無料登録すると、AIデザイン生成を続けて使えます。<br />
-                    保存・共有・もっと多くのテンプレートも解放されます。
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-                    <Link href="/login" style={ctaPrimaryStyle}>
-                      <Sparkles style={{ width: 16, height: 16 }} />
-                      無料登録して続ける
-                      <ArrowRight style={{ width: 16, height: 16 }} />
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {/* Generation failed → fallback preset preview */}
-              {!isGenerating && error === 'generation_failed' && (
-                <div>
-                  <PresetPreview tpl={tpl} message={message} />
-                  <p style={{ textAlign: 'center', fontSize: 13, color: C.inkMute, marginTop: 16, fontFamily: 'var(--font-lp-sans)' }}>
-                    AI生成が混み合っています。プレビューを表示しました。
-                  </p>
-                  <div style={{ textAlign: 'center', marginTop: 12 }}>
-                    <button onClick={() => { setStep(2); resetResult() }} style={linkButtonStyle}>
-                      もう一度生成する
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Success → AI-generated variants */}
-              {!isGenerating && !error && variants && variants.length > 0 && (
-                <div>
-                  <div style={{ maxWidth: 360, margin: '0 auto' }}>
-                    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.18)' }}>
-                      <CanvasStageView key={selectedVariant} canvasData={variants[selectedVariant]} />
-                    </div>
-                  </div>
-
-                  {/* Variant switcher */}
-                  {variants.length > 1 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 16 }}>
-                      {variants.map((v, i) => (
+              <AnimatePresence mode="wait">
+                {/* Step 1: Scene selection — mini greeting-card tiles */}
+                {step === 1 && (
+                  <motion.div
+                    key="step1"
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p style={{ textAlign: 'center', fontSize: 14, color: C.inkSoft, marginBottom: 16, fontWeight: 500, fontFamily: 'var(--font-lp-sans)' }}>
+                      どんなシーンで贈りますか？
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                      {DEMO_TEMPLATES.map((t, i) => (
                         <button
-                          key={i}
-                          onClick={() => setSelectedVariant(i)}
-                          aria-label={`デザイン候補 ${i + 1}`}
+                          key={t.id}
+                          onClick={() => handleTemplateSelect(i)}
+                          className="lp-demo-tile"
                           style={{
-                            width: 52, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', padding: 0,
-                            border: selectedVariant === i ? '2px solid var(--lp-terracotta)' : `2px solid ${C.line}`,
-                            background: 'rgba(255,255,255,0.6)', lineHeight: 0,
+                            background: t.bg,
+                            border: selectedIdx === i ? `2px solid ${t.accent}` : '2px solid rgba(255,255,255,0.5)',
+                            borderRadius: 14, padding: 0, cursor: 'pointer',
+                            textAlign: 'left', position: 'relative', overflow: 'hidden',
+                            height: 104, boxShadow: '0 8px 22px -14px rgba(20,28,52,0.4)',
                           }}
                         >
-                          <CanvasStageView canvasData={v} animate={false} />
+                          <span style={{ position: 'absolute', inset: 7, border: `1px solid ${t.accent}`, opacity: 0.28, borderRadius: 8, pointerEvents: 'none' }} />
+                          <span style={{
+                            position: 'absolute', left: 14, top: 12,
+                            fontFamily: 'var(--font-lp-mono)', fontSize: 8, letterSpacing: '0.2em',
+                            textTransform: 'uppercase', color: t.accent, opacity: 0.8,
+                          }}>♥ for you</span>
+                          <span style={{
+                            position: 'absolute', left: 14, bottom: 30,
+                            fontFamily: t.headingFont, fontStyle: 'italic', fontSize: 21,
+                            color: t.accent, lineHeight: 1,
+                          }}>{t.heading}</span>
+                          <span style={{
+                            position: 'absolute', left: 14, bottom: 12, fontSize: 12.5,
+                            color: t.textColor, fontWeight: 600, fontFamily: 'var(--font-lp-sans)',
+                          }}>{t.label}</span>
                         </button>
                       ))}
                     </div>
-                  )}
+                  </motion.div>
+                )}
 
-                  <p style={{ textAlign: 'center', fontSize: 13, color: C.inkMute, marginTop: 14, fontFamily: 'var(--font-lp-sans)' }}>
-                    ✨ これは本番と同じAIエンジンで生成したデザインです
-                  </p>
-
-                  {/* CTA */}
+                {/* Step 2: Message + mood */}
+                {step === 2 && (
                   <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.3 }}
-                    style={{ textAlign: 'center', marginTop: 24 }}
+                    key="step2"
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-                      <Link href="/create" style={ctaPrimaryStyle}>
+                    <div>
+                      <p style={{ fontSize: 13, color: C.inkSoft, marginBottom: 8, fontWeight: 600, fontFamily: 'var(--font-lp-sans)' }}>
+                        メッセージ
+                      </p>
+                      {/* letter-paper surface */}
+                      <div style={{
+                        borderRadius: 12, padding: 4,
+                        background: 'repeating-linear-gradient(180deg, #FBF8F1, #FBF8F1 27px, rgba(26,39,68,0.07) 28px)',
+                        border: '1px solid rgba(184,153,104,0.35)',
+                        boxShadow: 'inset 0 1px 6px rgba(20,28,52,0.05)',
+                      }}>
+                        <textarea
+                          value={message}
+                          onChange={e => setMessage(e.target.value)}
+                          placeholder="お誕生日おめでとう！"
+                          rows={4}
+                          maxLength={500}
+                          style={{
+                            width: '100%', border: 'none', borderRadius: 9, padding: '8px 12px',
+                            fontSize: 15.5, lineHeight: '28px', color: C.ink, resize: 'none',
+                            fontFamily: 'var(--font-lp-serif)', outline: 'none', background: 'transparent',
+                          }}
+                        />
+                      </div>
+
+                      <p style={{ fontSize: 13, color: C.inkSoft, margin: '18px 0 8px', fontWeight: 600, fontFamily: 'var(--font-lp-sans)' }}>
+                        ムード（雰囲気）
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {MOOD_OPTIONS.map(m => (
+                          <button
+                            key={m.id}
+                            onClick={() => setMood(m.id)}
+                            className="lp-demo-soft"
+                            style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+                              borderRadius: 999, fontSize: 13, fontWeight: mood === m.id ? 600 : 400, fontFamily: 'var(--font-lp-sans)',
+                              border: mood === m.id ? '1.5px solid var(--lp-terracotta)' : `1.5px solid ${C.line}`,
+                              background: mood === m.id ? 'rgba(176,58,46,0.08)' : 'rgba(255,255,255,0.65)',
+                              color: mood === m.id ? C.ink : C.inkSoft,
+                              boxShadow: mood === m.id ? '0 0 0 3px rgba(176,58,46,0.10)' : 'none',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <span>{m.emoji}</span>{m.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={handleGenerate}
+                        disabled={!message.trim()}
+                        className="lp-demo-soft"
+                        style={{
+                          marginTop: 22, width: '100%', padding: '15px 0', borderRadius: 999, border: 'none',
+                          background: message.trim() ? C.accent : 'rgba(26,39,68,0.25)', color: 'var(--lp-cream-soft)',
+                          fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-lp-sans)', cursor: message.trim() ? 'pointer' : 'default',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                          boxShadow: message.trim() ? '0 14px 34px -10px rgba(176,58,46,0.55)' : 'none',
+                        }}
+                      >
                         <Sparkles style={{ width: 16, height: 16 }} />
-                        このデザインで本格的に作る
-                        <ArrowRight style={{ width: 16, height: 16 }} />
-                      </Link>
-                      <Link href="/login" style={ctaSecondaryStyle}>
-                        <LogIn style={{ width: 14, height: 14 }} />
-                        ログインして保存・共有する
-                      </Link>
-                      <button onClick={handleRetry} style={linkButtonStyle}>
-                        別のシーンで試す
+                        AIでデザインを生成する
                       </button>
                     </div>
                   </motion.div>
-                </div>
-              )}
-            </motion.div>
+                )}
+
+                {/* Step 3: result controls (variant switch + CTA) */}
+                {step === 3 && hasResult && variants && (
+                  <motion.div
+                    key="step3"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {/* Variant switcher */}
+                    {variants.length > 1 && (
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 4 }}>
+                        {variants.map((v, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setSelectedVariant(i)}
+                            aria-label={`デザイン${VARIANT_LABELS[i] ?? i + 1}`}
+                            className="lp-demo-soft"
+                            style={{
+                              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                            }}
+                          >
+                            <span style={{
+                              width: 50, borderRadius: 8, overflow: 'hidden', lineHeight: 0,
+                              border: selectedVariant === i ? '2px solid var(--lp-terracotta)' : `2px solid ${C.line}`,
+                              boxShadow: selectedVariant === i ? '0 0 0 3px rgba(176,58,46,0.12)' : 'none',
+                            }}>
+                              <CanvasStageView canvasData={v} animate={false} />
+                            </span>
+                            <span style={{
+                              fontSize: 11, fontFamily: 'var(--font-lp-sans)',
+                              fontWeight: selectedVariant === i ? 600 : 400,
+                              color: selectedVariant === i ? C.ink : C.inkMute,
+                            }}>{VARIANT_LABELS[i] ?? `案${i + 1}`}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <p style={{ textAlign: 'center', fontSize: 13, color: C.inkMute, marginTop: 16, fontFamily: 'var(--font-lp-sans)' }}>
+                      ✨ これは本番と同じAIエンジンで生成したデザインです
+                    </p>
+
+                    {/* CTA */}
+                    <div style={{ textAlign: 'center', marginTop: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+                        <Link href="/create" style={ctaPrimaryBigStyle}>
+                          <Sparkles style={{ width: 18, height: 18 }} />
+                          このデザインで本格的に作る
+                          <ArrowRight style={{ width: 18, height: 18 }} />
+                        </Link>
+                        <Link href="/login" style={ctaSecondaryStyle}>
+                          <LogIn style={{ width: 14, height: 14 }} />
+                          ログインして保存・共有する
+                        </Link>
+                        <button onClick={handleRetry} style={linkButtonStyle}>
+                          別のシーンで試す
+                        </button>
+                      </div>
+                      <p style={{ fontSize: 12, color: C.inkMute, marginTop: 14, fontFamily: 'var(--font-lp-sans)', letterSpacing: '0.03em' }}>
+                        登録不要 · 3分で完成 · クレジットカード不要
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
-        </AnimatePresence>
+        </motion.div>
       </div>
     </section>
   )
@@ -598,6 +714,13 @@ const ctaPrimaryStyle: React.CSSProperties = {
   background: 'var(--lp-ink)', color: 'var(--lp-cream-soft)', fontSize: 14, fontWeight: 600,
   fontFamily: 'var(--font-lp-sans)', textDecoration: 'none',
   boxShadow: '0 12px 34px -10px rgba(20,28,52,0.5)',
+}
+
+const ctaPrimaryBigStyle: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 9, padding: '16px 32px', borderRadius: 999,
+  background: 'var(--lp-terracotta)', color: 'var(--lp-cream-soft)', fontSize: 15.5, fontWeight: 700,
+  fontFamily: 'var(--font-lp-sans)', textDecoration: 'none', letterSpacing: '0.02em',
+  boxShadow: '0 16px 38px -12px rgba(176,58,46,0.6)',
 }
 
 const ctaSecondaryStyle: React.CSSProperties = {

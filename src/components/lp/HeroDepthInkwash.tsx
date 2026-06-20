@@ -605,6 +605,49 @@ export function ArrivalLine() {
           <br />
           一枚のカードなら、そっと手渡せる。
         </p>
+
+        {/* hand-off cue → leads the eye into the live demo (fixes the hero→demo gap) */}
+        <a
+          href="#demo"
+          style={{
+            display: 'inline-flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 10,
+            marginTop: 'clamp(28px, 4vw, 44px)',
+            textDecoration: 'none',
+            pointerEvents: 'auto',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: SANS,
+              fontSize: 12,
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              color: 'var(--lp-terracotta)',
+            }}
+          >
+            ここで、いますぐ試せる
+          </span>
+          <span
+            aria-hidden
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 999,
+              display: 'grid',
+              placeItems: 'center',
+              background: 'var(--lp-terracotta)',
+              color: 'var(--lp-cream-soft)',
+              boxShadow: '0 12px 26px -10px rgba(176,58,46,0.6)',
+              animation: 'lp-floaty 2.6s ease-in-out infinite',
+            }}
+          >
+            ↓
+          </span>
+        </a>
       </div>
     </section>
   )
