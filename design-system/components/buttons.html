@@ -1,0 +1,25 @@
+<!-- @dsCard group="Components" name="Buttons" subtitle="Primary 朱 / Ink 紺 / Ghost" -->
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"/>
+<link rel="stylesheet" href="../_brand.css"/>
+<style>
+  .set { display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-bottom: 26px; }
+  .cap { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--lp-ink-mute); width:100%; margin-bottom:4px; }
+  .ghost-stage { background: var(--lp-night); padding: 28px 30px; border-radius: 16px; }
+</style></head>
+<body><div class="ds-stage">
+  <div class="ds-kicker">Components</div>
+  <h2 class="ds-h2">ボタン</h2>
+  <div class="lp-glass" style="padding:34px 36px">
+    <div class="set"><span class="cap">Primary — 朱 vermilion</span>
+      <button class="lp-btn lp-btn--primary">無料でカードを作る</button>
+      <button class="lp-btn lp-btn--primary" style="padding:11px 22px;font-size:14px">小サイズ</button>
+    </div>
+    <div class="set"><span class="cap">Ink — 紺</span>
+      <button class="lp-btn lp-btn--ink">本格的に作る</button>
+    </div>
+    <div class="set"><span class="cap">Ghost — on night hero</span>
+      <span class="ghost-stage"><button class="lp-btn lp-btn--ghost" style="color:var(--lp-cream-soft);border-color:rgba(244,240,230,0.62)">ギャラリーを見る</button></span>
+    </div>
+  </div>
+</div></body></html>

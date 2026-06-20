@@ -1,0 +1,37 @@
+<!-- @dsCard group="Components" name="Pricing cards" subtitle="Free / Pro（紺 Featured）" -->
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"/>
+<link rel="stylesheet" href="../_brand.css"/>
+<style>
+  .plans { grid-template-columns: repeat(2, minmax(0,1fr)); max-width: 720px; align-items:stretch; }
+  .plan { padding: 32px 30px; display:flex; flex-direction:column; gap:14px; }
+  .pname { font-family:var(--serif);font-weight:600;font-size:22px; }
+  .price { font-family:var(--display);font-size:46px;line-height:1; }
+  .price small { font-family:var(--sans);font-size:15px;color:var(--lp-ink-soft); }
+  .feat { font-size:14.5px;color:var(--lp-ink-soft);line-height:1.9;list-style:none; }
+  .feat li::before { content:"✓ ";color:var(--lp-terracotta);font-weight:700; }
+  .featured { background: linear-gradient(160deg,#1A2744,#26345A); color:var(--lp-cream-soft); }
+  .featured .price small, .featured .feat { color: rgba(244,240,230,0.78); }
+  .featured .feat li::before { color: var(--lp-gold); }
+  .badge { align-self:flex-start;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    background:var(--lp-terracotta);color:#fff;padding:5px 12px;border-radius:999px; }
+</style></head>
+<body><div class="ds-stage">
+  <div class="ds-kicker">Components</div>
+  <h2 class="ds-h2">料金カード</h2>
+  <div class="ds-grid plans">
+    <div class="lp-glass plan">
+      <div class="pname">Free</div>
+      <div class="price">¥0</div>
+      <ul class="feat"><li>カード作成</li><li>30日間の公開URL</li><li>基本テンプレート</li></ul>
+      <button class="lp-btn lp-btn--ghost" style="margin-top:auto">無料で始める</button>
+    </div>
+    <div class="plan featured">
+      <span class="badge">Pro</span>
+      <div class="pname">Pro</div>
+      <div class="price">¥480<small> / 月</small></div>
+      <ul class="feat"><li>永続URL・3Dカード</li><li>AIデザイン無制限</li><li>透かしなし・PDF書き出し</li></ul>
+      <button class="lp-btn lp-btn--primary" style="margin-top:auto">Proにする</button>
+    </div>
+  </div>
+</div></body></html>

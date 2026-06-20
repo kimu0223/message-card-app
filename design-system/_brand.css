@@ -1,0 +1,81 @@
+/* ============================================================
+   贈りことば — Design System tokens (和モダン)
+   Single source of truth for claude.ai/design previews.
+   Mirrors src/styles/lp.css :root
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap");
+
+:root {
+  --lp-cream: #F4F0E6;
+  --lp-cream-soft: #FAF7EF;
+  --lp-cream-deep: #E7E2D4;
+  --lp-terracotta: #B03A2E;        /* 朱 vermilion — primary accent */
+  --lp-terracotta-deep: #8F2F25;
+  --lp-sage: #8AA676;
+  --lp-sage-deep: #6E8669;
+  --lp-ink: #1A2744;               /* deep navy — primary text */
+  --lp-ink-soft: rgba(26, 39, 68, 0.62);
+  --lp-ink-mute: rgba(26, 39, 68, 0.42);
+  --lp-paper: #FAF7EF;
+  --lp-paper-line: rgba(26, 39, 68, 0.10);
+  --lp-gold: #B89968;
+  --lp-ink2: #26345A;
+  --lp-ink3: #3D5280;
+  --lp-night: #0D1430;
+
+  --lp-shadow-card: 0 1px 0 rgba(20,28,52,0.04), 0 18px 40px -20px rgba(20,28,52,0.28), 0 4px 12px -6px rgba(20,28,52,0.2);
+  --lp-shadow-soft: 0 12px 30px -16px rgba(20,28,52,0.24);
+  --lp-shadow-deep: 0 30px 60px -28px rgba(20,28,52,0.5), 0 8px 20px -12px rgba(20,28,52,0.28);
+
+  --serif: "Shippori Mincho", serif;
+  --sans: "DM Sans", system-ui, sans-serif;
+  --display: "Cormorant Garamond", serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.ds-stage {
+  min-height: 100%;
+  padding: 56px 48px;
+  font-family: var(--sans);
+  color: var(--lp-ink);
+  background:
+    radial-gradient(ellipse 1200px 600px at 80% -10%, rgba(176,58,46,0.08), transparent 70%),
+    radial-gradient(ellipse 900px 500px at 0% 30%, rgba(26,39,68,0.07), transparent 70%),
+    linear-gradient(180deg, #F6F3EA 0%, #EFECE2 50%, #E7E2D4 100%);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ds-kicker {
+  font-family: var(--sans);
+  font-size: 13px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--lp-terracotta); margin-bottom: 10px;
+}
+.ds-h2 { font-family: var(--serif); font-weight: 600; font-size: 34px; letter-spacing: .02em; margin-bottom: 28px; }
+.ds-grid { display: grid; gap: 22px; }
+
+/* shared glass card */
+.lp-glass {
+  background: rgba(255,255,255,0.74);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 20px;
+  box-shadow: var(--lp-shadow-card);
+  backdrop-filter: blur(8px);
+}
+
+/* 贈 hanko logo mark */
+.lp-logo-icon {
+  display: inline-grid; place-items: center;
+  width: 54px; height: 54px; border-radius: 12px;
+  background: var(--lp-terracotta); color: var(--lp-cream-soft);
+  font-family: var(--serif); font-weight: 700; font-size: 28px;
+  transform: rotate(-3deg);
+  box-shadow: inset 0 0 0 2px rgba(250,247,239,0.45);
+}
+
+/* buttons */
+.lp-btn { font-family: var(--sans); font-weight: 600; font-size: 16px; border: 0; cursor: pointer;
+  padding: 15px 30px; border-radius: 999px; letter-spacing: .02em; }
+.lp-btn--primary { background: var(--lp-terracotta); color: var(--lp-cream-soft); box-shadow: var(--lp-shadow-soft); }
+.lp-btn--ghost { background: rgba(255,255,255,0.06); color: var(--lp-ink); border: 1px solid var(--lp-ink-soft); }
+.lp-btn--ink { background: var(--lp-ink); color: var(--lp-cream-soft); }
