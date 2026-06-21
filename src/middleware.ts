@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { safeRedirectPath } from '@/lib/safe-redirect';
 
 const PROTECTED_ROUTES = ['/dashboard', '/editor', '/settings', '/billing'];
 const AUTH_ROUTES = ['/login'];
@@ -49,9 +50,12 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAuthRoute && user) {
-    const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = '/dashboard';
-    return NextResponse.redirect(dashboardUrl);
+    const redirectUrl = request.nextUrl.clone();
+    // 既ログインで /login に来た場合、next（同一オリジンの相対パス）があればそこへ。
+    // 料金CTA（/login?next=/billing）からの購入導線が /dashboard で行き止まりにならないようにする。
+    redirectUrl.pathname = safeRedirectPath(request.nextUrl.searchParams.get('next'));
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
   }
 
   return supabaseResponse;

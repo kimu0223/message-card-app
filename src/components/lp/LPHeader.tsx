@@ -25,12 +25,15 @@ export default function LPHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Solid unless we're sitting over the homepage hero with nothing scrolled/open.
+  // Solid bar (cream bg) once scrolled past the hero top; transparent while
+  // sitting over the homepage hero. Only the BACKGROUND depends on this.
   const solid = !isHome || scrolled || mobileOpen
 
-  // text/icon color flips between cream (over dark hero) and ink (scrolled).
-  const fg = solid ? 'var(--lp-ink)' : 'var(--lp-cream-soft)'
-  const fgSoft = solid ? 'var(--lp-ink-soft)' : 'rgba(250, 247, 239, 0.78)'
+  // The depth-inkwash hero is LIGHT (cream) at the top where the header sits,
+  // so the wordmark/nav must stay ink — cream text would vanish on the cream
+  // hero top. Ink also reads fine on the scrolled cream bar, so it's constant.
+  const fg = 'var(--lp-ink)'
+  const fgSoft = 'var(--lp-ink-soft)'
 
   return (
     <header
@@ -44,20 +47,9 @@ export default function LPHeader() {
         color: fg,
       }}
     >
-      {/* Recolor the Logo wordmark when displayed over the dark hero (top of page).
-          Scoped to this header via the wrapper classes. */}
-      <style>{`
-        .lph-logo-hero .lp-logo,
-        .lph-logo-hero .lp-logo-accent { color: var(--lp-cream-soft); }
-        .lph-logo-hero .lp-logo-icon { background: var(--lp-cream-soft); color: var(--lp-ink); }
-      `}</style>
       <div className="mx-auto flex max-w-[1240px] items-center justify-between px-8 py-[18px]">
-        {/* Logo wrapper: flip the wordmark text color between ink and cream.
-            The 贈 hanko keeps its own navy box (its inner light border keeps it
-            readable on the dark hero), so we only recolor the inheriting text. */}
-        <div className={solid ? 'lph-logo-solid' : 'lph-logo-hero'}>
-          <Logo />
-        </div>
+        {/* The hero top is light, so the wordmark keeps its default ink color. */}
+        <Logo />
 
         {/* Desktop nav */}
         <nav
@@ -77,7 +69,7 @@ export default function LPHeader() {
             href="/login"
             className="inline-flex items-center rounded-full border px-[18px] py-[10px] text-sm font-medium transition-colors"
             style={{
-              borderColor: solid ? 'var(--lp-paper-line)' : 'rgba(250, 247, 239, 0.4)',
+              borderColor: 'var(--lp-paper-line)',
               color: fg,
             }}
           >
@@ -87,9 +79,9 @@ export default function LPHeader() {
             href="/create"
             className="inline-flex items-center rounded-full px-[18px] py-[10px] text-sm font-medium transition-transform hover:-translate-y-0.5"
             style={{
-              // over dark hero: cream bg + ink text ; scrolled: ink bg + cream text
-              background: solid ? 'var(--lp-ink)' : 'var(--lp-cream-soft)',
-              color: solid ? 'var(--lp-cream-soft)' : 'var(--lp-ink)',
+              // ink fill reads on both the light hero top and the scrolled cream bar
+              background: 'var(--lp-ink)',
+              color: 'var(--lp-cream-soft)',
               boxShadow: '0 12px 24px -10px rgba(26,39,68,0.45)',
             }}
           >
@@ -103,8 +95,8 @@ export default function LPHeader() {
             href="/create"
             className="inline-flex items-center rounded-full px-4 py-2 text-xs font-medium"
             style={{
-              background: solid ? 'var(--lp-ink)' : 'var(--lp-cream-soft)',
-              color: solid ? 'var(--lp-cream-soft)' : 'var(--lp-ink)',
+              background: 'var(--lp-ink)',
+              color: 'var(--lp-cream-soft)',
             }}
           >
             無料で試す →

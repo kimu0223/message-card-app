@@ -22,7 +22,7 @@ const plans = [
     featured: true,
     feats: ['15クレジット（おすすめ）', '5クレジット ¥400〜', 'カード作成 +1クレジット', 'AIメッセージ +1クレジット', 'AIデザイン +2クレジット', 'プレミアムテンプレート +1クレジット'],
     cta: 'クレジットを購入',
-    href: '/login',
+    href: '/login?next=/billing',
   },
   {
     name: 'Pro',
@@ -32,7 +32,7 @@ const plans = [
     featured: false,
     feats: ['全テンプレート使い放題', '作成枚数 無制限', 'AIメッセージ 無制限', 'AIデザイン 無制限', '全アニメーション効果', '優先サポート'],
     cta: 'Proを始める',
-    href: '/login',
+    href: '/login?next=/billing',
   },
 ]
 

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import DashboardClient from '@/components/dashboard/DashboardClient'
 import DashboardHeader from '@/components/dashboard/DashboardHeader'
 import EmptyState from '@/components/dashboard/EmptyState'
@@ -48,7 +49,16 @@ export default async function DashboardPage() {
           <span className="dash-stat-label">Plan</span>
           <span className="dash-stat-value">{plan === 'pro' ? 'Pro' : 'Free'}</span>
           <span className="dash-stat-foot">
-            {plan === 'free' ? 'アップグレードで無制限に' : '全機能をご利用中'}
+            {plan === 'free' ? (
+              <Link
+                href="/billing"
+                style={{ color: 'var(--lp-terracotta)', textDecoration: 'underline', textUnderlineOffset: 3, fontWeight: 600 }}
+              >
+                アップグレードで無制限に →
+              </Link>
+            ) : (
+              '全機能をご利用中'
+            )}
           </span>
         </div>
 

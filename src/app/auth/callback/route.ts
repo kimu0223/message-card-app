@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { safeRedirectPath } from '@/lib/safe-redirect'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -13,12 +14,7 @@ export async function GET(request: Request) {
     if (!error) {
       // オープンリダイレクト防止: 同一オリジン内の相対パスのみ許可。
       // `//evil.com` や `/\evil.com`（プロトコル相対/バックスラッシュ）を弾く。
-      const isSafe =
-        next.startsWith('/') &&
-        !next.startsWith('//') &&
-        !next.startsWith('/\\')
-      const redirectPath = isSafe ? next : '/dashboard'
-      return NextResponse.redirect(`${origin}${redirectPath}`)
+      return NextResponse.redirect(`${origin}${safeRedirectPath(next)}`)
     }
   }
 
