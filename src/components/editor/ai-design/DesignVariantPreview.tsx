@@ -38,7 +38,8 @@ export default function DesignVariantPreview({ canvasData, selected, onClick }: 
     }
 
     return () => observer.disconnect();
-  }, []);
+    // アスペクト比（カードサイズ）が変わったら測り直す
+  }, [width, height]);
 
   const bgStyle: React.CSSProperties = canvasData.background.type === 'gradient'
     ? { background: canvasData.background.value }
@@ -78,8 +79,9 @@ export default function DesignVariantPreview({ canvasData, selected, onClick }: 
                     key={el.id}
                     className="absolute overflow-hidden"
                     style={{
-                      left: el.x,
-                      top: el.y,
+                      // CardCanvas は x,y を要素の中心として扱うため、ここも中心原点に合わせる
+                      left: el.x - el.width / 2,
+                      top: el.y - el.height / 2,
                       width: el.width,
                       height: el.height,
                       transform: `rotate(${el.rotation}deg)`,
@@ -99,8 +101,9 @@ export default function DesignVariantPreview({ canvasData, selected, onClick }: 
               }
               if (el.type === 'shape') {
                 const shapeStyle: React.CSSProperties = {
-                  left: el.x,
-                  top: el.y,
+                  // CardCanvas と同じく中心原点で配置する
+                  left: el.x - el.width / 2,
+                  top: el.y - el.height / 2,
                   width: el.width,
                   height: el.height,
                   transform: `rotate(${el.rotation}deg)`,

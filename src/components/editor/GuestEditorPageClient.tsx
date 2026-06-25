@@ -13,6 +13,7 @@ import EditorPanel from '@/components/editor/EditorPanel'
 import CardPreview from '@/components/card/CardPreview'
 import LoginPromptModal from '@/components/auth/LoginPromptModal'
 import { useEditorStore } from '@/store/editorStore'
+import { useFitZoom } from '@/hooks/useFitZoom'
 import type { CanvasData, CanvasElement, EnvelopeConfig } from '@/types/card'
 import { analytics } from '@/lib/analytics'
 
@@ -25,6 +26,7 @@ export default function GuestEditorPageClient() {
   const [loginPromptReason, setLoginPromptReason] = useState<'save' | 'share' | 'ai' | 'completed' | null>(null)
   const hasTrackedFirstEdit = useRef(false)
   const hasPreviewedCard = useRef(false)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
 
   const {
     title, setTitle,
@@ -35,6 +37,9 @@ export default function GuestEditorPageClient() {
     updateElement, addElement, removeElement, reorderElement,
     setSize, setBackground, setAnimation, setEnvelope,
   } = useEditorStore()
+
+  // カードをキャンバス領域にフィットさせる（モバイルで大きいカードがはみ出すのを防ぐ）
+  const { markManualZoom } = useFitZoom(canvasContainerRef, canvasData?.size)
 
   // localStorageから初期化 + editor_opened イベント
   useEffect(() => {
@@ -183,11 +188,11 @@ export default function GuestEditorPageClient() {
         <div className="ml-auto flex items-center gap-2">
           {/* ズーム */}
           <div className="hidden items-center gap-1 lg:flex">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setZoom(Math.max(0.25, zoom - 0.1))}>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { markManualZoom(); setZoom(Math.max(0.25, zoom - 0.1)) }}>
               <ZoomOut className="h-3.5 w-3.5" />
             </Button>
             <span className="min-w-[3rem] text-center text-xs text-zinc-500">{Math.round(zoom * 100)}%</span>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setZoom(Math.min(2, zoom + 0.1))}>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { markManualZoom(); setZoom(Math.min(2, zoom + 0.1)) }}>
               <ZoomIn className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -261,7 +266,7 @@ export default function GuestEditorPageClient() {
         )}
 
         {/* キャンバスエリア */}
-        <div className="relative flex flex-1 items-center justify-center overflow-auto bg-zinc-200 p-4 md:p-8">
+        <div ref={canvasContainerRef} className="relative flex flex-1 items-center justify-center overflow-auto bg-zinc-200 p-4 md:p-8">
           <div id="card-canvas-export">
             <CardCanvas
               canvasData={canvasData}

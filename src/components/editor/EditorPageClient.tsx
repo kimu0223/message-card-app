@@ -15,6 +15,7 @@ import AIAssistPanel from '@/components/editor/AIAssistPanel'
 import CardPreview from '@/components/card/CardPreview'
 import ShareDialog from '@/components/share/ShareDialog'
 import { useEditorStore } from '@/store/editorStore'
+import { useFitZoom } from '@/hooks/useFitZoom'
 import type { CanvasData, CanvasElement, Background, AnimationConfig, TextElement, EnvelopeConfig } from '@/types/card'
 
 interface EditorPageClientProps {
@@ -48,6 +49,9 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
     updateElement, addElement, removeElement, reorderElement,
     setSize, setBackground, setAnimation, setEnvelope,
   } = useEditorStore()
+
+  // カードをキャンバス領域にフィットさせる（モバイルで大きいカードがはみ出すのを防ぐ）
+  const { markManualZoom } = useFitZoom(canvasContainerRef, canvasData?.size)
 
   // 初期化
   useEffect(() => {
@@ -169,11 +173,11 @@ export default function EditorPageClient({ card }: EditorPageClientProps) {
         <div className="ml-auto flex items-center gap-2">
           {/* ズーム */}
           <div className="hidden items-center gap-1 lg:flex">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setZoom(Math.max(0.25, zoom - 0.1))}>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { markManualZoom(); setZoom(Math.max(0.25, zoom - 0.1)) }}>
               <ZoomOut className="h-3.5 w-3.5" />
             </Button>
             <span className="min-w-[3rem] text-center text-xs text-zinc-500">{Math.round(zoom * 100)}%</span>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setZoom(Math.min(2, zoom + 0.1))}>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { markManualZoom(); setZoom(Math.min(2, zoom + 0.1)) }}>
               <ZoomIn className="h-3.5 w-3.5" />
             </Button>
           </div>
