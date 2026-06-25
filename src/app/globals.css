@@ -126,6 +126,9 @@
   }
   html {
     @apply font-sans;
+    /* 横スクロール抑制をルートに置く。ルート(html)でのクリップは
+       viewport基準の position:sticky を壊さないため、LP のヘッダー追従と両立する。 */
+    overflow-x: clip;
   }
 }
 

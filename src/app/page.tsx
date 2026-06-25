@@ -11,6 +11,7 @@ import PricingSection from '@/components/lp/PricingSection'
 import FAQSection from '@/components/lp/FAQSection'
 import CTASection from '@/components/lp/CTASection'
 import LPFooter from '@/components/lp/LPFooter'
+import MobileStickyCTA from '@/components/lp/MobileStickyCTA'
 
 export default function Home() {
   return (
@@ -36,6 +37,7 @@ export default function Home() {
         </div>
       </main>
       <LPFooter />
+      <MobileStickyCTA />
     </div>
   )
 }

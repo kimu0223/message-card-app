@@ -7,7 +7,8 @@ import { brandName } from '@/lib/brand'
 export default function LPFooter() {
   return (
     <footer
-      className="lp-footer"
+      // モバイルの追従CTAバー(~64px)に最下部の操作要素が隠れないよう余白を確保
+      className="lp-footer pb-24 md:pb-0"
       style={{
         borderTop: '1px solid var(--lp-paper-line)',
         color: 'var(--lp-ink-mute)',

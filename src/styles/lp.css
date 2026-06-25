@@ -102,7 +102,9 @@
   font-feature-settings: "palt" 1;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: clip;
+  /* 横はみ出しの抑制は html 側（globals.css）で行う。
+     ここで overflow-x: clip すると、子孫の position:sticky（LPHeader）が
+     追従しなくなるため指定しない。 */
 }
 
 /* Paper grain overlay */
@@ -2445,9 +2447,12 @@ details.lp-reveal[open] summary ~ div {
     padding: 0 !important;
   }
 
-  /* LP page */
+  /* LP page —— モバイルでも横はみ出しを抑制。
+     ただし overflow-x: hidden は overflow-y を auto に昇格させて
+     .lp-page をスクロールコンテナ化し、ヘッダーの position:sticky を
+     壊す（スマホで追従しなくなる）。clip は反対軸を昇格させないため安全。 */
   .lp-page {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   /* Hero section */
@@ -2547,3 +2552,113 @@ details.lp-reveal[open] summary ~ div {
   }
 }
 
+
+/* =========================================================
+   ガイド記事（SEOページ）共通スタイル
+   ※ GuideArticle.tsx の静的インラインスタイルを抽出したもの。
+     見た目は従来のインライン値と完全一致させている。
+   ========================================================= */
+
+/* 比較表 */
+.lp-guide-table-wrap {
+  margin-top: 28px;
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--lp-paper-line);
+  box-shadow: var(--lp-shadow-card);
+}
+.lp-guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px;
+  font-size: 15px;
+}
+.lp-guide-table thead tr {
+  background: var(--lp-ink);
+  color: var(--lp-cream-soft);
+}
+.lp-guide-table th {
+  padding: 14px 18px;
+  text-align: left;
+  font-weight: 600;
+  font-family: var(--font-lp-serif);
+}
+.lp-guide-table tbody tr {
+  border-top: 1px solid var(--lp-paper-line);
+}
+/* 偶数行（0始まり）のみクリームの地色。データ駆動部分は data 属性で制御 */
+.lp-guide-table tbody tr[data-alt='1'] {
+  background: var(--lp-cream-soft);
+}
+.lp-guide-table td {
+  padding: 14px 18px;
+  color: var(--lp-ink-soft);
+  font-weight: 400;
+  line-height: 1.7;
+}
+/* 1列目は常に太字 */
+.lp-guide-table td[data-col0='1'] {
+  font-weight: 600;
+}
+/* 強調列は朱色＋太字 */
+.lp-guide-table td[data-highlight='1'] {
+  color: var(--lp-terracotta);
+  font-weight: 600;
+}
+
+/* カードグリッド */
+.lp-guide-cards {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+.lp-guide-card {
+  background: var(--lp-cream-soft);
+  border: 1px solid var(--lp-paper-line);
+  border-radius: 16px;
+  padding: 24px 22px;
+  box-shadow: var(--lp-shadow-card);
+}
+.lp-guide-card-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--lp-terracotta);
+  margin-bottom: 10px;
+}
+.lp-guide-card-title {
+  margin: 0;
+  font-family: var(--font-lp-serif);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--lp-ink);
+}
+.lp-guide-card-body {
+  margin: 10px 0 0;
+  color: var(--lp-ink-soft);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+/* 箇条書き */
+.lp-guide-bullets {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lp-guide-bullets li {
+  display: flex;
+  gap: 12px;
+  color: var(--lp-ink-soft);
+  font-size: 16px;
+  line-height: 1.8;
+}
+.lp-guide-bullets li > span:first-child {
+  color: var(--lp-terracotta);
+  flex-shrink: 0;
+}

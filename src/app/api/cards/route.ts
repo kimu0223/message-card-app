@@ -128,6 +128,7 @@ export async function POST(request: Request) {
     }
   }
 
+  // 3Dカード演出のゲートは公開レンダリング時に一度だけ行う（保存時は生データのまま）
   const { data: card, error } = await supabase
     .from('cards')
     .insert({

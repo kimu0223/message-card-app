@@ -29,11 +29,17 @@ export async function PUT(request: Request, { params }: { params: Params }) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
   const { title, canvasData, animation, isFavorite } = body
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (title !== undefined) updates.title = title
+  // 3Dカード演出のゲートは公開レンダリング時に一度だけ行う（保存時は生データのまま）
   if (canvasData !== undefined) updates.canvas_data = canvasData
   if (animation !== undefined) updates.animation = animation
   if (isFavorite !== undefined) updates.is_favorite = isFavorite

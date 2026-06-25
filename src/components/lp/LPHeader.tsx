@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import Logo from '@/components/shared/Logo'
+import CtaButton from '@/components/lp/CtaButton'
+import { useScrolledPast } from '@/hooks/useScrolledPast'
 
 export default function LPHeader() {
   // scrolled past the dark hero top → solid cream bar with ink text.
   // at the very top (<=40px) → transparent bar with light text over the dark hero.
-  const [scrolled, setScrolled] = useState(false)
+  const scrolled = useScrolledPast(40)
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
 
@@ -17,13 +19,6 @@ export default function LPHeader() {
   // dark depth hero. Every other (lp) route is light at the top, so there the
   // header is always the solid cream bar (light text would be invisible).
   const isHome = pathname === '/'
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
 
   // Solid bar (cream bg) once scrolled past the hero top; transparent while
   // sitting over the homepage hero. Only the BACKGROUND depends on this.
@@ -75,32 +70,21 @@ export default function LPHeader() {
           >
             ログイン
           </Link>
-          <Link
+          <CtaButton
             href="/create"
-            className="inline-flex items-center rounded-full px-[18px] py-[10px] text-sm font-medium transition-transform hover:-translate-y-0.5"
-            style={{
-              // ink fill reads on both the light hero top and the scrolled cream bar
-              background: 'var(--lp-ink)',
-              color: 'var(--lp-cream-soft)',
-              boxShadow: '0 12px 24px -10px rgba(26,39,68,0.45)',
-            }}
+            size="md"
+            className="transition-transform hover:-translate-y-0.5"
+            style={{ boxShadow: '0 12px 24px -10px rgba(26,39,68,0.45)' }}
           >
             無料で試す →
-          </Link>
+          </CtaButton>
         </div>
 
         {/* Mobile: CTA + hamburger */}
         <div className="flex items-center gap-2 md:hidden">
-          <Link
-            href="/create"
-            className="inline-flex items-center rounded-full px-4 py-2 text-xs font-medium"
-            style={{
-              background: 'var(--lp-ink)',
-              color: 'var(--lp-cream-soft)',
-            }}
-          >
+          <CtaButton href="/create" size="sm">
             無料で試す →
-          </Link>
+          </CtaButton>
           <button
             onClick={() => setMobileOpen(v => !v)}
             aria-label="メニュー"
@@ -129,14 +113,17 @@ export default function LPHeader() {
             <a href="#faq" onClick={() => setMobileOpen(false)}>FAQ</a>
             <hr style={{ borderColor: 'var(--lp-paper-line)' }} />
             <Link href="/login" style={{ color: 'var(--lp-ink)' }} onClick={() => setMobileOpen(false)}>ログイン</Link>
-            <Link
+            <CtaButton
               href="/create"
-              className="inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium"
-              style={{ background: 'var(--lp-ink)', color: 'var(--lp-cream-soft)' }}
+              size="md"
+              className="justify-center"
+              // ドロワーのみ padding が px-5 py-3。size='md' の text-sm を活かしつつ
+              // padding はインライン style で上書きして従来の見た目を維持する。
+              style={{ paddingInline: '1.25rem', paddingBlock: '0.75rem' }}
               onClick={() => setMobileOpen(false)}
             >
               無料で試す →
-            </Link>
+            </CtaButton>
           </nav>
         </div>
       )}

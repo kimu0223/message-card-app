@@ -12,7 +12,7 @@ function sanitizeUserText(text: string, maxLen = 200): string {
     .slice(0, maxLen);
 }
 
-function buildDesignPrompt(req: AIDesignGenerateRequest): string {
+function buildDesignPrompt(req: AIDesignGenerateRequest, isPro = false): string {
   const size: CardSize = req.size ?? 'a4_landscape';
   const { width, height } = CARD_SIZES[size];
   const fonts = FONT_GUIDANCE[req.mood];
@@ -83,6 +83,22 @@ function buildDesignPrompt(req: AIDesignGenerateRequest): string {
     }
   })();
 
+  // Proプラン限定：立体感・奥行き・高品質を引き上げる追加指示。
+  // Free / お試し(trial) では空文字となり、現行の生成品質を据え置く。
+  // 数値の重複（背景ボケ径・opacity範囲・グラデ角度）は後述「装飾の役割ガイド」に集約済み。
+  // ここではその技法を「最大限・3層以上」適用させる強度指示のみを与え、数値の二重管理を避ける。
+  const proQualityGuide = isPro
+    ? `
+## 【Proプラン・立体ハイクオリティ演出】★必達★
+このカードは有料プランのユーザー向けです。後述の「装飾の役割ガイド」のすべての技法
+（背景ボケ・コーナークラスター・opacity重ね・セパレーター）を最大限に適用し、
+平面的にせず奥行きと立体感を必ず作り込んでください。
+- 装飾は3層以上（背景ボケ → 中間装飾 → 前景アクセント）を意図的に重ねること。
+- 背景は単調な単色を避け、多色の対角グラデーションにすること。
+- アニメーションは静止的に終わらせず、動きのある演出を優先すること。
+`
+    : '';
+
   return `
 あなたは一流のグラフィックデザイナーです。メッセージカードのデザインデータをJSON形式で4パターン生成してください。
 プロのデザイナーとして、レイアウト・配色・タイポグラフィ・装飾すべてに意図を持った美しいデザインを作ってください。
@@ -94,6 +110,7 @@ function buildDesignPrompt(req: AIDesignGenerateRequest): string {
 - キャンバスサイズ: ${width}x${height}px (${size})
 ${req.messageText ? `- メッセージテキスト: 「${sanitizeUserText(req.messageText)}」` : '- メッセージテキスト: 相手やシーンに適した心のこもった日本語メッセージを考えてください(20-40文字程度)'}
 ${moodSpecialGuide}
+${proQualityGuide}
 
 ## フォント指定
 - タイトル/メインメッセージ用: "${fonts.primary}"
@@ -317,10 +334,11 @@ function normalizeCanvasData(data: CanvasData, expectedSize?: CardSize): CanvasD
 }
 
 export async function generateDesignVariants(
-  req: AIDesignGenerateRequest
+  req: AIDesignGenerateRequest,
+  isPro = false
 ): Promise<AIDesignGenerateResponse> {
   const client = getGeminiClient();
-  const prompt = buildDesignPrompt(req);
+  const prompt = buildDesignPrompt(req, isPro);
   const size = req.size ?? 'a4_landscape';
 
   const response = await client.models.generateContent({

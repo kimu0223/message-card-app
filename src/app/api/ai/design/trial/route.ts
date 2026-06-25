@@ -48,9 +48,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'trial_limit_exceeded', reason }, { status: 429 })
   }
 
-  // 3. AI生成（失敗時は予約を取り消して枠を返す）
+  // 3. AI生成（お試しは標準品質。立体・高品質演出はProのみ）
   try {
-    const result = await generateDesignVariants(body)
+    const result = await generateDesignVariants(body, false)
     const response = NextResponse.json(result)
     if (isNew) setGuestCookie(response, sessionId)
     return response

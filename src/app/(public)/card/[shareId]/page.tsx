@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 import PublicCardView from '@/components/share/PublicCardView'
+import { gateDisplayModeByPlan } from '@/lib/card-display-mode'
 import type { CanvasData } from '@/types/card'
 
 // generateMetadata + page の両方で Supabase を使うため動的レンダリングに固定
@@ -58,7 +60,7 @@ export default async function PublicCardPage({ params }: Props) {
 
   const { data: card } = await supabase
     .from('cards')
-    .select('id, title, canvas_data, animation, thumbnail_url, expires_at')
+    .select('id, user_id, title, canvas_data, animation, thumbnail_url, expires_at')
     .eq('share_id', shareId)
     .eq('status', 'published')
     .single()
@@ -72,10 +74,23 @@ export default async function PublicCardPage({ params }: Props) {
   // 閲覧数をインクリメント（失敗しても表示に影響しない）
   void supabase.rpc('increment_card_view', { card_id: card.id })
 
+  // 3Dカード演出はProのみ。所有者の「現在の」プランで一度だけゲートする
+  // （唯一の権威ゲート。保存時には行わない）
+  const { data: ownerProfile } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', card.user_id)
+    .single()
+
+  const canvasData = gateDisplayModeByPlan(
+    card.canvas_data as CanvasData,
+    ownerProfile?.plan,
+  )
+
   return (
     <PublicCardView
       title={card.title}
-      canvasData={card.canvas_data as CanvasData}
+      canvasData={canvasData}
       shareId={shareId}
     />
   )
@@ -92,12 +107,12 @@ function ExpiredCardPage() {
         <p className="text-zinc-400 text-sm mb-6">
           Proプランにアップグレードすると、永続的に公開できます。
         </p>
-        <a
+        <Link
           href="/"
           className="inline-block rounded-lg bg-white px-6 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100"
         >
           自分もカードを作る
-        </a>
+        </Link>
       </div>
     </div>
   )

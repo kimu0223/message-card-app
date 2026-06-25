@@ -45,7 +45,8 @@ export async function POST(request: Request) {
     }
 
     try {
-      const result = await generateDesignVariants(body)
+      // ゲストは標準品質（立体・高品質演出はProのみ）
+      const result = await generateDesignVariants(body, false)
       const response = NextResponse.json(result)
       if (isNew) setGuestCookie(response, sessionId)
       return response
@@ -69,7 +70,8 @@ export async function POST(request: Request) {
     if (validationError) return validationError
 
     try {
-      const result = await generateDesignVariants(body)
+      // 管理者はPro相当の高品質生成
+      const result = await generateDesignVariants(body, true)
       return NextResponse.json(result)
     } catch (error) {
       console.error('AI design generation error (admin):', error)
@@ -121,7 +123,7 @@ export async function POST(request: Request) {
   if (validationError) return validationError
 
   try {
-    const result = await generateDesignVariants(body)
+    const result = await generateDesignVariants(body, isPro)
 
     if (needsCreditDeduction) {
       const { success } = await deductCredits(supabase, user.id, CREDIT_COSTS.aiDesign, 'AIデザイン生成（Free上限超過）')
